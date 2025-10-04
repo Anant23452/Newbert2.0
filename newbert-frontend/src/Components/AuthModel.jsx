@@ -67,9 +67,9 @@ function AuthModal({ isOpen, onClose }) {
         </div>
 
         {/* Google Auth */}
-        <div className="w-full h-[10vh] flex items-center justify-between ">
+        <div className="w-full h-[10vh] flex items-center justify-evenly ">
             
-            <button className="w-[50%] border border-gray-400 rounded-full flex items-center justify-center  hover:bg-gray-100 transition">
+            <button className="w-[30%] border border-gray-400 rounded-full flex items-center justify-center  hover:bg-gray-100 transition">
           <img
             src="https://download.logo.wine/logo/GitHub/GitHub-Logo.wine.png"
             alt="Github"
@@ -77,11 +77,11 @@ function AuthModal({ isOpen, onClose }) {
           />
           
         </button>
-        <button className="w-[50%] border border-gray-400 rounded-full flex items-center justify-center  hover:bg-gray-100 transition">
+        <button className="w-[30%] border border-gray-400 rounded-full flex items-center justify-center  hover:bg-gray-100 transition">
           <img
             src="https://www.citypng.com/public/uploads/preview/google-logo-icon-gsuite-hd-701751694791470gzbayltphh.png"
             alt="Google"
-            className="contain h-11 w-15"
+            className="contain h-10 w-15"
           />
           
         </button>
