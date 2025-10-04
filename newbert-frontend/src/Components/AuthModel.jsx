@@ -8,11 +8,11 @@ function AuthModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-50">
-      <div className="bg-white w-[90%] max-w-md rounded-2xl shadow-lg p-6 relative">
+      <div className="bg-white w-[90%] max-w-[20rem] rounded-2xl shadow-lg p-6 relative">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-black"
+          className="absolute top-3 right-3 text-gray-500 hover:text-red-600 hover:scale-110 transition"
         >
        close
         </button>
@@ -58,14 +58,26 @@ function AuthModal({ isOpen, onClose }) {
         </div>
 
         {/* Google Auth */}
-        <button className="w-full border border-gray-400 rounded-full py-2 flex items-center justify-center gap-2 hover:bg-gray-100 transition">
+        <div className="w-full bg-blue-600 h-[10vh] flex items-center justify-between ">
+            
+            <button className="w-[50%] border border-gray-400 rounded-full flex items-center justify-center  hover:bg-gray-100 transition">
           <img
-            src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png"
+            src="https://www.citypng.com/public/uploads/preview/google-logo-icon-gsuite-hd-701751694791470gzbayltphh.png"
             alt="Google"
-            className="h-5 w-5"
+            className="contain h-9 w-9"
           />
-          Continue with Google
+          
         </button>
+        <button className="w-[50%] border border-gray-400 rounded-full flex items-center justify-center  hover:bg-gray-100 transition">
+          <img
+            src="https://www.citypng.com/public/uploads/preview/google-logo-icon-gsuite-hd-701751694791470gzbayltphh.png"
+            alt="Google"
+            className="contain h-9 w-9"
+          />
+          
+        </button>
+        </div>
+        
 
        
       </div>
