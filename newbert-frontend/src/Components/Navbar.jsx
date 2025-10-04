@@ -7,6 +7,10 @@ function Navbar() {
 
     //login ke liye
     const[showAuth,setShowAuth] =useState(false);
+
+    //ab logine ho gaya to user ka name show karne ke liye
+    const[user,setUser]=useState(null);
+
   return (
     <>
 <nav className="w-full h-[10vh]  flex justify-center items-center px-4 py-9 border-b-2 border-zinc-600">
@@ -41,7 +45,11 @@ function Navbar() {
         </div>
       
         <div className="login ">
-          <button onClick={()=>setShowAuth(true)} className="bg-white text-black p-1 rounded-lg">Login</button>
+            {user ?(<h1>anant</h1> ):(
+                 <button onClick={()=>setShowAuth(true)} className="bg-white text-black p-1 rounded-lg">Login</button>
+            )
+        }
+         
         </div>
       </div>
     </nav>
