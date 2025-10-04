@@ -54,7 +54,11 @@ function Navbar() {
       </div>
     </nav>
     {/* {showAuth && <AuthModel/>} */}
-           <AuthModel isOpen={showAuth} onClose={() => setShowAuth(false)} />
+           <AuthModel
+            isOpen={showAuth} 
+            onClose={() => setShowAuth(false)} 
+            onLoginSucess={handleLogin}
+            />
    
     </>
   );
