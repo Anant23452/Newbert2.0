@@ -7,7 +7,7 @@ function AuthModal({ isOpen, onClose }) {
   if (!isOpen) return null; // hidden by default
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-50">
       <div className="bg-white w-[90%] max-w-md rounded-2xl shadow-lg p-6 relative">
         {/* Close Button */}
         <button
