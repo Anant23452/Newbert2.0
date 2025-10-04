@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
+import AuthModel from "./AuthModel";
 
 function Navbar() {
+    //mobile view ke liye 
+    const [modelOpen, setModelOpen]=useState(false);
+
+    //login ke liye
+    const[showAuth,setShowAuth] =useState(false);
   return (
+    <>
 <nav className="w-full h-[10vh]  flex justify-center items-center px-4 py-9 border-b-2 border-zinc-600">
       <div className="logo flex items-center gap-1  w-full">
   <img
@@ -34,10 +41,14 @@ function Navbar() {
         </div>
       
         <div className="login ">
-          <button className="bg-white text-black p-1 rounded-lg">Login</button>
+          <button onClick={()=>setShowAuth(true)} className="bg-white text-black p-1 rounded-lg">Login</button>
         </div>
       </div>
     </nav>
+    {/* {showAuth && <AuthModel/>} */}
+           <AuthModel isOpen={showAuth} onClose={() => setShowAuth(false)} />
+   
+    </>
   );
 }
 
