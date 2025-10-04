@@ -11,6 +11,15 @@ function Navbar() {
     //ab logine ho gaya to user ka name show karne ke liye
     const[user,setUser]=useState(null);
 
+    const handleLogin = (userData) => {
+    setUser(userData);
+    setShowAuth(false);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
   return (
     <>
 <nav className="w-full h-[10vh]  flex justify-center items-center px-4 py-9 border-b-2 border-zinc-600">
