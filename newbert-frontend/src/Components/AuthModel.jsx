@@ -1,10 +1,18 @@
 import React, { useState } from "react";
 
 
-function AuthModal({ isOpen, onClose }) {
+function AuthModal({ isOpen, onClose,onLoginSucess }) {
   const [isSignUp, setIsSignUp] = useState(false);
 
   if (!isOpen) return null; // hidden by default
+
+  const  hadlefakelogin =()=>{
+    const fakelogin={
+      name:"anant",
+      img:""
+    }
+    onLoginSucess(fakelogin);
+  }
 
   return (
     <div className="fixed inset-0 bg-black/80 flex justify-center items-center z-50">
