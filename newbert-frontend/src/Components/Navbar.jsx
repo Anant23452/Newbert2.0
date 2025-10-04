@@ -3,18 +3,19 @@ import React from "react";
 function Navbar() {
   return (
 <nav className="w-full h-[10vh]  flex justify-center items-center px-4 py-9 border-b-2 border-zinc-600">
-      <div className="logo flex items-center justify-between w-full">
+      <div className="logo flex items-center gap-1  w-full">
   <img
-    src="/src/assets/1-removebg-preview(1).png"
+    src="/src/assets/2-removebg-preview(1).png"
     alt="Newbert Logo"
-    className="h-[11rem] w-auto object-contain"
+    className="select-none h-[4rem] w-auto object-contain"
   />
+  <h1 className="text-3xl font-bold select-none " >Newbert</h1>
 </div>
 
     
-      <div className="w-full h-full  flex  items-center  gap-4 ">
+      <div className="w-full h-full  flex  items-center  gap-4 px-4 ">
        
-        <div className="link text-white flex gap-10 px-8 bg-blue-400 fles items-center p-2">
+        <div className="link text-white flex gap-10 px-8 items-center p-2">
           {[
             "Home",
             "Academics",
@@ -25,15 +26,15 @@ function Navbar() {
             "Request.call",
           ].map((item, index) => {
             return (
-              <a className="text-white w-full" index={index} href="">
+              <a className="text-white w-full select-none " index={index} href="">
                 {item}
               </a>
             );
           })}
         </div>
       
-        <div className="login bg-green-500">
-          <button className="bg-white text-black p-2 rounded-lg">Login</button>
+        <div className="login ">
+          <button className="bg-white text-black p-1 rounded-lg">Login</button>
         </div>
       </div>
     </nav>
