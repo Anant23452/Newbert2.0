@@ -57,9 +57,9 @@ function Navbar() {
       
         <div className="login ">
             {user ?
-            (<div className="profile w-full h-full bg-blue-400 ">
-              <img src="https://i.pinimg.com/1200x/f0/38/38/f038383985e6289f4c208150818e01ab.jpg" alt="img" className="w-auto h-[4rem] contain "  />
-              <h4>anant</h4>
+            (<div className="profile w-12 h-12 bg-blue-400  overflow-hidden cursor-pointer flex items-center gap-2 flex-col rounded-full " onClick={handleLogout}>
+              <img src="https://i.pinimg.com/1200x/f0/38/38/f038383985e6289f4c208150818e01ab.jpg" alt="img" className="w-full h-full object-cover  "  />
+            
             </div> ):(
                  <button onClick={()=>setShowAuth(true)} className="bg-white text-black p-1 rounded-lg">Login</button>
             )
