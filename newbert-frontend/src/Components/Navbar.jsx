@@ -11,11 +11,13 @@ function Navbar() {
     //ab logine ho gaya to user ka name show karne ke liye
     const[user,setUser]=useState(null);
 
+    //user login karega to setuser me user ka data a jayega or login ki jaga profile dikehga
     const handleLogin = (userData) => {
     setUser(userData);
     setShowAuth(false);
   };
-
+ 
+  // user logout ke liye 
   const handleLogout = () => {
     setUser(null);
   };
