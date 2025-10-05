@@ -51,6 +51,7 @@ function AuthModal({ isOpen, onClose,onLoginSucess }) {
           />
 
           <button
+          onClick={()=>hadlefakelogin() }
             type="submit"
             className="w-full bg-yellow-400 text-black py-2 rounded-full font-semibold hover:bg-yellow-300 transition"
           >

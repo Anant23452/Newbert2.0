@@ -56,7 +56,11 @@ function Navbar() {
         </div>
       
         <div className="login ">
-            {user ?(<h1>anant</h1> ):(
+            {user ?
+            (<div className="profile w-full h-full bg-blue-400 ">
+              <img src="https://i.pinimg.com/1200x/f0/38/38/f038383985e6289f4c208150818e01ab.jpg" alt="img" className="w-auto h-[4rem] contain "  />
+              <h4>anant</h4>
+            </div> ):(
                  <button onClick={()=>setShowAuth(true)} className="bg-white text-black p-1 rounded-lg">Login</button>
             )
         }
