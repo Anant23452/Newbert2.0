@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 
 
-function AuthModal({ isOpen, onClose,onLoginSucess }) {
+function AuthModal({ isOpen, onClose,onLoginSuccess }) {
   const [isSignUp, setIsSignUp] = useState(false);
 
   if (!isOpen) return null; // hidden by default
 
-  const  hadlefakelogin =()=>{
+  const  handlefakelogin =()=>{
     const fakelogin={
       name:"anant",
       img:""
     }
-    onLoginSucess(fakelogin);
+    onLoginSuccess(fakelogin);
   }
 
   return (
@@ -51,8 +51,8 @@ function AuthModal({ isOpen, onClose,onLoginSucess }) {
           />
 
           <button
-          onClick={()=>hadlefakelogin() }
-            type="submit"
+          onClick={()=>handlefakelogin() }
+            type="button"
             className="w-full bg-yellow-400 text-black py-2 rounded-full font-semibold hover:bg-yellow-300 transition"
           >
             {isSignUp ? "Sign Up" : "Sign In"}
