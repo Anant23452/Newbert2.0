@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import AuthModel from "./AuthModel";
+import { useNavigate } from "react-router-dom";
 
 function Navbar() {
     //mobile view ke liye 
@@ -16,11 +17,11 @@ function Navbar() {
     setUser(userData);
     setShowAuth(false);
   };
+
+  //routing ke liye jab click kare to dashboard pe jaye
  
-  // user logout ke liye 
-  const handleLogout = () => {
-    setUser(null);
-  };
+  const navigate =useNavigate();
+  
 
   return (
     <>
@@ -57,7 +58,7 @@ function Navbar() {
       
         <div className="login ">
             {user ?
-            (<div className="profile w-12 h-12 bg-blue-400  overflow-hidden cursor-pointer flex items-center gap-2 flex-col rounded-full " onClick={handleLogout}>
+            (<div className="profile w-12 h-12 bg-blue-400  overflow-hidden cursor-pointer flex items-center gap-2 flex-col rounded-full " onClick={() => navigate("/dashboard")}>
               <img src="https://i.pinimg.com/1200x/f0/38/38/f038383985e6289f4c208150818e01ab.jpg" alt="img" className="w-full h-full object-cover  "  />
             
             </div> ):(
