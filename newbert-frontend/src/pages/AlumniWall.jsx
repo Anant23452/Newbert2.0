@@ -1,9 +1,7 @@
-import React from 'react'
-
-function Dashboard() {
+function AlumniWall() {
   return (
-    <div>Dashboard</div>
+    <div>AlumniWall</div>
   )
 }
 
-export default Dashboard
+export default AlumniWall
