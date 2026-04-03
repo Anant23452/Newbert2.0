@@ -141,8 +141,7 @@ newbert/
 
 ```bash
  Clone repo
-git clone https://github.com/your-username/newbert.git
-
+git clone https://github.com/Anant23452/Newbert2.0
 Go to project
 cd newbert
 
