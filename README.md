@@ -175,9 +175,9 @@ npm run dev
 
  🗺️ Roadmap
 
-* **Month 1–2:** MVP (Alumni + Gap + Roadmap)
-* **Month 3–4:** Jobs + Resume AI + Leaderboard
-* **Month 5–6:** AI + Revenue
+* Month 1–2 MVP (Alumni + Gap + Roadmap)
+* Month 3–4: Jobs + Resume AI + Leaderboard
+* Month 5–6: AI + Revenue
 
 ---
  🆚 Why Newbert?
@@ -210,13 +210,13 @@ npm run dev
 
 ---
 
-## 📜 License
+ 📜 License
 
 MIT License
 
 ---
 
-## ⭐ Support
+ ⭐ Support
 
 If you like this project:
 
@@ -230,28 +230,8 @@ If you like this project:
 
 > India has 40M students.
 > Most are flying blind.
-> **Newbert fixes that.**
+> Newbert fixes that.
 
 ```
 
 ---
-
-## 🔥 Mentor Advice (Important)
-
-This README is **good for GitHub**, but to make it **🔥 standout for recruiters**:
-
-Add:
-1. 📸 Screenshots (very important)
-2. 🔗 Live demo link
-3. 🎥 Demo video (Loom / YouTube)
-4. 📊 Sample data (JSON)
-
----
-
-If you want next step, I can:
-- Review your **actual GitHub repo**
-- Fix your **project structure**
-- Help you **connect frontend ↔ backend properly**
-
-Just send repo 👍
-```
