@@ -1,5 +1,9 @@
 const Jobs =()=>{
-    return  <div>Jobs</div>
+    return  <>
+        <div className="job">
+            <h1>we should do job</h1>
+        </div>
+    </>
 
 }
 export default Jobs;
