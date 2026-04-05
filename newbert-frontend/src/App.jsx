@@ -13,7 +13,7 @@ function App() {
     <>
     <Navbar/>
     <Routing/>
-    <h1>Anant</h1>
+   
     
     </>
   )

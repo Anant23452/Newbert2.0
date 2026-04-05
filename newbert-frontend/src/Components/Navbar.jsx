@@ -1,8 +1,17 @@
 import React, { useState } from "react";
 import AuthModel from "./AuthModel";
 import { useNavigate, Link } from "react-router-dom";
+import {useEffect} from "react";
 
 function Navbar() {
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    // fake user restore (later from backend)
+    setUser({ name: "Anant" });
+  }
+}, []);
   const [showAuth, setShowAuth] = useState(false);
   const [user, setUser] = useState(null);
 
