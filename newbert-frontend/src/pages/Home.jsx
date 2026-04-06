@@ -386,75 +386,101 @@ hover:border-orange-500 transition rotate-[3deg] shadow-xl w-full max-w-md"
             </div>
 
             {/* ⚠️ WEAKNESS PANEL */}
-           <div
-  onMouseEnter={() => setActive("left")}
-  className="bg-[#0f1115] rounded-xl p-5 
+            <div
+              onMouseEnter={() => setActive("left")}
+              className="bg-[#0f1115] rounded-xl p-5 
   hover:scale-[1.03] hover:border-red-500/40 
   border border-transparent transition-all duration-300"
->
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-red-400 font-semibold text-sm">
+                  ⚠ Skill Gaps
+                </h3>
+                <span className="text-[10px] text-slate-500">
+                  Improve to grow
+                </span>
+              </div>
 
-  {/* Header */}
-  <div className="flex items-center justify-between mb-3">
-    <h3 className="text-red-400 font-semibold text-sm">⚠ Skill Gaps</h3>
-    <span className="text-[10px] text-slate-500">Improve to grow</span>
-  </div>
+              {/* Skills */}
+              <div className="space-y-3 text-xs">
+                {/* Backend */}
+                <div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-300">Backend</span>
+                    <span className="text-red-400">25%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-700 rounded-full mt-1">
+                    <div className="h-1.5 bg-red-500 w-[25%] rounded-full transition-all"></div>
+                  </div>
+                </div>
 
-  {/* Skills */}
-  <div className="space-y-3 text-xs">
+                {/* System Design */}
+                <div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-300">System Design</span>
+                    <span className="text-red-400">0%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-700 rounded-full mt-1">
+                    <div className="h-1.5 bg-red-500 w-[5%] rounded-full"></div>
+                  </div>
+                </div>
 
-    {/* Backend */}
-    <div>
-      <div className="flex justify-between">
-        <span className="text-slate-300">Backend</span>
-        <span className="text-red-400">25%</span>
-      </div>
-      <div className="w-full h-1.5 bg-slate-700 rounded-full mt-1">
-        <div className="h-1.5 bg-red-500 w-[25%] rounded-full transition-all"></div>
-      </div>
-    </div>
+                {/* DSA */}
+                <div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-300">DSA</span>
+                    <span className="text-orange-400">140 / 300</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-700 rounded-full mt-1">
+                    <div className="h-1.5 bg-orange-500 w-[45%] rounded-full"></div>
+                  </div>
+                </div>
+              </div>
 
-    {/* System Design */}
-    <div>
-      <div className="flex justify-between">
-        <span className="text-slate-300">System Design</span>
-        <span className="text-red-400">0%</span>
-      </div>
-      <div className="w-full h-1.5 bg-slate-700 rounded-full mt-1">
-        <div className="h-1.5 bg-red-500 w-[5%] rounded-full"></div>
-      </div>
-    </div>
+              {/* Divider */}
+              <div className="h-px bg-slate-800 my-4"></div>
 
-    {/* DSA */}
-    <div>
-      <div className="flex justify-between">
-        <span className="text-slate-300">DSA</span>
-        <span className="text-orange-400">140 / 300</span>
-      </div>
-      <div className="w-full h-1.5 bg-slate-700 rounded-full mt-1">
-        <div className="h-1.5 bg-orange-500 w-[45%] rounded-full"></div>
-      </div>
-    </div>
-
-  </div>
-
-  {/* Divider */}
-  <div className="h-px bg-slate-800 my-4"></div>
-
-  {/* Action Section */}
-  <div className="text-[11px] text-slate-400">
-    <p className="text-orange-400 font-medium mb-1">🚀 Path to 100%</p>
-    <ul className="space-y-1">
-      <li>• +160 DSA problems</li>
-      <li>• Build 2 backend APIs</li>
-      <li>• Learn system design basics</li>
-    </ul>
-  </div>
-
-</div>
+              {/* Action Section */}
+              <div className="text-[11px] text-slate-400">
+                <p className="text-orange-400 font-medium mb-1">
+                  🚀 Path to 100%
+                </p>
+                <ul className="space-y-1">
+                  <li>• +160 DSA problems</li>
+                  <li>• Build 2 backend APIs</li>
+                  <li>• Learn system design basics</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div className="forth-page h-screen flex items-center justify-center bg-yellow-200"></div>
+
+      {/* fourth page  */}
+      <div className="forth-page h-screen flex items-center justify-center bg-yellow-200">
+        <div className="laptop"></div>
+        <div className="course bg-[#1a1c22] border border-orange-500/20 p-4 rounded-xl shadow-lg hover:scale-105 transition w-40">
+          <h3 className="text-sm font-semibold text-white">
+            React for Placement
+          </h3>
+          <div className="img">
+            <img src="...src/" alt="" />
+          </div>
+
+
+          <p className="text-[10px] text-slate-400 mt-1">
+            Recommended for Frontend
+          </p>
+
+          <div className="mt-2 text-yellow-400 text-xs">
+            ⭐ 4.6 (1200 students)
+          </div>
+        </div>
+        <div className="course"></div>
+        <div className="course"></div>
+        <div className="course"></div>
+      </div>
     </>
   );
 }
