@@ -1,79 +1,462 @@
-import React from 'react'
+import React from "react";
+import { useState } from "react";
+import studentImg from "../assets/Tips_mudah_menghadapi_bosan_saat_sedang_belajar___Refrez-removebg-preview.png";
 
 function Home() {
+  const [activeSide, setActiveSide] = useState(null); // controls hover state
+  const [active, setActive] = useState("right");
+
   return (
     <>
+      {/* // First page */}
+      <div className="first-page h-screen  py-20 bg-[#1A1A2E] font-[Orbitron]  ">
+        <div className="head-1   ">
+          <h1 className="text-4xl font-bold text-white text-center">
+            Stop guessing. <br />
+            See exactly what got <br />
+            <span className="text-orange-500">your seniors placed.</span>
+          </h1>
+        </div>
 
-    {/* // First page */}
-    <div className="first-page h-screen  py-20 bg-[#1A1A2E]">
-      <div className="head-1   ">
-        <h1 className='text-4xl font-bold text-white text-center'>
-          Stop guessing. <br />
-           See exactly what got <br />
-          <span className='text-orange-500' >your seniors placed.</span></h1>
+        <div className="head-2  mt-2 ">
+          <h1 className="text-center text-oklch(86.9% 0.022 252.894) ">
+            Real placement journeys from students at YOUR college. <br />
+            Not generic advice. Not IIT stories. <br /> YOUR college. YOUR
+            truth.
+          </h1>
+        </div>
+
+        <div className="hero-btn flex justify-center gap-3 p-2 flex-col sm:flex-row items-center  font-bold mt-5 ">
+          <button className="bg-orange-500 text-white px-6 py-2  rounded-2xl">
+            See Alumni from Your College
+          </button>
+
+          <button className="bg-white text-orange-500 px-6 py-2 rounded-2xl border border-orange-500">
+            Check your current gap
+          </button>
+        </div>
+
+        <div className="w-full bg-[#1A1A2E] py-10 mt-10">
+          <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            {/* Stat 1 */}
+            <div>
+              <h2 className="text-orange-400 text-3xl font-bold">1+</h2>
+              <p className="text-gray-400 text-sm mt-1">AKTU colleges</p>
+            </div>
+
+            {/* Stat 2 */}
+            <div>
+              <h2 className="text-orange-400 text-3xl font-bold">50+</h2>
+              <p className="text-gray-400 text-sm mt-1">Alumni stories</p>
+            </div>
+
+            {/* Stat 3 */}
+            <div>
+              <h2 className="text-orange-400 text-3xl font-bold">20+</h2>
+              <p className="text-gray-400 text-sm mt-1">Students guided</p>
+            </div>
+
+            {/* Stat 4 */}
+            <div>
+              <h2 className="text-orange-400 text-3xl font-bold">6LPA</h2>
+              <p className="text-gray-400 text-sm mt-1">Avg package</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-     <div className="head-2  mt-2 ">
-      <h1 className='text-center text-oklch(86.9% 0.022 252.894) ' >Real placement journeys from students at YOUR college.  <br />Not generic advice. Not IIT stories.  <br /> YOUR college. YOUR truth.</h1>
-     </div>
+      {/* // Second page */}
+      <div className="second-page h-screen flex items-center justify-center  bg-[#1A1A2E]">
+        <div
+          className="relative min-h-screen w-full overflow-hidden text-white font-['Plus_Jakarta_Sans']
+  "
+        >
+          {/* 🔥 Background Glow */}
+          <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-red-900/10 rounded-full blur-[120px]" />
+          <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[120px]" />
 
-   <div className="hero-btn flex justify-center gap-3 p-2 flex-col sm:flex-row items-center  font-bold mt-5 ">
-  <button className="bg-orange-500 text-white px-6 py-2  rounded-2xl">
-    See Alumni from Your College
-  </button>
+          {/* 🧠 HEADLINE */}
+          <div className="text-center mb-16 z-10 px-4 font-[Orbitron] ">
+            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
+              {" "}
+              Two Paths.<span className=" text-orange-500">One Truth.</span>
+            </h1>
+          </div>
 
-  <button className="bg-white text-orange-500 px-6 py-2 rounded-2xl border border-orange-500">
-    Check your current gap
-  </button>
-</div>
+          {/* 🧩 MAIN GRID */}
+          <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-3 gap-10 items-center relative z-10">
+            {/* ❌ LEFT: CHAOS */}
+            <div
+              onMouseEnter={() => setActiveSide("generic")}
+              onMouseLeave={() => setActiveSide(null)}
+              className={`transition-all duration-500 ${
+                activeSide === "newbert" ? "opacity-50 grayscale" : ""
+              } bg-yellow-100/10 p-6 rounded-xl shadow-lg`}
+            >
+              <h2 className="text-2xl text-center font-bold text-slate-400 mb-6 font-[Orbitron]">
+                Generic Advice
+              </h2>
 
-<div className="w-full bg-[#1A1A2E] py-10 mt-10">
-  <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              <div className="space-y-4 relative">
+                <div className="bg-[#1a1c22] border border-red-900/30 p-4 rounded-xl rotate-[-2deg] shadow-xl">
+                  <p className="text-[10px] text-red-400 font-mono">
+                    ERROR: No Placement Clarity
+                  </p>
+                </div>
 
-    {/* Stat 1 */}
+                <div className="bg-[#1a1c22] border border-slate-800 p-4 rounded-xl rotate-[3deg] shadow-xl">
+                  <p className="text-[11px] text-slate-500 italic">
+                    "Do 1000 DSA questions bro..."
+                  </p>
+                </div>
+
+                <div className="bg-[#1a1c22] border border-slate-800 p-4 rounded-xl rotate-[-4deg] shadow-xl">
+                  <p className="text-[11px] text-slate-500 italic">
+                    "Buy this random course..."
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 🎯 CENTER: STUDENT */}
+            <div className="flex flex-col items-center">
+              <div className="relative group">
+                <div className="w-50 h-50 flex items-center justify-center shadow-2xl transition-transform duration-500 group-hover:scale-105">
+                  <span className="text-4xl">
+                    <img
+                      className="w-full h-full object-cover"
+                      src={studentImg}
+                      alt=""
+                    />
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* ✅ RIGHT: NEWBERT */}
+            <div
+              onMouseEnter={() => setActiveSide("newbert")}
+              onMouseLeave={() => setActiveSide(null)}
+              className={`transition-all duration-500 ${
+                activeSide === "generic" ? "opacity-30 grayscale" : ""
+              }`}
+            >
+              <h2 className="text-2xl font-bold text-orange-500 mb-6 text-center font-[Orbitron]">
+                Newbert: The Truth
+              </h2>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* gap analysis card */}
+                <div
+                  className="bg-[#1a1c22] border border-orange-500/20 p-5 rounded-xl 
+hover:border-orange-500 transition rotate-[-4deg] shadow-xl w-full max-w-md"
+                >
+                  {/* Title */}
+                  <div className="mb-4">
+                    <p className="text-orange-500 text-lg"></p>
+                    <p className="text-xs text-slate-400">Gap Analysis</p>
+                  </div>
+
+                  {/* Progress Items */}
+                  <div className="space-y-4">
+                    {/* DSA */}
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-slate-300">DSA questions</span>
+                        <span className="text-orange-500">140 / 300</span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-700 rounded-full">
+                        <div className="h-2 bg-orange-500 rounded-full w-[45%]"></div>
+                      </div>
+                    </div>
+
+                    {/* Frontend */}
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-slate-300">Frontend</span>
+                        <span className="text-green-500">70% ✓</span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-700 rounded-full">
+                        <div className="h-2 bg-green-500 rounded-full w-[70%]"></div>
+                      </div>
+                    </div>
+
+                    {/* Backend */}
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-slate-300">Backend</span>
+                        <span className="text-orange-500">25%</span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-700 rounded-full">
+                        <div className="h-2 bg-orange-500 rounded-full w-[25%]"></div>
+                      </div>
+                    </div>
+
+                    {/* Full Stack */}
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-slate-300">
+                          Full stack project
+                        </span>
+                        <span className="text-red-500">Missing</span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-700 rounded-full">
+                        <div className="h-2 bg-red-500 rounded-full w-[10%]"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* company match card */}
+
+                <div
+                  className="bg-[#1a1c22] border border-orange-500/20 p-5 rounded-xl 
+hover:border-orange-500 transition rotate-[3deg] shadow-xl w-full max-w-md"
+                >
+                  {/* Title */}
+                  <div className="mb-4">
+                    <p className="text-orange-500 text-lg">🧠</p>
+                    <p className="text-xs text-slate-400">
+                      AI Company Prediction
+                    </p>
+                  </div>
+
+                  {/* Company List */}
+                  <div className="space-y-4">
+                    {/* Company 1 */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-white">
+                          TCS Digital
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          Based on AKTU seniors
+                        </p>
+                      </div>
+                      <span className="text-green-500 text-sm font-bold">
+                        82%
+                      </span>
+                    </div>
+
+                    {/* Progress */}
+                    <div className="w-full h-2 bg-slate-700 rounded-full">
+                      <div className="h-2 bg-green-500 rounded-full w-[82%]"></div>
+                    </div>
+
+                    {/* Company 2 */}
+                    <div className="flex items-center justify-between mt-3">
+                      <div>
+                        <p className="text-sm font-semibold text-white">
+                          Infosys
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          Similar skill match
+                        </p>
+                      </div>
+                      <span className="text-orange-500 text-sm font-bold">
+                        65%
+                      </span>
+                    </div>
+
+                    <div className="w-full h-2 bg-slate-700 rounded-full">
+                      <div className="h-2 bg-orange-500 rounded-full w-[65%]"></div>
+                    </div>
+
+                    {/* Company 3 */}
+                    <div className="flex items-center justify-between mt-3">
+                      <div>
+                        <p className="text-sm font-semibold text-white">
+                          Startups (5–10 LPA)
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          High growth potential
+                        </p>
+                      </div>
+                      <span className="text-yellow-500 text-sm font-bold">
+                        50%
+                      </span>
+                    </div>
+
+                    <div className="w-full h-2 bg-slate-700 rounded-full">
+                      <div className="h-2 bg-yellow-500 rounded-full w-[50%]"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 🚀 CTA */}
+          <div className="flex justify-center pt-10">
+            <button
+              className="bg-orange-600 hover:bg-orange-500 
+  px-8 py-3 rounded-full font-bold text-white
+  shadow-lg shadow-orange-500/30 
+  transition transform hover:scale-105"
+            >
+              🚀 Start Your Journey — Free
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* third page  */}
+      <div className="third-page h-screen flex flex-col bg-[#1A1A2E] pt-10 border-t border-orange-500/20 ">
+        <div className="textarea  flex justify-center flex-col">
+          <h1 className="text-4xl font-bold text-center mb-4 font-[Orbitron]">
+            Know Your Job Before{" "}
+            <span className="text-orange-500">You Apply.</span>
+          </h1>
+          <h5 className="text-center leading-tight  text-gray-400 max-w-2xl mx-auto">
+            Newbert analyzes your skills, compares them with real placed
+            students, <br /> and shows jobs you actually have a chance of
+            getting — along <br /> with what you're missing to reach 100%.
+          </h5>
+          <button
+            className="text-center bg-orange-600 hover:bg-orange-500 
+   rounded-full font-bold text-white
+  shadow-lg shadow-orange-500/30 
+  transition transform hover:scale-105 m-auto mt-10 px-8 py-3"
+          >
+            <p>Check your job matches</p>
+          </button>
+        </div>
+
+        <div className="relative w-full flex flex-col items-center  justify-center ">
+          {/* 🔥 SVG CONNECTION */}
+
+          {/* 🧠 GRID */}
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-5 
+      bg-[#1a1c22]  p-6 rounded-xl shadow-xl 
+      w-full max-w-6xl mx-auto min-h-[350px]"
+          >
+            {/* 👨‍💻 PROFILE (CENTER) */}
+            <div className="bg-[#0f1115] rounded-xl p-5 flex flex-col items-center justify-center hover:scale-105 transition">
+              <div className="text-4xl mb-2">🤖</div>
+              <h3 className="text-white font-bold">
+                Newb <span className="text-orange-500">AI</span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 text-center">
+                Analyzing your profile...
+              </p>
+
+              {/* Floating skills */}
+              <div className="flex flex-wrap gap-2 mt-3 justify-center">
+                {["DSA", "React", "Node"].map((skill, i) => (
+                  <span
+                    key={i}
+                    className="text-[10px] px-2 py-1 bg-orange-500/20 text-orange-400 rounded-full animate-pulse"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* 💼 JOB MATCHES */}
+            <div
+              onMouseEnter={() => setActive("right")}
+              className="bg-[#0f1115] rounded-xl p-5 space-y-4 hover:scale-105 transition"
+            >
+              <h3 className="text-white font-bold mb-2">AI Job Matches</h3>
+
+              {[
+                { name: "TCS Digital", match: 82 },
+                { name: "Infosys", match: 65 },
+                { name: "Wipro Elite", match: 58 },
+                { name: "Startup (React Dev)", match: 50 },
+              ].map((job, i) => (
+                <div key={i}>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-300">{job.name}</span>
+                    <span className="text-orange-500 font-bold">
+                      {job.match}%
+                    </span>
+                  </div>
+
+                  <div className="w-full h-2 bg-slate-700 rounded-full mt-1">
+                    <div
+                      className="h-2 bg-orange-500 rounded-full transition-all duration-700"
+                      style={{ width: `${job.match}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ⚠️ WEAKNESS PANEL */}
+           <div
+  onMouseEnter={() => setActive("left")}
+  className="bg-[#0f1115] rounded-xl p-5 
+  hover:scale-[1.03] hover:border-red-500/40 
+  border border-transparent transition-all duration-300"
+>
+
+  {/* Header */}
+  <div className="flex items-center justify-between mb-3">
+    <h3 className="text-red-400 font-semibold text-sm">⚠ Skill Gaps</h3>
+    <span className="text-[10px] text-slate-500">Improve to grow</span>
+  </div>
+
+  {/* Skills */}
+  <div className="space-y-3 text-xs">
+
+    {/* Backend */}
     <div>
-      <h2 className="text-orange-400 text-3xl font-bold">40+</h2>
-      <p className="text-gray-400 text-sm mt-1">AKTU colleges</p>
+      <div className="flex justify-between">
+        <span className="text-slate-300">Backend</span>
+        <span className="text-red-400">25%</span>
+      </div>
+      <div className="w-full h-1.5 bg-slate-700 rounded-full mt-1">
+        <div className="h-1.5 bg-red-500 w-[25%] rounded-full transition-all"></div>
+      </div>
     </div>
 
-    {/* Stat 2 */}
+    {/* System Design */}
     <div>
-      <h2 className="text-orange-400 text-3xl font-bold">500+</h2>
-      <p className="text-gray-400 text-sm mt-1">Alumni stories</p>
+      <div className="flex justify-between">
+        <span className="text-slate-300">System Design</span>
+        <span className="text-red-400">0%</span>
+      </div>
+      <div className="w-full h-1.5 bg-slate-700 rounded-full mt-1">
+        <div className="h-1.5 bg-red-500 w-[5%] rounded-full"></div>
+      </div>
     </div>
 
-    {/* Stat 3 */}
+    {/* DSA */}
     <div>
-      <h2 className="text-orange-400 text-3xl font-bold">2,000+</h2>
-      <p className="text-gray-400 text-sm mt-1">Students guided</p>
-    </div>
-
-    {/* Stat 4 */}
-    <div>
-      <h2 className="text-orange-400 text-3xl font-bold">8 LPA</h2>
-      <p className="text-gray-400 text-sm mt-1">Avg package</p>
+      <div className="flex justify-between">
+        <span className="text-slate-300">DSA</span>
+        <span className="text-orange-400">140 / 300</span>
+      </div>
+      <div className="w-full h-1.5 bg-slate-700 rounded-full mt-1">
+        <div className="h-1.5 bg-orange-500 w-[45%] rounded-full"></div>
+      </div>
     </div>
 
   </div>
+
+  {/* Divider */}
+  <div className="h-px bg-slate-800 my-4"></div>
+
+  {/* Action Section */}
+  <div className="text-[11px] text-slate-400">
+    <p className="text-orange-400 font-medium mb-1">🚀 Path to 100%</p>
+    <ul className="space-y-1">
+      <li>• +160 DSA problems</li>
+      <li>• Build 2 backend APIs</li>
+      <li>• Learn system design basics</li>
+    </ul>
+  </div>
+
 </div>
-
-
-    </div>
-      {/* // Second page */}
-    <div className="second-page h-screen flex items-center justify-center bg-green-200">
-
-    </div>
-    <div className="third-page h-screen flex items-center justify-center bg-blue-200">
-
-
-    </div>
-    <div className="forth-page h-screen flex items-center justify-center bg-yellow-200">
-
-    </div>
-    
-    
+          </div>
+        </div>
+      </div>
+      <div className="forth-page h-screen flex items-center justify-center bg-yellow-200"></div>
     </>
-  )
+  );
 }
 
-export default Home
+export default Home;
