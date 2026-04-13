@@ -1,5 +1,10 @@
-const LeaderBoard =()=>{
-    return <div>LeaderBoard</div>
+function LeaderBoard(){
+  return <>
+    <div>Leaderboard</div>
+  
+  </>
 
+  
 }
 export default LeaderBoard;
+
