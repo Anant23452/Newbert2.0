@@ -34,7 +34,7 @@ function Navbar() {
         {/* 🔹 NAV LINKS */}
         <div className="flex gap-6 text-gray-300 text-sm">
           <Link to="/">Home</Link>
-          <Link to="/alumni-wall">Alumni wall</Link>
+          <Link to="/alumni-wall">Alumni_wall</Link>
           <Link to="/jobs">Jobs</Link>
           <Link to="/resume-ai">Resume AI</Link>
           <Link to="/courses">Courses</Link>
