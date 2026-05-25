@@ -67,7 +67,7 @@ function Navbar() {
               </div>
 
               {/* 👤 PROFILE */}
-              //making thing 
+              
               <div
                 onClick={() => navigate("/profile")}
                 className="w-9 h-9 flex items-center justify-center bg-orange-500 rounded-full font-bold cursor-pointer"
