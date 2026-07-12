@@ -2,7 +2,7 @@ import React from 'react'
 import { Routes,Route } from 'react-router-dom';
 import AllumniWall from './pages/AlumniWall';
 import Profile from './pages/Profile';
-import Roadmap from './pages/Roadmap';
+import Roadmap from './pages/Temp';
 import Jobs from './pages/Jobs';
 import Leaderboard from './pages/Leaderboard';
 import ResumeAi from './pages/ResumeAi';
