@@ -7,7 +7,7 @@ const checklist = [
   ["Write your first resume", "Use outcomes and impact rather than a list of tools."],
 ];
 
-export default function RoadMap() {
+export default function Roadmap() {
   const [role, setRole] = useState(roles[0]);
   const [checked, setChecked] = useState([]);
   const toggle = (index) => setChecked((current) => current.includes(index) ? current.filter((item) => item !== index) : [...current, index]);
