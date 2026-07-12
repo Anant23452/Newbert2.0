@@ -1,10 +1,2 @@
-function LeaderBoard(){
-  return <>
-    <div>Leaderboard</div>
-  
-  </>
-
-  
-}
-export default LeaderBoard;
-
+const students = [["1", "Riya S.", "94", "18 tasks completed"], ["2", "Aditya K.", "88", "16 tasks completed"], ["3", "Naman V.", "82", "14 tasks completed"]];
+export default function LeaderBoard() { return <main className="mx-auto max-w-4xl px-5 py-12 md:py-16"><p className="eyebrow">Weekly momentum</p><h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">Progress that keeps you moving.</h1><p className="mt-3 text-sm leading-6 text-slate-600">A light weekly view of students consistently working through their plans.</p><section className="surface mt-8 overflow-hidden"><div className="grid grid-cols-[3rem_1fr_auto] gap-3 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-500"><span>Rank</span><span>Student</span><span>Points</span></div>{students.map(([rank, name, points, activity]) => <div key={rank} className="grid grid-cols-[3rem_1fr_auto] items-center gap-3 border-b border-slate-100 px-5 py-4 last:border-0"><span className="font-mono font-bold text-teal-700">{rank}</span><span><span className="block text-sm font-bold text-slate-900">{name}</span><span className="text-xs text-slate-500">{activity}</span></span><span className="text-sm font-extrabold text-slate-900">{points}</span></div>)}</section></main>; }

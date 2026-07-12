@@ -1,12 +1,31 @@
-const Jobs =()=>{
-    return  <>
-        <div className="job">
-            <>
-            <h1>Newbert Resume Ai</h1>
-            
-            </>
-        </div>
-    </>
+import { useMemo, useState } from "react";
+import { getSavedJobs, saveJob, updateJobStatus } from "../utils/jobApplications";
 
+const studentSkills = ["React", "JavaScript", "DSA", "SQL"];
+const jobs = [
+  { title: "Frontend Intern", company: "Early-stage product company", location: "Remote · Internship", fit: 82, skills: ["React", "JavaScript", "REST APIs", "TypeScript"], missing: ["TypeScript"], reason: "Your React projects and JavaScript practice match this role. Add TypeScript to become a stronger fit." },
+  { title: "Graduate Engineer Trainee", company: "Technology services company", location: "Noida · Full-time", fit: 71, skills: ["Java", "SQL", "DSA", "OOP", "Aptitude"], missing: ["OOP", "Aptitude"], reason: "You meet the core technical requirements. OOP revision and aptitude practice will improve your eligibility." },
+  { title: "Software Engineer Intern", company: "Consumer internet company", location: "Bengaluru · Internship", fit: 58, skills: ["DSA", "JavaScript", "CS fundamentals", "System design"], missing: ["CS fundamentals", "1 deployed project"], reason: "This is an ambitious match today. Complete the missing foundations before applying." },
+];
+const statuses = ["Saved", "Applied", "Resume selected", "Online assessment", "Technical round", "HR round", "Offer received", "Not selected"];
+
+export default function Jobs() {
+  const [selected, setSelected] = useState(jobs[0]);
+  const [savedJobs, setSavedJobs] = useState(getSavedJobs);
+  const saved = savedJobs.find((job) => job.title === selected.title);
+  const demandGaps = useMemo(() => {
+    const counts = jobs.flatMap((job) => job.skills).reduce((all, skill) => ({ ...all, [skill]: (all[skill] || 0) + 1 }), {});
+    return Object.entries(counts).filter(([skill]) => !studentSkills.includes(skill)).sort((a, b) => b[1] - a[1]).slice(0, 2);
+  }, []);
+  const bookmark = () => setSavedJobs(saveJob(selected));
+  const setStatus = (status) => setSavedJobs(updateJobStatus(selected.title, status));
+  return <main className="mx-auto max-w-6xl px-5 py-12 md:py-16">
+    <div className="max-w-2xl"><p className="eyebrow">AI job matching</p><h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950">Roles matched to your current profile.</h1><p className="mt-3 text-sm leading-6 text-slate-600">Newbert checks your skills, projects, preparation progress and role requirements. Save roles, track every stage, and use the gaps to improve your chances.</p></div>
+    <section className="mt-7 grid gap-3 md:grid-cols-2"><div className="rounded-lg border border-amber-200 bg-amber-50 p-5"><p className="text-xs font-bold uppercase tracking-[0.12em] text-amber-800">Most requested skills you are missing</p><div className="mt-3 flex gap-2">{demandGaps.map(([skill, count]) => <span key={skill} className="rounded bg-white px-2.5 py-1.5 text-sm font-bold text-amber-900">{skill} <span className="text-xs font-medium text-amber-700">in {count} roles</span></span>)}</div><p className="mt-3 text-xs leading-5 text-amber-800">Adding these skills will strengthen multiple active job matches.</p></div><div className="rounded-lg border border-teal-200 bg-teal-50 p-5"><p className="text-xs font-bold uppercase tracking-[0.12em] text-teal-800">Your application tracker</p><p className="mt-2 text-2xl font-extrabold text-teal-950">{savedJobs.length} saved role{savedJobs.length === 1 ? "" : "s"}</p><p className="mt-1 text-xs text-teal-800">Saved roles also appear in your profile.</p></div></section>
+    <div className="mt-9 grid gap-5 lg:grid-cols-[1.1fr_.9fr]"><section className="space-y-3">{jobs.map((job) => <button key={job.title} onClick={() => setSelected(job)} className={`surface w-full p-5 text-left transition ${selected.title === job.title ? "border-teal-600 ring-2 ring-teal-100" : "hover:border-teal-300"}`}><div className="flex items-start justify-between gap-4"><div><h2 className="font-bold text-slate-950">{job.title}</h2><p className="mt-1 text-sm text-slate-600">{job.company}</p><p className="mt-2 text-xs font-semibold text-teal-700">{job.location}</p></div><FitBadge fit={job.fit}/></div><div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100"><div style={{ width: `${job.fit}%` }} className="h-full rounded-full bg-teal-600"/></div></button>)}</section>
+      <aside className="surface h-fit p-6 lg:sticky lg:top-24"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-teal-700">Why this match</p><h2 className="mt-2 text-xl font-extrabold text-slate-950">{selected.title}</h2></div><FitBadge fit={selected.fit}/></div><p className="mt-5 text-sm leading-6 text-slate-600">{selected.reason}</p><InfoList title="You already have" items={selected.skills.filter((skill) => studentSkills.includes(skill))} tone="good"/><InfoList title="Build before applying" items={selected.missing} tone="missing"/>{saved ? <label className="mt-6 block text-sm font-bold text-slate-800">Application status<select value={saved.status} onChange={(event) => setStatus(event.target.value)} className="control mt-2 w-full">{statuses.map((status) => <option key={status}>{status}</option>)}</select></label> : <button onClick={bookmark} className="mt-6 w-full rounded-md bg-teal-700 px-4 py-3 text-sm font-bold text-white hover:bg-teal-800">Bookmark this job</button>}<button className="mt-3 w-full rounded-md border border-slate-300 px-4 py-3 text-sm font-bold text-slate-700 hover:border-teal-600">View job details</button></aside>
+    </div>
+  </main>;
 }
-export default Jobs;
+function FitBadge({ fit }) { return <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-extrabold ${fit >= 75 ? "bg-teal-50 text-teal-800" : fit >= 60 ? "bg-amber-50 text-amber-800" : "bg-slate-100 text-slate-700"}`}>{fit}% fit</span>; }
+function InfoList({ title, items, tone }) { return <div className="mt-6"><p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{title}</p><div className="mt-2 flex flex-wrap gap-2">{items.map((item) => <span key={item} className={`rounded px-2 py-1 text-xs font-semibold ${tone === "good" ? "bg-teal-50 text-teal-800" : "bg-amber-50 text-amber-800"}`}>{tone === "good" ? "+ " : "Need: "}{item}</span>)}</div></div>; }

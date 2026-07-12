@@ -1,95 +1,17 @@
-export default function AlumniCard({ alumni }) {
-  const isPlacement = alumni.type === "placement"
+import { useNavigate } from "react-router-dom";
 
-  return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-orange-400 transition-all cursor-pointer">
-      
-      {/* TOP ROW — Avatar + Name + Badge */}
-      <div className="flex items-start gap-3 mb-3">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${alumni.avatarColor}`}>
-          {alumni.initials}
-        </div>
-        <div className="flex-1">
-          <div className="font-bold text-gray-900 text-sm">{alumni.name}</div>
-          <div className="text-xs text-gray-500 mt-0.5">{alumni.college} · {alumni.batch}</div>
-          <div className="text-xs text-gray-500">{alumni.company}</div>
-        </div>
-        {/* Package or AIR badge */}
-        {isPlacement ? (
-          <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-full">
-            {alumni.package} LPA
-          </span>
-        ) : (
-          <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">
-            AIR {alumni.gateAIR}
-          </span>
-        )}
-      </div>
-
-      {/* TYPE BADGE */}
-      <div className="flex gap-2 mb-3 flex-wrap">
-        <span className={`text-xs font-bold px-2 py-1 rounded-full ${isPlacement ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
-          {isPlacement ? '💼 Placed' : '🎓 GATE'}
-        </span>
-        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
-          {alumni.role}
-        </span>
-      </div>
-
-      {/* SKILLS */}
-      <div className="flex gap-1 flex-wrap mb-3">
-        {alumni.skills.slice(0,4).map((skill, i) => (
-          <span key={i} className={` text-gray-600 text-xs px-2 py-1 rounded-full ${skill=="JavaScript"?"bg-yellow-100":"bg-gray-100"}`} >
-            {skill}
-          </span>
-        ))}
-      </div>
-
-      {/* STATS */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
-        {isPlacement ? (
-          <>
-            <div className="bg-gray-50 rounded-lg p-2 text-center">
-              <div className="font-bold text-gray-900 text-sm">{alumni.dsaSolved}</div>
-              <div className="text-xs text-gray-400">DSA solved</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-2 text-center">
-              <div className="font-bold text-gray-900 text-sm">{alumni.projects}</div>
-              <div className="text-xs text-gray-400">Projects</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-2 text-center">
-              <div className="font-bold text-gray-900 text-sm">{alumni.prepMonths} mo</div>
-              <div className="text-xs text-gray-400">Prep time</div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="bg-gray-50 rounded-lg p-2 text-center">
-              <div className="font-bold text-green-600 text-sm">{alumni.gateScore}</div>
-              <div className="text-xs text-gray-400">GATE score</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-2 text-center">
-              <div className="font-bold text-gray-900 text-sm">AIR {alumni.gateAIR}</div>
-              <div className="text-xs text-gray-400">All India Rank</div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-2 text-center">
-              <div className="font-bold text-gray-900 text-sm">{alumni.prepMonths} mo</div>
-              <div className="text-xs text-gray-400">Prep time</div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* QUOTE */}
-      <div className="bg-orange-50 rounded-lg p-3 grid grid-cols-2">
-        <p className="text-xs text-orange-900 leading-relaxed italic">
-          "{alumni.quote}"
-        </p>
-        <div className="text-xs text-white-900 flex items-center justify-end">
-          <button className="border border-black-200 bg-orange-600 p-2 rounded-lg ">Match Ur Profile</button>
-        </div>
-      </div>
-
+export default function AlumniCard({ alumni, onCompare }) {
+  const navigate = useNavigate();
+  const isPlacement = alumni.type === "placement";
+  return <article onClick={() => navigate(`/alumni-wall/${alumni.id}`)} className="surface cursor-pointer p-5 transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-md">
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex min-w-0 items-center gap-3"><div className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm font-extrabold ${alumni.avatarColor}`}>{alumni.initials}</div><div className="min-w-0"><h3 className="truncate text-sm font-bold text-slate-950">{alumni.name}</h3><p className="mt-0.5 truncate text-xs text-slate-500">{alumni.college} · {alumni.batch}</p><p className="mt-0.5 truncate text-xs font-semibold text-slate-700">{alumni.company}</p></div></div>
+      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${isPlacement ? "bg-teal-50 text-teal-800" : "bg-indigo-50 text-indigo-700"}`}>{isPlacement ? `${alumni.package} LPA` : `AIR ${alumni.gateAIR}`}</span>
     </div>
-  )
+    <div className="mt-5 flex flex-wrap gap-2"><span className="rounded bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">{alumni.role}</span>{alumni.skills.slice(0, 3).map((skill) => <span key={skill} className="rounded bg-slate-50 px-2 py-1 text-xs text-slate-600">{skill}</span>)}</div>
+    <div className="mt-5 grid grid-cols-3 divide-x divide-slate-200 rounded-md border border-slate-200 bg-slate-50"><Stat value={isPlacement ? alumni.dsaSolved : alumni.gateScore} label={isPlacement ? "DSA solved" : "GATE score"}/><Stat value={alumni.projects ?? "-"} label="Projects"/><Stat value={`${alumni.prepMonths} mo`} label="Prep time"/></div>
+    <p className="mt-4 border-l-2 border-teal-600 pl-3 text-xs leading-5 text-slate-600">“{alumni.quote}”</p>
+    <button onClick={(event) => { event.stopPropagation(); onCompare(alumni); }} className="mt-5 text-sm font-bold text-teal-700 hover:text-teal-900">Compare to my profile <span aria-hidden="true">→</span></button>
+  </article>;
 }
+function Stat({ value, label }) { return <div className="px-2 py-3 text-center"><p className="text-sm font-extrabold text-slate-950">{value}</p><p className="mt-0.5 text-[11px] text-slate-500">{label}</p></div>; }

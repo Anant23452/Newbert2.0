@@ -1,0 +1,92 @@
+{/* First page — hero */}
+<div className="first-page min-h-screen py-24 bg-[#0B0B1F] font-[Orbitron] relative overflow-hidden">
+
+  {/* background glow blobs */}
+  <div className="absolute top-[-10%] left-[10%] w-[400px] h-[400px] bg-violet-600/20 rounded-full blur-[130px] pointer-events-none" />
+  <div className="absolute top-[10%] right-[10%] w-[400px] h-[400px] bg-cyan-400/10 rounded-full blur-[130px] pointer-events-none" />
+
+  {/* subtle dot grid */}
+  <div
+    className="absolute inset-0 opacity-[0.15] pointer-events-none"
+    style={{
+      backgroundImage:
+        "radial-gradient(circle, #ffffff 1px, transparent 1px)",
+      backgroundSize: "28px 28px",
+    }}
+  />
+
+  <div className="relative z-10">
+    {/* eyebrow */}
+    <p className="text-center text-xs sm:text-sm tracking-[0.3em] font-bold uppercase bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent mb-6">
+      Track. Compare. Get Placed.
+    </p>
+
+    <div className="head-1">
+      <h1 className="text-4xl md:text-6xl font-bold text-white text-center leading-tight">
+        Stop guessing. <br />
+        See exactly what got <br />
+        your seniors{" "}
+        <span className="inline-block px-3 py-1 mt-2 rounded-xl border border-cyan-400/40 bg-cyan-400/5 text-cyan-300 shadow-[0_0_25px_-5px_rgba(34,211,238,0.5)]">
+          placed.
+        </span>
+      </h1>
+    </div>
+
+    <div className="head-2 mt-6">
+      <h1 className="text-center text-gray-400 font-[Plus_Jakarta_Sans] text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+        Real placement journeys from students at YOUR college. <br />
+        Not generic advice. Not IIT stories. <br /> YOUR college. YOUR truth.
+      </h1>
+    </div>
+
+    <div className="hero-btn flex justify-center gap-3 p-2 flex-col sm:flex-row items-center font-bold mt-8">
+      <button className="bg-gradient-to-r from-violet-500 to-cyan-400 text-[#0B0B1F] px-6 py-2.5 rounded-full shadow-[0_0_25px_-5px_rgba(139,92,246,0.6)] hover:scale-105 transition-transform">
+        See Alumni from Your College
+      </button>
+
+      <button className="bg-white/5 text-white px-6 py-2.5 rounded-full border border-white/15 hover:border-cyan-300/50 transition-colors">
+        Check your current gap
+      </button>
+    </div>
+
+    {/* avatar stack + stat, like reference */}
+    <div className="flex items-center justify-center gap-3 mt-8">
+      <div className="flex -space-x-3">
+        {["AK", "PS", "VK", "RM"].map((initials, i) => (
+          <div
+            key={i}
+            className="w-9 h-9 rounded-full border-2 border-[#0B0B1F] bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center text-[10px] font-bold text-[#0B0B1F]"
+          >
+            {initials}
+          </div>
+        ))}
+      </div>
+      <p className="text-sm text-gray-400 font-[Plus_Jakarta_Sans]">
+        <span className="text-cyan-300 font-bold">2,000+</span> students
+        tracking their placement gap
+      </p>
+    </div>
+
+    {/* stat bar */}
+    <div className="w-full py-14 mt-14">
+      <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div>
+          <h2 className="text-cyan-300 text-3xl font-bold">40+</h2>
+          <p className="text-gray-500 text-sm mt-1">AKTU colleges</p>
+        </div>
+        <div>
+          <h2 className="text-cyan-300 text-3xl font-bold">500+</h2>
+          <p className="text-gray-500 text-sm mt-1">Alumni stories</p>
+        </div>
+        <div>
+          <h2 className="text-cyan-300 text-3xl font-bold">2,000+</h2>
+          <p className="text-gray-500 text-sm mt-1">Students guided</p>
+        </div>
+        <div>
+          <h2 className="text-cyan-300 text-3xl font-bold">6LPA</h2>
+          <p className="text-gray-500 text-sm mt-1">Avg package</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
