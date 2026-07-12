@@ -4,7 +4,7 @@ import AllumniWall from './pages/AlumniWall';
 import Profile from './pages/Profile';
 import Roadmap from './pages/Roadmap';
 import Jobs from './pages/Jobs';
-import Leaderboard from './pages/Leaderboard';
+import LeaderBoard from './pages/LeaderBoard';
 import ResumeAi from './pages/ResumeAi';
 import Home from './pages/Home';
 import Courses from './pages/Courses';
@@ -21,7 +21,7 @@ function Routing() {
         <Route path="/profile" element={<Profile/> }/>
         <Route path="/roadmap" element={<Roadmap/> }/>
         < Route path="/jobs" element={<Jobs/> }/>
-        < Route path="/leaderboard" element={<Leaderboard/> }/>
+        < Route path="/leaderboard" element={<LeaderBoard/> }/>
         < Route path="/resume-ai" element={<ResumeAi/> }/>
         < Route path="/courses" element={<Courses/> }/>
         < Route path="/notes" element={<Notes/> }/>
