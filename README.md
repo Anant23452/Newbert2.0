@@ -30,7 +30,7 @@ AI-powered Placement Intelligence Platform for Tier-2 & Tier-3 Students
 ## 🎥 Demo
 
 <p align="center">
-  <img src="./screenshots/newbert.gif" alt="Newbert Demo" width="100%">
+  <img src=".screenshots/newbert.gif" alt="Newbert Demo" width="100%">
 </p>
 
 ## 🎥 Demo
