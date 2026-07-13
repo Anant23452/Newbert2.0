@@ -43,13 +43,13 @@ AI-powered Placement Intelligence Platform for Tier-2 & Tier-3 Students
 
 ## Landing Page
 
-![Landing](assets/resum.png)
+![Landing](screenshots/resum.png)
 
 ---
 
 ## Alumni Wall
 
-![Alumni](assets/allumni.png)
+![Alumni](screenshots/allumni.png)
 
 ---
 
