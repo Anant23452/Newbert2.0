@@ -231,13 +231,7 @@ npm install
 npm run dev
 ```
 
-MONGODB_URI=
 
-JWT_SECRET=
-
-OPENAI_API_KEY=
-
-GITHUB_TOKEN=
 
 
 ## Roadmap
