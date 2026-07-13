@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import AlumniCard from "../components/AlumniCard";
+import AlumniCard from "../Components/AlumniCard";
 import { dummyAlumni } from "../data/dummyAlumni";
 
 const filters = ["All", "Placement", "GATE"];
