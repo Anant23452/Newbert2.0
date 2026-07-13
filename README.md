@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/banner.png" alt="Newbert Banner"/>
+  <img src="./assets/2-removebg-preview(1).png" alt="Newbert Banner"/>
 </p>
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
 ![Node.js](https://img.shields.io/badge/Node.js-22-green?logo=node.js)
