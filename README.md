@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".src/assets/2-removebg-preview(1).png" alt="Newbert Banner"/>
+<img src="./src/assets/2-removebg-preview(1).png" alt="Banner">
 </p>
 
 
