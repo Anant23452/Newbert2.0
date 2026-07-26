@@ -15,31 +15,58 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; min-width: 320px; }
-button, input, textarea { font: inherit; }
+html { scroll-behavior: smooth; background: #f7f8fa; }
+body { margin: 0; min-width: 320px; background: #f7f8fa; }
+button, input, textarea, select { font: inherit; }
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid #0f766e; outline-offset: 3px; }
+::selection { background: #99f6e4; color: #134e4a; }
+.app-shell { min-height: 100vh; background: #f7f8fa; }
 
 /* The product keeps its existing utility styles; these variables make each route react to the global mode. */
 :root[data-theme="night"] { color-scheme: dark; background: #101827; }
 :root[data-theme="night"] body { background: #101827; color: #e5edf8; }
+:root[data-theme="night"] html, :root[data-theme="night"] .app-shell { background: #101827; }
 :root[data-theme="night"] .site-nav { border-color: #2b3a50; background: rgba(16, 24, 39, .95); }
 :root[data-theme="night"] .site-nav .text-slate-900, :root[data-theme="night"] .site-nav .text-slate-700, :root[data-theme="night"] .site-nav .text-slate-600 { color: #e5edf8; }
 :root[data-theme="night"] .site-nav .border-slate-200, :root[data-theme="night"] .site-nav .border-slate-300 { border-color: #3a4a63; }
 :root[data-theme="night"] .site-nav .bg-white { background-color: #182235; }
 :root[data-theme="night"] .site-nav .hover\\:bg-slate-50:hover { background-color: #25334a; }
+:root[data-theme="night"] .site-nav-menu { border-color: #2b3a50; background: #182235; }
+:root[data-theme="night"] .site-nav-menu .text-slate-700 { color: #d9e4f3; }
+:root[data-theme="night"] .site-nav-menu .hover\\:bg-slate-50:hover { background-color: #25334a; }
 
 .theme-toggle { display: inline-flex; align-items: center; gap: .45rem; border: 1px solid #cbd5e1; border-radius: .375rem; padding: .38rem .6rem; color: #334155; font-size: .75rem; font-weight: 800; line-height: 1; transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease; }
-.theme-toggle:hover { border-color: #0f766e; background: #f0fdfa; color: #115e59; }
-.theme-toggle-icon { min-width: 2.2rem; border-radius: 999px; background: #e0f2fe; color: #0369a1; padding: .28rem .3rem; font-size: .63rem; text-align: center; }
-:root[data-theme="night"] .theme-toggle { border-color: #3a4a63; color: #e5edf8; }
-:root[data-theme="night"] .theme-toggle:hover { border-color: #2dd4bf; background: #25334a; color: #ccfbf1; }
-:root[data-theme="night"] .theme-toggle-icon { background: #312e81; color: #ddd6fe; }
+.theme-toggle:hover { border-color: #f97316; background: #fff7ed; color: #c2410c; }
+.theme-toggle-icon { min-width: 2.2rem; border-radius: 999px; background: #ffedd5; color: #c2410c; padding: .28rem .3rem; font-size: .63rem; text-align: center; }
+:root[data-theme="night"] .theme-toggle { border-color: #5a4650; color: #e5edf8; }
+:root[data-theme="night"] .theme-toggle:hover { border-color: #fb923c; background: #382c2c; color: #ffedd5; }
+:root[data-theme="night"] .theme-toggle-icon { background: #4a2c1a; color: #fed7aa; }
 
 @layer components {
-  .eyebrow { @apply text-xs font-bold uppercase tracking-[0.16em] text-teal-700; }
+  .eyebrow { @apply text-xs font-bold uppercase tracking-[0.16em] text-orange-600; }
   .surface { @apply rounded-lg border border-slate-200 bg-white shadow-soft; }
-  .control { @apply rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-100; }
+  .control { @apply rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100; }
 }
+
+/* Shared night-mode foundation for all product screens that use the standard design tokens. */
+:root[data-theme="night"] .app-shell > main:not(.home-page):not(.resume-ai-page):not(.courses-page):not(.notes-page):not(.profile-page) { background: #101827; color: #e5edf8; min-height: calc(100vh - 4rem); }
+:root[data-theme="night"] .app-shell .surface { border-color: #2b3a50; background: #182235; box-shadow: none; }
+:root[data-theme="night"] .app-shell .text-slate-950, :root[data-theme="night"] .app-shell .text-slate-900, :root[data-theme="night"] .app-shell .text-slate-800 { color: #f1f5f9; }
+:root[data-theme="night"] .app-shell .text-slate-700 { color: #d9e4f3; }
+:root[data-theme="night"] .app-shell .text-slate-600 { color: #aab9ce; }
+:root[data-theme="night"] .app-shell .text-slate-500 { color: #8ba0bc; }
+:root[data-theme="night"] .app-shell .border-slate-100, :root[data-theme="night"] .app-shell .border-slate-200, :root[data-theme="night"] .app-shell .border-slate-300 { border-color: #33445d; }
+:root[data-theme="night"] .app-shell .divide-slate-100 > :not([hidden]) ~ :not([hidden]), :root[data-theme="night"] .app-shell .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-color: #33445d; }
+:root[data-theme="night"] .app-shell .bg-white, :root[data-theme="night"] .app-shell .bg-slate-50 { background-color: #182235; }
+:root[data-theme="night"] .app-shell .bg-slate-100 { background-color: #202d42; }
+:root[data-theme="night"] .app-shell .bg-amber-50 { background-color: #3b3020; }
+:root[data-theme="night"] .app-shell .border-amber-200 { border-color: #72592b; }
+:root[data-theme="night"] .app-shell .text-amber-900, :root[data-theme="night"] .app-shell .text-amber-800 { color: #fde68a; }
+:root[data-theme="night"] .app-shell .bg-teal-50 { background-color: #123c3d; }
+:root[data-theme="night"] .app-shell .border-teal-200 { border-color: #1c6261; }
+:root[data-theme="night"] .app-shell .control { border-color: #3a4a63; background: #101827; color: #e5edf8; }
+:root[data-theme="night"] .app-shell .control::placeholder { color: #7387a3; }
 
 @keyframes homeDrift {
   0%, 100% { transform: translateY(0); }
@@ -111,6 +138,36 @@ button, input, textarea { font: inherit; }
 :root[data-theme="night"] .profile-page .bg-white, :root[data-theme="night"] .profile-page .bg-slate-50 { background-color: #182235; }
 :root[data-theme="night"] .profile-page .bg-slate-100 { background-color: #202d42; }
 :root[data-theme="night"] .profile-page .control { border-color: #3a4a63; background: #101827; color: #e5edf8; }
+
+/* Newbert's shared accent system: warm orange replaces the earlier teal palette across every screen. */
+.app-shell .bg-teal-700 { background-color: #f97316; }
+.app-shell .bg-teal-600 { background-color: #ea580c; }
+.app-shell .bg-teal-50 { background-color: #fff7ed; }
+.app-shell .bg-teal-100 { background-color: #ffedd5; }
+.app-shell .text-teal-950 { color: #7c2d12; }
+.app-shell .text-teal-900 { color: #9a3412; }
+.app-shell .text-teal-800 { color: #9a3412; }
+.app-shell .text-teal-700 { color: #c2410c; }
+.app-shell .text-teal-600 { color: #ea580c; }
+.app-shell .text-teal-300 { color: #fdba74; }
+.app-shell .border-teal-700 { border-color: #f97316; }
+.app-shell .border-teal-600 { border-color: #ea580c; }
+.app-shell .border-teal-300 { border-color: #fdba74; }
+.app-shell .border-teal-200 { border-color: #fed7aa; }
+.app-shell .ring-teal-100 { --tw-ring-color: #ffedd5; }
+.app-shell .hover\\:bg-teal-800:hover { background-color: #ea580c; }
+.app-shell .hover\\:border-teal-700:hover, .app-shell .hover\\:border-teal-600:hover, .app-shell .hover\\:border-teal-300:hover { border-color: #f97316; }
+.app-shell .hover\\:text-teal-900:hover { color: #9a3412; }
+
+:root[data-theme="night"] .app-shell .bg-teal-50 { background-color: #442b1f; }
+:root[data-theme="night"] .app-shell .bg-teal-100 { background-color: #53311d; }
+:root[data-theme="night"] .app-shell .text-teal-950, :root[data-theme="night"] .app-shell .text-teal-900, :root[data-theme="night"] .app-shell .text-teal-800, :root[data-theme="night"] .app-shell .text-teal-700 { color: #fdba74; }
+:root[data-theme="night"] .app-shell .text-teal-600, :root[data-theme="night"] .app-shell .text-teal-300 { color: #fed7aa; }
+:root[data-theme="night"] .app-shell .border-teal-700, :root[data-theme="night"] .app-shell .border-teal-600 { border-color: #ea580c; }
+:root[data-theme="night"] .app-shell .border-teal-300, :root[data-theme="night"] .app-shell .border-teal-200 { border-color: #7c4227; }
+
+.auth-backdrop { background: rgba(5, 5, 5, .86); backdrop-filter: blur(8px); }
+.auth-modal { border-radius: 10px; }
 
 @media (prefers-reduced-motion: reduce) {
   .home-marker, .home-compare-line { animation: none; }
