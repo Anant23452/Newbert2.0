@@ -169,6 +169,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .auth-backdrop { background: rgba(5, 5, 5, .86); backdrop-filter: blur(8px); }
 .auth-modal { border-radius: 10px; }
 
+.profile-hero { border-radius: 8px; }
+.profile-activity-strip { display: grid; grid-template-columns: repeat(31, minmax(0, 1fr)); gap: 3px; }
+.profile-activity-day { display: block; min-height: 18px; border-radius: 2px; }
+.profile-activity-empty { background: #e2e8f0; }
+.profile-activity-github { background: #fed7aa; }
+.profile-activity-leetcode { background: #fdba74; }
+.profile-activity-both { background: #f97316; }
+.profile-legend { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border-radius: 2px; vertical-align: -1px; }
+:root[data-theme="night"] .profile-activity-empty { background: #334155; }
+:root[data-theme="night"] .profile-activity-github { background: #7c4227; }
+:root[data-theme="night"] .profile-activity-leetcode { background: #c2410c; }
+:root[data-theme="night"] .profile-activity-both { background: #fb923c; }
+
 @media (prefers-reduced-motion: reduce) {
   .home-marker, .home-compare-line { animation: none; }
 }
