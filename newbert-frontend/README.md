@@ -2,6 +2,8 @@
 
 Read [Frontend to Backend Guide](docs/FRONTEND_BACKEND_GUIDE.md) before connecting this frontend to the backend. It explains every Newbert screen, current dummy data, local storage, future APIs, database models, and recommended backend order.
 
+Read [AI Implementation Playbook](docs/AI_IMPLEMENTATION_PLAYBOOK.md) to understand how Newbert should use AI for alumni comparison, job matching, Resume AI, courses, company readiness, notes, RAG, safety, and future training.
+
 ## React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
