@@ -1,4 +1,8 @@
-# React + Vite
+# Newbert Frontend
+
+Read [Frontend to Backend Guide](docs/FRONTEND_BACKEND_GUIDE.md) before connecting this frontend to the backend. It explains every Newbert screen, current dummy data, local storage, future APIs, database models, and recommended backend order.
+
+## React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
