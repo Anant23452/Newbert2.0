@@ -182,8 +182,16 @@ export default function Leaderboard() {
               <button onClick={() => setPlatformView("git")} className={`px-3 py-1.5 text-xs font-bold transition-all ${platformView === "git" ? "border border-orange-300 bg-orange-50 text-orange-700" : "text-slate-600"}`}>🐙 Git</button>
             </div>
           </div>
-
-         
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <select value={selectedCollege} onChange={(event) => { setSelectedCollege(event.target.value); setScope("global"); }} className="control min-w-40 text-xs" aria-label="Filter by college">
+              <option>All Colleges</option>
+              <option>AKTU Lucknow</option>
+              <option>AKTU Kanpur</option>
+              <option>AKTU Agra</option>
+              <option>PSIT Kanpur</option>
+            </select>
+            <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} className="control min-w-0 sm:w-52" placeholder="Search student or college" aria-label="Search leaderboard" />
+          </div>
         </section>
 
         {/* ================= STREAK LEADERBOARD ================= */}
