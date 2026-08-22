@@ -31,19 +31,40 @@ AI-powered Placement Intelligence Platform for Tier-2 & Tier-3 Students
 
 ## Landing Page
 
-![Landing](./screenshots/resum.png)
+![Landing](newbert-frontend/screenshots/newbert.gif)
 
 ---
 
 ## Alumni Wall
 
-![Alumni](./screenshots/allumni.png)
+![Alumni](newbert-frontend/screenshots/allumni.png)
 
 ---
 
-## Dashboard
+## profile
 
-![Dashboard](./screenshots/dashboard.png)
+![Dashboard](newbert-frontend/screenshots/profile.png)
+
+## notes
+
+![Dashboard](newbert-frontend/screenshots/notes.png)
+
+## JOBS
+
+![Dashboard](newbert-frontend/screenshots/job.png)
+
+
+## RESUME
+
+![Dashboard](newbert-frontend/screenshots/resum.png)
+
+## RESPONSIVE
+
+![Dashboard](newbert-frontend/screenshots/responsive.png)
+
+
+
+
 
 
 ## ✨ Features
