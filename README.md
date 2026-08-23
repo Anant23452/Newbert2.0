@@ -1,11 +1,10 @@
 <p align="center">
-<img src="./src/assets/2-removebg-preview(1).png" alt="Banner">
+  <img 
+    src="newbert-frontend/src/assets/1-removebg-preview(1).png" 
+    alt="Banner"
+    width="200"
+  >
 </p>
-
-
-<h1 align="center">
-🚀 Newbert
-</h1>
 
 <p align="center">
 AI-powered Placement Intelligence Platform for Tier-2 & Tier-3 Students
@@ -16,6 +15,7 @@ AI-powered Placement Intelligence Platform for Tier-2 & Tier-3 Students
 ⭐ Alumni Intelligence • 🤖 AI Resume • 📈 Placement Readiness • 💼 Smart Jobs
 
 </p>
+
 <p align="center">
 
 <a href="https://agent-6a54c2f7b683a600c--lucent-bubblegum-3fb5b2.netlify.app/">
@@ -28,37 +28,91 @@ AI-powered Placement Intelligence Platform for Tier-2 & Tier-3 Students
 
 </p>
 
-
 ## Landing Page
 
-![Landing](./screenshots/resum.png)
+![Landing](newbert-frontend/screenshots/newbert.gif)
 
 ---
+
+<table>
+<tr>
+
+<td width="50%" align="center">
 
 ## Alumni Wall
 
-![Alumni](./screenshots/allumni.png)
+<img src="newbert-frontend/screenshots/allumni.png" alt="Alumni" width="100%">
+
+</td>
+
+<td width="50%" align="center">
+
+## Profile
+
+<img src="newbert-frontend/screenshots/profile.png" alt="Dashboard" width="100%">
+
+</td>
+
+</tr>
+
+<tr>
+
+<td width="50%" align="center">
+
+## Notes
+
+<img src="newbert-frontend/screenshots/notes.png" alt="Dashboard" width="100%">
+
+</td>
+
+<td width="50%" align="center">
+
+## JOBS
+
+<img src="newbert-frontend/screenshots/job.png" alt="Dashboard" width="100%">
+
+</td>
+
+</tr>
+
+<tr>
+
+<td width="50%" align="center">
+
+## RESUME
+
+<img src="newbert-frontend/screenshots/resum.png" alt="Dashboard" width="100%">
+
+</td>
+
+<td width="50%" align="center">
+
+## RESPONSIVE
+
+<img src="newbert-frontend/screenshots/responsive.png" alt="Dashboard" width="100%">
+
+</td>
+
+</tr>
+</table>
 
 ---
-
-## Dashboard
-
-![Dashboard](./screenshots/dashboard.png)
-
 
 ## ✨ Features
 
 ### 🎓 Alumni Wall
-- Browse verified placement and GATE success stories.
-- View company, package, DSA count, projects, tech stack, and preparation journey.
-- Learn directly from seniors of your own college.
+
+* Browse verified placement and GATE success stories.
+* View company, package, DSA count, projects, tech stack, and preparation journey.
+* Learn directly from seniors of your own college.
 
 ---
 
 ### 📊 AI Gap Analysis
-- Compare your profile with placed alumni.
-- Get a placement readiness score.
-- Identify missing skills, DSA problems, projects, and internships.
+
+* Compare your profile with placed alumni.
+* Get a placement readiness score.
+* Identify missing skills, DSA problems, projects, and internships.
 
 Example:
 
@@ -75,8 +129,9 @@ Missing:
 ---
 
 ### 🤖 Placement DNA AI
-- Predict placement probability for different companies.
-- Personalized recommendations to improve your chances.
+
+* Predict placement probability for different companies.
+* Personalized recommendations to improve your chances.
 
 Example:
 
@@ -89,137 +144,143 @@ Accenture ASE    91%
 ---
 
 ### 💼 AI Job Matching
-- Smart job recommendations based on your skills.
-- Shows match percentage before applying.
-- Verified opportunities with no fake internships.
+
+* Smart job recommendations based on your skills.
+* Shows match percentage before applying.
+* Verified opportunities with no fake internships.
 
 ---
 
 ### 📄 Resume AI
-- Upload your resume.
-- Paste any job description.
-- AI rewrites your resume for ATS optimization.
-- Generates interview questions based on the job role.
+
+* Upload your resume.
+* Paste any job description.
+* AI rewrites your resume for ATS optimization.
+* Generates interview questions based on the job role.
 
 ---
 
 ### 🗺️ Personalized Roadmap
-- AI-generated learning roadmap.
-- Tailored to your college, target company, and current skill level.
-- Track your progress with milestones.
+
+* AI-generated learning roadmap.
+* Tailored to your college, target company, and current skill level.
+* Track your progress with milestones.
 
 ---
 
 ### 🥇 Leaderboard
-- College-wise and global rankings.
-- Based on DSA, GitHub activity, coding streaks, and achievements.
-- Encourages healthy competition.
+
+* College-wise and global rankings.
+* Based on DSA, GitHub activity, coding streaks, and achievements.
+* Encourages healthy competition.
 
 ---
 
 ### 📚 Course Recommendation
-- AI recommends courses based on your skill gaps.
-- Ranked using feedback from placed students.
+
+* AI recommends courses based on your skill gaps.
+* Ranked using feedback from placed students.
 
 ---
 
 ### 👨‍🏫 Mentorship
-- Connect with verified seniors.
-- Watch mentor introduction videos.
-- Book 1-on-1 mentorship sessions.
+
+* Connect with verified seniors.
+* Watch mentor introduction videos.
+* Book 1-on-1 mentorship sessions.
 
 ---
 
 ### 🔐 Student Profile
-- Track coding progress.
-- GitHub and LeetCode integration.
-- Placement readiness dashboard.
-- Achievement badges and streak system.
+
+* Track coding progress.
+* GitHub and LeetCode integration.
+* Placement readiness dashboard.
+* Achievement badges and streak system.
 
 ## 🛠 Tech Stack
 
 ### 🎨 Frontend
 
-| Technology | Purpose |
-|------------|---------|
-| React.js | Frontend Framework |
-| Vite | Build Tool |
-| JavaScript (ES6+) | Programming Language |
-| HTML5 | Markup |
-| CSS3 | Styling |
-| Tailwind CSS | Responsive UI |
-| React Router | Routing |
-| Framer Motion *(Planned)* | Animations |
+| Technology                | Purpose              |
+| ------------------------- | -------------------- |
+| React.js                  | Frontend Framework   |
+| Vite                      | Build Tool           |
+| JavaScript (ES6+)         | Programming Language |
+| HTML5                     | Markup               |
+| CSS3                      | Styling              |
+| Tailwind CSS              | Responsive UI        |
+| React Router              | Routing              |
+| Framer Motion *(Planned)* | Animations           |
 
 ---
 
 ### ⚙ Backend
 
-| Technology | Purpose |
-|------------|---------|
-| Node.js | Runtime Environment |
-| Express.js | REST API Framework |
-| JWT | Authentication |
-| bcrypt | Password Encryption |
-| Multer | Resume Upload |
-| Cloudinary *(Planned)* | Image Storage |
+| Technology             | Purpose             |
+| ---------------------- | ------------------- |
+| Node.js                | Runtime Environment |
+| Express.js             | REST API Framework  |
+| JWT                    | Authentication      |
+| bcrypt                 | Password Encryption |
+| Multer                 | Resume Upload       |
+| Cloudinary *(Planned)* | Image Storage       |
 
 ---
 
 ### 🗄 Database
 
-| Technology | Purpose |
-|------------|---------|
+| Technology    | Purpose        |
+| ------------- | -------------- |
 | MongoDB Atlas | Cloud Database |
-| Mongoose | ODM |
+| Mongoose      | ODM            |
 
 ---
 
 ### 🤖 AI & Machine Learning
 
-| Technology | Purpose |
-|------------|---------|
-| OpenAI API | Resume AI & Career Assistant |
-| Claude API *(Planned)* | Resume Optimization |
-| Rule-Based Engine | Placement Readiness |
-| Logistic Regression *(Planned)* | Placement Prediction |
-| NLP | Resume & Job Description Analysis |
-| spaCy *(Planned)* | Keyword Extraction |
+| Technology                      | Purpose                           |
+| ------------------------------- | --------------------------------- |
+| OpenAI API                      | Resume AI & Career Assistant      |
+| Claude API *(Planned)*          | Resume Optimization               |
+| Rule-Based Engine               | Placement Readiness               |
+| Logistic Regression *(Planned)* | Placement Prediction              |
+| NLP                             | Resume & Job Description Analysis |
+| spaCy *(Planned)*               | Keyword Extraction                |
 
 ---
 
 ### 🔗 APIs
 
-| API | Usage |
-|-----|------|
-| GitHub API | Repository & Contribution Analysis |
-| LeetCode API | DSA Statistics |
-| Gemini/OpenAI API | AI Features |
-| REST APIs | Backend Communication |
+| API               | Usage                              |
+| ----------------- | ---------------------------------- |
+| GitHub API        | Repository & Contribution Analysis |
+| LeetCode API      | DSA Statistics                     |
+| Gemini/OpenAI API | AI Features                        |
+| REST APIs         | Backend Communication              |
 
 ---
 
 ### 🚀 Deployment
 
-| Platform | Purpose |
-|----------|---------|
+| Platform         | Purpose          |
+| ---------------- | ---------------- |
 | Netlify / Vercel | Frontend Hosting |
-| Render / Railway | Backend Hosting |
-| MongoDB Atlas | Database |
-| GitHub | Version Control |
+| Render / Railway | Backend Hosting  |
+| MongoDB Atlas    | Database         |
+| GitHub           | Version Control  |
 
 ---
 
 ### 🧰 Developer Tools
 
-- VS Code
-- Git & GitHub
-- Postman
-- Figma
-- npm
-- ESLint
-- Prettier
-
+* VS Code
+* Git & GitHub
+* Postman
+* Figma
+* npm
+* ESLint
+* Prettier
 
 ```bash
 git clone https://github.com/Anant23452/Newbert2.0
@@ -231,21 +292,18 @@ npm install
 npm run dev
 ```
 
-
-
-
 ## Roadmap
 
-- [x] Landing Page
-- [x] Alumni Wall
-- [x] Profile Dashboard
-- [x] Leaderboard
-- [x] Roadmap
-- [x] Resume AI UI
-- [ ] Resume AI Backend
-- [ ] Authentication
-- [ ] Job Recommendation AI
-- [ ] Mobile App
+* [x] Landing Page
+* [x] Alumni Wall
+* [x] Profile Dashboard
+* [x] Leaderboard
+* [x] Roadmap
+* [x] Resume AI UI
+* [ ] Resume AI Backend
+* [ ] Authentication
+* [ ] Job Recommendation AI
+* [ ] Mobile App
 
 Made with ❤️ by Team Newbert
 
