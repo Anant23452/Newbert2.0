@@ -318,7 +318,7 @@ useEffect(() => {
 Create `newbert-frontend/.env` for local development:
 
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=https://newbert2-0.onrender.com/api
 VITE_GOOGLE_CLIENT_ID=your-google-client-id
 ```
 
