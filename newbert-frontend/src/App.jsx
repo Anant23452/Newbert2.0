@@ -1,6 +1,6 @@
-import Navbar from './components/Navbar';
+import Navbar from './Components/Navbar';
 import Routing from './Routing';
-import AuthModal from './components/AuthModel';
+import AuthModal from './Components/AuthModel';
 
 import { useEffect, useState } from 'react';
 
