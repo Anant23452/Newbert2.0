@@ -1,5 +1,5 @@
-const Profile = require("../models/Profile");
-const User = require("../models/User");
+const Profile = require("../Models/Profile");
+const User = require("../Models/User");
 
 function response(profile, user) {
   return { name: user.name, email: user.email, college: profile.college || "", branch: profile.branch || "", graduationYear: profile.graduationYear || "", bio: profile.bio || "", targetCompany: profile.targetCompany || "", github: profile.githubUrl || "", leetcode: profile.leetcodeUrl || "", linkedin: profile.linkedinUrl || "", avatar: profile.avatarUrl || "", cover: profile.coverUrl || "", skills: profile.skills, currentStreak: profile.currentStreak, longestStreak: profile.longestStreak };

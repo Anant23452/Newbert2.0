@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
+const User = require("../Models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { OAuth2Client } = require("google-auth-library");
 const requireAuth = require("../middleWare/authMiddleware");
-const Profile = require("../models/Profile");
+const Profile = require("../Models/Profile");
 
 function publicUser(user) { return { id: user._id, name: user.name, email: user.email }; }
 function createToken(user) { return jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" }); }

@@ -1,4 +1,4 @@
-const Alumni = require("../models/Alumni");
+const Alumni = require("../Models/Alumni");
 
 exports.listAlumni = async (req, res, next) => {
   try {
