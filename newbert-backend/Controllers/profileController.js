@@ -2,7 +2,33 @@ const Profile = require("../Models/Profile");
 const User = require("../Models/User");
 
 function response(profile, user) {
-  return { name: user.name, email: user.email, college: profile.college || "", branch: profile.branch || "", graduationYear: profile.graduationYear || "", bio: profile.bio || "", targetCompany: profile.targetCompany || "", github: profile.githubUrl || "", leetcode: profile.leetcodeUrl || "", linkedin: profile.linkedinUrl || "", avatar: profile.avatarUrl || "", cover: profile.coverUrl || "", skills: profile.skills, currentStreak: profile.currentStreak, longestStreak: profile.longestStreak };
+  return { name: user.name, email: user.email, college: profile.college || "", branch: profile.branch || "", graduationYear: profile.graduationYear || "", bio: profile.bio || "", targetCompany: profile.targetCompany || "", github: profile.githubUrl || "", leetcode: profile.leetcodeUrl || "", linkedin: profile.linkedinUrl || "", avatar: profile.avatarUrl || user.avatarUrl || "", cover: profile.coverUrl || "", skills: profile.skills, githubStats: profile.githubStats || null, leetcodeStats: profile.leetcodeStats || null, lastSyncedAt: profile.lastSyncedAt || null, currentStreak: profile.currentStreak, longestStreak: profile.longestStreak };
+}
+
+function usernameFromUrl(value, provider) {
+  if (typeof value !== "string") return "";
+  const cleaned = value.trim().replace(/\/$/, "");
+  const match = cleaned.match(new RegExp(`${provider}\\.com/([^/?#]+)`, "i"));
+  return match ? match[1] : cleaned.replace(/^@/, "");
+}
+
+async function fetchGitHub(username) {
+  const result = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, { headers: { Accept: "application/vnd.github+json", "User-Agent": "Newbert" } });
+  if (!result.ok) throw new Error("GitHub profile could not be found.");
+  const user = await result.json();
+  const reposResponse = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?per_page=100&sort=updated`, { headers: { Accept: "application/vnd.github+json", "User-Agent": "Newbert" } });
+  const repos = reposResponse.ok ? await reposResponse.json() : [];
+  const languages = [...new Set(repos.map((repo) => repo.language).filter(Boolean))].slice(0, 12);
+  return { username: user.login, avatar: user.avatar_url, publicRepos: user.public_repos, followers: user.followers, following: user.following, languages, updatedAt: new Date().toISOString() };
+}
+
+async function fetchLeetCode(username) {
+  const result = await fetch("https://leetcode.com/graphql", { method: "POST", headers: { "Content-Type": "application/json", Referer: "https://leetcode.com" }, body: JSON.stringify({ query: "query user($username: String!) { matchedUser(username: $username) { username profile { ranking } submitStats: submitStatsGlobal { acSubmissionNum { difficulty count } } } }", variables: { username } }) });
+  if (!result.ok) throw new Error("LeetCode statistics could not be fetched.");
+  const user = (await result.json()).data?.matchedUser;
+  if (!user) throw new Error("LeetCode profile could not be found.");
+  const counts = Object.fromEntries(user.submitStats.acSubmissionNum.map((item) => [item.difficulty.toLowerCase(), item.count]));
+  return { username: user.username, ranking: user.profile.ranking, solved: counts.all || 0, easy: counts.easy || 0, medium: counts.medium || 0, hard: counts.hard || 0, updatedAt: new Date().toISOString() };
 }
 
 exports.getMyProfile = async (req, res, next) => {
@@ -22,5 +48,21 @@ exports.updateMyProfile = async (req, res, next) => {
     const profile = await Profile.findOneAndUpdate({ userId: req.auth.id }, { $set: { college: req.body.college, branch: req.body.branch, graduationYear: req.body.graduationYear, bio: req.body.bio, targetCompany: req.body.targetCompany, githubUrl: req.body.github, leetcodeUrl: req.body.leetcode, linkedinUrl: req.body.linkedin, avatarUrl: req.body.avatar, coverUrl: req.body.cover, skills: req.body.skills } }, { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true });
     const user = await User.findById(req.auth.id);
     return res.json(response(profile, user));
+  } catch (error) { return next(error); }
+};
+
+exports.syncPublicProfiles = async (req, res, next) => {
+  try {
+    const github = usernameFromUrl(req.body.github, "github");
+    const leetcode = usernameFromUrl(req.body.leetcode, "leetcode");
+    if (!github && !leetcode) return res.status(400).json({ message: "Add a GitHub or LeetCode profile first." });
+    const [githubResult, leetcodeResult] = await Promise.allSettled([github ? fetchGitHub(github) : null, leetcode ? fetchLeetCode(leetcode) : null]);
+    const errors = [githubResult, leetcodeResult].filter((item) => item.status === "rejected").map((item) => item.reason.message);
+    const githubStats = githubResult.status === "fulfilled" ? githubResult.value : undefined;
+    const leetcodeStats = leetcodeResult.status === "fulfilled" ? leetcodeResult.value : undefined;
+    const skills = [...new Set([...(githubStats?.languages || []), ...(leetcodeStats?.solved ? ["DSA", "Problem Solving"] : [])])].map((name) => ({ name, score: 70, source: name === "DSA" || name === "Problem Solving" ? "leetcode" : "github" }));
+    const profile = await Profile.findOneAndUpdate({ userId: req.auth.id }, { $set: { ...(github && { githubUrl: `https://github.com/${github}` }), ...(leetcode && { leetcodeUrl: `https://leetcode.com/${leetcode}` }), ...(githubStats && { githubStats }), ...(leetcodeStats && { leetcodeStats }), ...(githubStats?.avatar && { avatarUrl: githubStats.avatar }), ...(skills.length && { skills }), lastSyncedAt: new Date() } }, { new: true, upsert: true, setDefaultsOnInsert: true });
+    const user = await User.findById(req.auth.id);
+    return res.json({ profile: response(profile, user), errors });
   } catch (error) { return next(error); }
 };

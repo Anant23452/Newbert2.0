@@ -7,7 +7,7 @@ const { OAuth2Client } = require("google-auth-library");
 const requireAuth = require("../middleWare/authMiddleware");
 const Profile = require("../Models/Profile");
 
-function publicUser(user) { return { id: user._id, name: user.name, email: user.email }; }
+function publicUser(user) { return { id: user._id, name: user.name, email: user.email, avatar: user.avatarUrl || "" }; }
 function createToken(user) { return jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" }); }
 async function ensureProfile(user, avatarUrl) {
   return Profile.findOneAndUpdate({ userId: user._id }, { $setOnInsert: { avatarUrl: avatarUrl || user.avatarUrl || "" } }, { upsert: true, new: true, setDefaultsOnInsert: true });

@@ -16,6 +16,9 @@ const profileSchema = new mongoose.Schema({
   githubUrl: { type: String, trim: true }, leetcodeUrl: { type: String, trim: true }, linkedinUrl: { type: String, trim: true },
   avatarUrl: { type: String, trim: true }, coverUrl: { type: String, trim: true },
   skills: { type: [skillSchema], default: [] },
+  githubStats: { type: mongoose.Schema.Types.Mixed, default: null },
+  leetcodeStats: { type: mongoose.Schema.Types.Mixed, default: null },
+  lastSyncedAt: Date,
   currentStreak: { type: Number, default: 0, min: 0 }, longestStreak: { type: Number, default: 0, min: 0 },
 }, { timestamps: true });
 

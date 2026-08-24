@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 
 const links = [
@@ -13,7 +13,9 @@ const links = [
 
 export default function Navbar({ theme, onThemeToggle, onSignIn }) {
   const [open, setOpen] = useState(false);
+  const [profile, setProfile] = useState(() => JSON.parse(localStorage.getItem("newbert-profile") || "null"));
   const navigate = useNavigate();
+  useEffect(() => { const refresh = () => setProfile(JSON.parse(localStorage.getItem("newbert-profile") || "null")); window.addEventListener("newbert-profile-updated", refresh); return () => window.removeEventListener("newbert-profile-updated", refresh); }, []);
 
   return (
     <header className="site-nav sticky top-0 z-50 border-b border-slate-200 bg-[#f7f8fa]/95 backdrop-blur">
@@ -39,7 +41,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
             <span aria-hidden="true" className="theme-toggle-icon">{theme === 'day' ? 'Moon' : 'Sun'}</span>
             <span>{theme === 'day' ? 'Night' : 'Day'}</span>
           </button>
-          <button onClick={onSignIn} className="text-sm font-semibold text-slate-700 hover:text-slate-950">Sign in</button>
+          {profile ? <button onClick={() => navigate("/profile")} className="grid h-9 w-9 overflow-hidden rounded-full border-2 border-teal-700 bg-teal-50 text-xs font-extrabold text-teal-800" aria-label="Open my profile">{profile.avatar ? <img src={profile.avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : profile.name?.slice(0, 1).toUpperCase()}</button> : <button onClick={onSignIn} className="text-sm font-semibold text-slate-700 hover:text-slate-950">Sign in</button>}
           <button onClick={() => navigate("/roadmap")} className="hidden rounded-md bg-teal-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-teal-800 lg:inline-flex">Build my plan</button>
         </div>
 
@@ -50,7 +52,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
       {open && <nav id="primary-navigation" className="site-nav-menu border-t border-slate-200 bg-white px-5 py-3">
         <div className="mx-auto flex max-w-6xl flex-col gap-1">
           {links.map((link) => <NavLink key={link.to} onClick={() => setOpen(false)} to={link.to} className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">{link.label}</NavLink>)}
-          <button onClick={() => { setOpen(false); onSignIn(); }} className="mt-2 rounded-md border border-orange-400 px-3 py-2 text-left text-sm font-bold text-orange-700 md:hidden">Sign in</button>
+          {profile ? <button onClick={() => { setOpen(false); navigate("/profile"); }} className="mt-2 rounded-md border border-teal-700 px-3 py-2 text-left text-sm font-bold text-teal-700 md:hidden">My profile</button> : <button onClick={() => { setOpen(false); onSignIn(); }} className="mt-2 rounded-md border border-orange-400 px-3 py-2 text-left text-sm font-bold text-orange-700 md:hidden">Sign in</button>}
           <button onClick={onThemeToggle} className="theme-toggle mt-2 justify-center md:hidden" aria-label={`Switch to ${theme === 'day' ? 'night' : 'day'} theme`}><span aria-hidden="true" className="theme-toggle-icon">{theme === 'day' ? 'Moon' : 'Sun'}</span><span>{theme === 'day' ? 'Night mode' : 'Day mode'}</span></button>
           <button onClick={() => { setOpen(false); navigate("/roadmap"); }} className="mt-2 rounded-md bg-teal-700 px-3 py-2 text-left text-sm font-bold text-white">Build my plan</button>
         </div>

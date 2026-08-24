@@ -174,6 +174,7 @@ export default function Profile() {
     API.get("/profiles/me").then(({ data }) => {
       localStorage.setItem("newbert-profile", JSON.stringify(data));
       setProfile(data);
+      window.dispatchEvent(new Event("newbert-profile-updated"));
     }).catch(() => {});
   }, []);
 
@@ -181,6 +182,7 @@ export default function Profile() {
     const { data } = await API.put("/profiles/me", next);
     localStorage.setItem("newbert-profile", JSON.stringify(data));
     setProfile(data);
+    window.dispatchEvent(new Event("newbert-profile-updated"));
   };
 
   if (!profile) return <GuestProfile />;
@@ -234,14 +236,17 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
   });
 
   const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
-  const syncProfiles = () => {
+  const syncProfiles = async () => {
     setSyncing(true);
-    window.setTimeout(() => {
-      update("skills", detectedSkills);
-      setSyncing(false);
-    }, 700);
+    try {
+      const { data } = await API.post("/profiles/sync", { github: form.github, leetcode: form.leetcode });
+      setForm((current) => ({ ...current, ...data.profile, skills: data.profile.skills || current.skills }));
+      if (data.errors?.length) window.alert(data.errors.join("\n"));
+    } catch (error) {
+      window.alert(error.response?.data?.message || "Could not sync your public profiles.");
+    } finally { setSyncing(false); }
   };
-  const canSave = form.name.trim() && form.college.trim() && form.github.trim() && form.leetcode.trim();
+  const canSave = form.name.trim() && form.college.trim();
 
   return (
     <main className="profile-page min-h-screen px-5 py-12 md:py-16">
@@ -285,14 +290,14 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
             <Field label="Cover image URL" value={form.cover} onChange={(v) => update("cover", v)} placeholder="Optional cover image URL" />
           </div>
           <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-            <button onClick={syncProfiles} disabled={!form.github || !form.leetcode || syncing} className={`rounded-lg px-4 py-2.5 text-sm font-extrabold shadow-sm transition ${form.github && form.leetcode && !syncing ? "bg-orange-500 text-white hover:bg-orange-600" : "bg-slate-100 text-slate-400"}`}>
+            <button onClick={syncProfiles} disabled={(!form.github && !form.leetcode) || syncing} className={`rounded-lg px-4 py-2.5 text-sm font-extrabold shadow-sm transition ${(form.github || form.leetcode) && !syncing ? "bg-orange-500 text-white hover:bg-orange-600" : "bg-slate-100 text-slate-400"}`}>
               {syncing ? "Reading public profiles..." : "Detect skills from profiles"}
             </button>
             {form.skills.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {form.skills.map((skill) => (
-                  <span key={skill} className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">
-                    {skill}
+                  <span key={skill.name || skill} className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">
+                    {skill.name || skill}
                   </span>
                 ))}
               </div>
@@ -310,7 +315,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
 
 function ProfileDashboard({ profile, savedJobs, onEdit }) {
   const [company, setCompany] = useState(profile.targetCompany || "TCS Digital");
-  const skills = profile.skills?.length ? profile.skills : detectedSkills;
+  const skills = (profile.skills?.length ? profile.skills : detectedSkills).map((skill) => skill.name || skill);
   const requirements = companies[company] || [];
   const skillMatch = requirements.filter((skill) => skills.includes(skill)).length;
   const readiness = Math.min(94, 45 + skillMatch * 10 + 7);
@@ -353,6 +358,7 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
                 </span>
               ))}
             </div>
+            {(profile.githubStats || profile.leetcodeStats) && <div className="mt-5 grid gap-3 sm:grid-cols-2"><AccountStat title="GitHub" value={profile.githubStats ? `${profile.githubStats.publicRepos} public repos` : "Not synced"} detail={profile.githubStats ? `${profile.githubStats.followers} followers · ${profile.githubStats.languages?.join(", ") || "No languages"}` : ""}/><AccountStat title="LeetCode" value={profile.leetcodeStats ? `${profile.leetcodeStats.solved} problems solved` : "Not synced"} detail={profile.leetcodeStats ? `Easy ${profile.leetcodeStats.easy} · Medium ${profile.leetcodeStats.medium} · Hard ${profile.leetcodeStats.hard}` : ""}/></div>}
           </div>
         </section>
 
@@ -439,6 +445,8 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
     </main>
   );
 }
+
+function AccountStat({ title, value, detail }) { return <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-extrabold uppercase tracking-wider text-orange-600">{title}</p><p className="mt-1 font-extrabold text-slate-950">{value}</p>{detail && <p className="mt-1 text-xs text-slate-600">{detail}</p>}</div>; }
 
 // --- GitHub/LeetCode Style Heatmap Calendar & Streak Dashboard ---
 function StreakCalendarHeatmap() {
