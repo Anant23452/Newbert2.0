@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getSavedJobs } from "../utils/jobApplications";
+import API, { AUTH_TOKEN_KEY } from "../Services/api";
 
 const detectedSkills = ["JavaScript", "React", "Node.js", "Git", "DSA", "SQL"];
 const skillScores = [
@@ -168,9 +169,18 @@ export default function Profile() {
   const [syncing, setSyncing] = useState(false);
   const [savedJobs] = useState(getSavedJobs);
 
-  const save = (next) => {
-    localStorage.setItem("newbert-profile", JSON.stringify(next));
-    setProfile(next);
+  useEffect(() => {
+    if (!localStorage.getItem(AUTH_TOKEN_KEY)) return;
+    API.get("/profiles/me").then(({ data }) => {
+      localStorage.setItem("newbert-profile", JSON.stringify(data));
+      setProfile(data);
+    }).catch(() => {});
+  }, []);
+
+  const save = async (next) => {
+    const { data } = await API.put("/profiles/me", next);
+    localStorage.setItem("newbert-profile", JSON.stringify(data));
+    setProfile(data);
   };
 
   if (!profile) return <GuestProfile />;
@@ -179,8 +189,7 @@ export default function Profile() {
       <ProfileSetup
         profile={profile}
         onSave={(next) => {
-          save(next);
-          setEditing(false);
+          save(next).then(() => setEditing(false));
         }}
         syncing={syncing}
         setSyncing={setSyncing}

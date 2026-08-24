@@ -15,6 +15,10 @@ exports.getMyProfile = async (req, res, next) => {
 
 exports.updateMyProfile = async (req, res, next) => {
   try {
+    const userUpdates = {};
+    if (typeof req.body.name === "string" && req.body.name.trim()) userUpdates.name = req.body.name.trim();
+    if (typeof req.body.email === "string" && req.body.email.trim()) userUpdates.email = req.body.email.trim().toLowerCase();
+    if (Object.keys(userUpdates).length) await User.findByIdAndUpdate(req.auth.id, { $set: userUpdates }, { runValidators: true });
     const profile = await Profile.findOneAndUpdate({ userId: req.auth.id }, { $set: { college: req.body.college, branch: req.body.branch, graduationYear: req.body.graduationYear, bio: req.body.bio, targetCompany: req.body.targetCompany, githubUrl: req.body.github, leetcodeUrl: req.body.leetcode, linkedinUrl: req.body.linkedin, avatarUrl: req.body.avatar, coverUrl: req.body.cover, skills: req.body.skills } }, { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true });
     const user = await User.findById(req.auth.id);
     return res.json(response(profile, user));

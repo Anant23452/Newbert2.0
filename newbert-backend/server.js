@@ -15,6 +15,8 @@ app.use(express.json());
 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/profiles", require("./routes/profileRoutes"));
+app.use("/api/jobs", require("./routes/jobRoutes"));
+app.use("/api/alumni", require("./routes/alumniRoutes"));
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 app.use((error, req, res, next) => { console.error(error); res.status(500).json({ message: "Something went wrong on the server." }); });
 
