@@ -316,6 +316,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
 function ProfileDashboard({ profile, savedJobs, onEdit }) {
   const [company, setCompany] = useState(profile.targetCompany || "TCS Digital");
   const skills = (profile.skills?.length ? profile.skills : detectedSkills).map((skill) => skill.name || skill);
+  const ratedSkills = profile.skills?.length ? profile.skills.map((skill) => ({ name: skill.name || skill, score: skill.score || 60 })) : skillScores;
   const requirements = companies[company] || [];
   const skillMatch = requirements.filter((skill) => skills.includes(skill)).length;
   const readiness = Math.min(94, 45 + skillMatch * 10 + 7);
@@ -346,9 +347,7 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
                   </p>
                 </div>
               </div>
-              <button onClick={onEdit} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:border-orange-500 hover:text-orange-600">
-                Edit profile
-              </button>
+              <div className="flex gap-2"><button onClick={onEdit} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:border-orange-500 hover:text-orange-600">Edit profile</button><button onClick={() => { localStorage.removeItem(AUTH_TOKEN_KEY); localStorage.removeItem("newbert-profile"); window.location.assign("/"); }} className="rounded-lg border border-red-200 px-4 py-2 text-sm font-extrabold text-red-700 transition hover:border-red-500">Log out</button></div>
             </div>
             {profile.bio && <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">{profile.bio}</p>}
             <div className="mt-4 flex flex-wrap gap-2">
@@ -418,7 +417,7 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
               <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Sync data</p>
             </div>
             <div className="mt-6 grid gap-x-7 gap-y-4 sm:grid-cols-2">
-              {skillScores.map((skill) => (
+              {ratedSkills.map((skill) => (
                 <div key={skill.name}>
                   <div className="flex justify-between text-sm">
                     <span className="font-bold text-slate-800">{skill.name}</span>

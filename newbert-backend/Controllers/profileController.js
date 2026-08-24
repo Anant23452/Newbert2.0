@@ -18,17 +18,19 @@ async function fetchGitHub(username) {
   const user = await result.json();
   const reposResponse = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?per_page=100&sort=updated`, { headers: { Accept: "application/vnd.github+json", "User-Agent": "Newbert" } });
   const repos = reposResponse.ok ? await reposResponse.json() : [];
-  const languages = [...new Set(repos.map((repo) => repo.language).filter(Boolean))].slice(0, 12);
-  return { username: user.login, avatar: user.avatar_url, publicRepos: user.public_repos, followers: user.followers, following: user.following, languages, updatedAt: new Date().toISOString() };
+  const languageCounts = repos.reduce((counts, repo) => { if (repo.language) counts[repo.language] = (counts[repo.language] || 0) + 1; return counts; }, {});
+  const languages = Object.keys(languageCounts).sort((a, b) => languageCounts[b] - languageCounts[a]).slice(0, 12);
+  return { username: user.login, avatar: user.avatar_url, publicRepos: user.public_repos, followers: user.followers, following: user.following, languages, languageCounts, updatedAt: new Date().toISOString() };
 }
 
 async function fetchLeetCode(username) {
-  const result = await fetch("https://leetcode.com/graphql", { method: "POST", headers: { "Content-Type": "application/json", Referer: "https://leetcode.com" }, body: JSON.stringify({ query: "query user($username: String!) { matchedUser(username: $username) { username profile { ranking } submitStats: submitStatsGlobal { acSubmissionNum { difficulty count } } } }", variables: { username } }) });
+  const result = await fetch("https://leetcode.com/graphql", { method: "POST", headers: { "Content-Type": "application/json", Referer: "https://leetcode.com" }, body: JSON.stringify({ query: "query user($username: String!) { matchedUser(username: $username) { username profile { ranking } submitStats: submitStatsGlobal { acSubmissionNum { difficulty count } } languageProblemCount { languageName problemsSolved } } }", variables: { username } }) });
   if (!result.ok) throw new Error("LeetCode statistics could not be fetched.");
   const user = (await result.json()).data?.matchedUser;
   if (!user) throw new Error("LeetCode profile could not be found.");
   const counts = Object.fromEntries(user.submitStats.acSubmissionNum.map((item) => [item.difficulty.toLowerCase(), item.count]));
-  return { username: user.username, ranking: user.profile.ranking, solved: counts.all || 0, easy: counts.easy || 0, medium: counts.medium || 0, hard: counts.hard || 0, updatedAt: new Date().toISOString() };
+  const languageCounts = Object.fromEntries((user.languageProblemCount || []).filter((item) => item.problemsSolved > 0).map((item) => [item.languageName, item.problemsSolved]));
+  return { username: user.username, ranking: user.profile.ranking, solved: counts.all || 0, easy: counts.easy || 0, medium: counts.medium || 0, hard: counts.hard || 0, languageCounts, updatedAt: new Date().toISOString() };
 }
 
 exports.getMyProfile = async (req, res, next) => {
@@ -60,7 +62,17 @@ exports.syncPublicProfiles = async (req, res, next) => {
     const errors = [githubResult, leetcodeResult].filter((item) => item.status === "rejected").map((item) => item.reason.message);
     const githubStats = githubResult.status === "fulfilled" ? githubResult.value : undefined;
     const leetcodeStats = leetcodeResult.status === "fulfilled" ? leetcodeResult.value : undefined;
-    const skills = [...new Set([...(githubStats?.languages || []), ...(leetcodeStats?.solved ? ["DSA", "Problem Solving"] : [])])].map((name) => ({ name, score: 70, source: name === "DSA" || name === "Problem Solving" ? "leetcode" : "github" }));
+    const ratedSkills = new Map();
+    for (const [name, count] of Object.entries(githubStats?.languageCounts || {})) ratedSkills.set(name, { name, score: Math.min(95, 40 + count * 12), source: "github" });
+    for (const [name, count] of Object.entries(leetcodeStats?.languageCounts || {})) {
+      const score = Math.min(100, 35 + count * 4);
+      if (!ratedSkills.has(name) || ratedSkills.get(name).score < score) ratedSkills.set(name, { name, score, source: "leetcode" });
+    }
+    if (leetcodeStats?.solved) {
+      ratedSkills.set("DSA", { name: "DSA", score: Math.min(100, 30 + Math.round(leetcodeStats.solved * 0.35)), source: "leetcode" });
+      ratedSkills.set("Problem Solving", { name: "Problem Solving", score: Math.min(100, 30 + Math.round(leetcodeStats.solved * 0.35)), source: "leetcode" });
+    }
+    const skills = [...ratedSkills.values()].sort((a, b) => b.score - a.score);
     const profile = await Profile.findOneAndUpdate({ userId: req.auth.id }, { $set: { ...(github && { githubUrl: `https://github.com/${github}` }), ...(leetcode && { leetcodeUrl: `https://leetcode.com/${leetcode}` }), ...(githubStats && { githubStats }), ...(leetcodeStats && { leetcodeStats }), ...(githubStats?.avatar && { avatarUrl: githubStats.avatar }), ...(skills.length && { skills }), lastSyncedAt: new Date() } }, { new: true, upsert: true, setDefaultsOnInsert: true });
     const user = await User.findById(req.auth.id);
     return res.json({ profile: response(profile, user), errors });
