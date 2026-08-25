@@ -3,15 +3,6 @@ import { Link } from "react-router-dom";
 import { getSavedJobs } from "../utils/jobApplications";
 import API, { AUTH_TOKEN_KEY } from "../Services/api";
 
-const detectedSkills = ["JavaScript", "React", "Node.js", "Git", "DSA", "SQL"];
-const skillScores = [
-  { name: "JavaScript", score: 78 },
-  { name: "React", score: 72 },
-  { name: "DSA", score: 58 },
-  { name: "Git", score: 66 },
-  { name: "SQL", score: 52 },
-  { name: "Projects", score: 64 },
-];
 const companies = {
   "TCS Digital": ["JavaScript", "React", "DSA", "SQL"],
   "Infosys SP": ["Java", "SQL", "DSA", "Spring Boot"],
@@ -126,29 +117,12 @@ function buildHeatmapWeeks(days) {
 
 const MONTH_SHORT_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// --- Intensity Level Theme Palettes ---
-const HEATMAP_THEMES = {
-  orange: {
-    0: "bg-slate-100 border-slate-200/60",
-    1: "bg-orange-200 border-orange-300",
-    2: "bg-orange-400 border-orange-500",
-    3: "bg-orange-500 border-orange-600",
-    4: "bg-orange-600 border-orange-700 shadow-sm shadow-orange-500/40",
-  },
-  emerald: {
-    0: "bg-slate-100 border-slate-200/60",
-    1: "bg-emerald-200 border-emerald-300",
-    2: "bg-emerald-400 border-emerald-500",
-    3: "bg-emerald-500 border-emerald-600",
-    4: "bg-emerald-700 border-emerald-800 shadow-sm shadow-emerald-500/40",
-  },
-  fire: {
-    0: "bg-slate-100 border-slate-200/60",
-    1: "bg-amber-200 border-amber-300",
-    2: "bg-amber-400 border-amber-500",
-    3: "bg-orange-500 border-orange-600",
-    4: "bg-red-600 border-red-700 shadow-sm shadow-red-500/40",
-  },
+const HEATMAP_LEVELS = {
+  0: "bg-slate-800/15 dark:bg-slate-800/70",
+  1: "bg-emerald-900/45",
+  2: "bg-emerald-700/75",
+  3: "bg-emerald-500",
+  4: "bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,.22)]",
 };
 
 export default function Profile() {
@@ -313,6 +287,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
               </div>
             )}
           </div>
+          {syncing && <div className="mt-4 grid gap-2 text-xs font-semibold text-slate-600 sm:grid-cols-2">{form.github && <p className="rounded-lg bg-slate-100 px-3 py-2">Syncing GitHub activity...</p>}{form.leetcode && <p className="rounded-lg bg-slate-100 px-3 py-2">Syncing LeetCode profile...</p>}</div>}
           {(syncErrors.github || syncErrors.leetcode || syncErrors.general) && <div className="mt-4 space-y-2">{syncErrors.github && <SyncMessage label="GitHub" message={syncErrors.github}/>} {syncErrors.leetcode && <SyncMessage label="LeetCode" message={syncErrors.leetcode}/>} {syncErrors.general && <SyncMessage label="Sync" message={syncErrors.general}/>}</div>}
         </section>
 
@@ -325,8 +300,8 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
 }
 
 function ProfileDashboard({ profile, savedJobs, onEdit }) {
-  const skills = (profile.skills?.length ? profile.skills : detectedSkills).map((skill) => skill.name || skill);
-  const ratedSkills = profile.skills?.length ? profile.skills.map((skill) => ({ name: skill.name || skill, score: skill.score || 60 })) : skillScores;
+  const skills = (profile.skills || []).map((skill) => skill.name || skill);
+  const ratedSkills = (profile.skills || []).map((skill) => ({ name: skill.name || skill, score: skill.score ?? 0 }));
   const [seniorMatch, setSeniorMatch] = useState({ loading: true, match: null, reason: "", error: "" });
 
   useEffect(() => {
@@ -407,6 +382,7 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
                   </div>
                 </div>
               ))}
+              {!ratedSkills.length && <p className="text-sm leading-6 text-slate-500 sm:col-span-2">No verified skill scores yet. Sync GitHub or LeetCode from Edit profile.</p>}
             </div>
             <div className="mt-6 flex flex-wrap gap-2">
               {skills.map((skill) => (
@@ -439,7 +415,6 @@ function SeniorMatchCard({ state }) {
 function StreakCalendarHeatmap({ activityCalendar, lastSyncedAt, syncedCurrentStreak, syncedLongestStreak }) {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [theme, setTheme] = useState("emerald"); // 'orange' | 'emerald' | 'fire'
   const [hoveredDay, setHoveredDay] = useState(null);
 
   const daysData = useMemo(() => buildYearlyActivity(selectedYear, activityCalendar), [selectedYear, activityCalendar]);
@@ -447,7 +422,6 @@ function StreakCalendarHeatmap({ activityCalendar, lastSyncedAt, syncedCurrentSt
   const weeks = useMemo(() => buildHeatmapWeeks(daysData), [daysData]);
 
   const yearOptions = [currentYear, currentYear - 1, currentYear - 2];
-  const activePalette = HEATMAP_THEMES[theme];
 
   // Map month label positions to week column indices
   const monthLabels = useMemo(() => {
@@ -470,21 +444,12 @@ function StreakCalendarHeatmap({ activityCalendar, lastSyncedAt, syncedCurrentSt
         <div>
           <p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Momentum</p>
           <h2 className="mt-0.5 text-xl font-extrabold text-slate-950 flex items-center gap-2">
-            <span>🔥 {metrics.totalContributions.toLocaleString()} contributions</span>
+            <span>{metrics.totalContributions.toLocaleString()} verified activities</span>
             <span className="text-xs font-bold text-slate-500">in {selectedYear}</span>
           </h2>
         </div>
 
-        {/* Controls: Year Selector & Theme Switcher */}
         <div className="flex items-center gap-2">
-          {/* Theme Switcher */}
-          <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 p-1">
-            <button type="button" title="Orange Theme" onClick={() => setTheme("orange")} className={`h-5 w-5 rounded-full bg-orange-500 border ${theme === "orange" ? "ring-2 ring-orange-500 ring-offset-1" : "opacity-60"}`} />
-            <button type="button" title="GitHub Emerald" onClick={() => setTheme("emerald")} className={`ml-1 h-5 w-5 rounded-full bg-emerald-500 border ${theme === "emerald" ? "ring-2 ring-emerald-500 ring-offset-1" : "opacity-60"}`} />
-            <button type="button" title="LeetCode Fire" onClick={() => setTheme("fire")} className={`ml-1 h-5 w-5 rounded-full bg-red-500 border ${theme === "fire" ? "ring-2 ring-red-500 ring-offset-1" : "opacity-60"}`} />
-          </div>
-
-          {/* Year Dropdown */}
           <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="control rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-extrabold text-slate-900 focus:border-orange-500 focus:outline-none">
             {yearOptions.map((y) => (
               <option key={y} value={y}>
@@ -499,7 +464,7 @@ function StreakCalendarHeatmap({ activityCalendar, lastSyncedAt, syncedCurrentSt
       <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
         <StreakMetricCard label={selectedYear === currentYear ? "Current Streak" : "Year-end Streak"} value={`${selectedYear === currentYear ? (syncedCurrentStreak || 0) : metrics.currentStreak} ${(selectedYear === currentYear ? (syncedCurrentStreak || 0) : metrics.currentStreak) === 1 ? "day" : "days"}`} icon="⚡" subtitle={selectedYear === currentYear ? "Across both platforms" : `End of ${selectedYear}`} />
         <StreakMetricCard label="Longest Streak" value={`${syncedLongestStreak || 0} ${(syncedLongestStreak || 0) === 1 ? "day" : "days"}`} icon="🏆" subtitle="Best run in synced history" />
-        <StreakMetricCard label="Active Days" value={`${metrics.activeDays} days`} icon="📅" subtitle={`${Math.round((metrics.activeDays / 365) * 100)}% of year`} />
+        <StreakMetricCard label="Active Days" value={`${metrics.activeDays} days`} icon="📅" subtitle={`${Math.round((metrics.activeDays / daysData.length) * 100)}% of year`} />
       </div>
 
       <p className={`mt-4 rounded-lg border px-3 py-2 text-xs font-semibold ${activityCalendar.length ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
@@ -508,20 +473,20 @@ function StreakCalendarHeatmap({ activityCalendar, lastSyncedAt, syncedCurrentSt
 
       {/* GitHub / LeetCode Heatmap Grid Container */}
       <div className="mt-6 overflow-x-auto pb-2">
-        <div className="min-w-[690px]">
+        <div className="min-w-[830px]">
           {/* Month Headers */}
           <div className="relative mb-2 h-4 text-[11px] font-extrabold text-slate-500">
             {monthLabels.map((m, idx) => (
-              <span key={`${m.monthName}-${idx}`} className="absolute" style={{ left: `${m.weekIdx * 13 + 28}px` }}>
+              <span key={`${m.monthName}-${idx}`} className="absolute" style={{ left: `${m.weekIdx * 15 + 34}px` }}>
                 {m.monthName}
               </span>
             ))}
           </div>
 
           {/* Heatmap Grid Body */}
-          <div className="flex gap-1">
+          <div className="flex gap-2">
             {/* Weekday Row Labels (Sun - Sat) */}
-            <div className="flex flex-col justify-between py-[1px] text-[10px] font-extrabold text-slate-400 pr-1.5 w-6 select-none">
+            <div className="grid w-7 shrink-0 grid-rows-7 gap-[3px] text-[9px] font-bold leading-3 text-slate-400 select-none">
               <span>Sun</span>
               <span>Mon</span>
               <span>Tue</span>
@@ -532,29 +497,28 @@ function StreakCalendarHeatmap({ activityCalendar, lastSyncedAt, syncedCurrentSt
             </div>
 
             {/* 52 Week Columns */}
-            <div className="flex gap-1">
+            <div className="flex gap-[3px]">
               {weeks.map((week, weekIdx) => (
-                <div key={`week-${weekIdx}`} className="flex flex-col gap-1">
+                <div key={`week-${weekIdx}`} className="flex flex-col gap-[3px]">
                   {week.map((day, dayIdx) => {
                     if (!day) {
-                      return <div key={`empty-${weekIdx}-${dayIdx}`} className="h-2.5 w-2.5 rounded-[2px] bg-transparent" />;
+                      return <div key={`empty-${weekIdx}-${dayIdx}`} className="h-3 w-3 rounded-[3px] bg-transparent" />;
                     }
 
                     // Intensity score (0..4)
                     let level = 0;
-                    if (day.total >= 8) level = 4;
-                    else if (day.total >= 5) level = 3;
-                    else if (day.total >= 2) level = 2;
+                    if (day.total >= 10) level = 4;
+                    else if (day.total >= 6) level = 3;
+                    else if (day.total >= 3) level = 2;
                     else if (day.total >= 1) level = 1;
-
-                    const colorClass = activePalette[level];
 
                     return (
                       <div
                         key={day.dateStr}
-                        onMouseEnter={() => setHoveredDay(day)}
+                        onMouseEnter={(event) => setHoveredDay({ day, x: Math.min(event.clientX + 14, window.innerWidth - 230), y: Math.max(12, event.clientY - 150) })}
+                        onMouseMove={(event) => setHoveredDay((current) => current ? { ...current, x: Math.min(event.clientX + 14, window.innerWidth - 230), y: Math.max(12, event.clientY - 150) } : current)}
                         onMouseLeave={() => setHoveredDay(null)}
-                        className={`h-2.5 w-2.5 rounded-[2px] border transition-transform hover:scale-125 cursor-pointer ${colorClass}`}
+                        className={`h-3 w-3 rounded-[3px] transition duration-150 ${day.isFuture ? "cursor-default bg-slate-800/5 opacity-40" : `cursor-pointer hover:ring-2 hover:ring-emerald-300/40 hover:ring-offset-1 ${HEATMAP_LEVELS[level]}`}`}
                       />
                     );
                   })}
@@ -565,34 +529,26 @@ function StreakCalendarHeatmap({ activityCalendar, lastSyncedAt, syncedCurrentSt
         </div>
       </div>
 
-      {/* Footer: Tooltip details & Legend */}
+      {hoveredDay && <ActivityTooltip {...hoveredDay} />}
+
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 text-xs">
-        {/* Dynamic Tooltip on Hover */}
-        <div className="min-h-5 text-slate-700 font-medium">
-          {hoveredDay ? (
-            <span>
-              <strong className="font-extrabold text-slate-950">
-                {hoveredDay.total} {hoveredDay.total === 1 ? "contribution" : "contributions"}
-              </strong>{" "}
-              on {hoveredDay.date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-              {hoveredDay.total > 0 && <span className="ml-1 text-slate-500">({hoveredDay.github} GitHub, {hoveredDay.leetcode} LeetCode)</span>}
-            </span>
-          ) : (
-            <span className="text-slate-400">Hover over any day tile to view activity breakdown</span>
-          )}
-        </div>
+        <span className="text-slate-400">Hover over a day to view its verified activity</span>
 
         {/* Intensity Legend */}
         <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
           <span>Less</span>
           {[0, 1, 2, 3, 4].map((lvl) => (
-            <span key={lvl} className={`h-2.5 w-2.5 rounded-[2px] border ${activePalette[lvl]}`} />
+            <span key={lvl} className={`h-3 w-3 rounded-[3px] ${HEATMAP_LEVELS[lvl]}`} />
           ))}
           <span>More</span>
         </div>
       </div>
     </div>
   );
+}
+
+function ActivityTooltip({ day, x, y }) {
+  return <div className="pointer-events-none fixed z-[100] w-52 rounded-lg border border-slate-700 bg-[#101827] p-3 text-left shadow-2xl" style={{ left: x, top: y }}><p className="text-xs font-extrabold text-white">{day.date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}</p>{day.total > 0 ? <div className="mt-3 space-y-2">{day.github > 0 && <div><p className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">GitHub</p><p className="text-xs font-semibold text-slate-200">{day.github} {day.github === 1 ? "contribution" : "contributions"}</p></div>}{day.leetcode > 0 && <div><p className="text-[10px] font-bold uppercase tracking-wider text-orange-300">LeetCode</p><p className="text-xs font-semibold text-slate-200">{day.leetcode} {day.leetcode === 1 ? "submission" : "submissions"}</p></div>}<div className="border-t border-slate-700 pt-2"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total activity</p><p className="text-sm font-extrabold text-white">{day.total}</p></div></div> : <p className="mt-2 text-xs font-semibold text-slate-400">No activity</p>}</div>;
 }
 
 // --- High-Contrast Metric Card Component ---
