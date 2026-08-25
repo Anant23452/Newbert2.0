@@ -18,6 +18,7 @@ const profileSchema = new mongoose.Schema({
   skills: { type: [skillSchema], default: [] },
   githubStats: { type: mongoose.Schema.Types.Mixed, default: null },
   leetcodeStats: { type: mongoose.Schema.Types.Mixed, default: null },
+  activityCalendar: { type: [mongoose.Schema.Types.Mixed], default: [] },
   lastSyncedAt: Date,
   currentStreak: { type: Number, default: 0, min: 0 }, longestStreak: { type: Number, default: 0, min: 0 },
 }, { timestamps: true });

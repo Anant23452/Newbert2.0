@@ -18,38 +18,26 @@ const companies = {
   "Wipro Elite": ["React", "DSA", "SQL", "Git"],
 };
 
-// --- Seeded Random Generator for Stable Demo Data ---
-function seededRandom(seed) {
-  let value = seed % 2147483647;
-  if (value <= 0) value += 2147483646;
-  return () => {
-    value = (value * 16807) % 2147483647;
-    return (value - 1) / 2147483646;
-  };
-}
-
-// --- Generate Full 365-Day Contribution Data for GitHub Heatmap Grid ---
-function generateYearlyActivity(year) {
+// Build a complete year from authenticated, server-synced activity records.
+function buildYearlyActivity(year, activityCalendar) {
+  const activityByDate = new Map((activityCalendar || []).map((day) => [day.date, day]));
   const days = [];
   const startDate = new Date(year, 0, 1);
   const endDate = new Date(year, 11, 31);
   const today = new Date();
   today.setHours(23, 59, 59, 999);
-
-  const rand = seededRandom(year * 9999 + 42);
-
   const current = new Date(startDate);
   while (current <= endDate) {
     const isFuture = current > today;
-    // Generate realistic contribution density
-    const hasActivity = !isFuture && rand() > 0.35;
-    const github = hasActivity ? Math.floor(rand() * 6) + 1 : 0;
-    const leetcode = hasActivity && rand() > 0.4 ? Math.floor(rand() * 5) + 1 : 0;
+    const dateStr = `${year}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`;
+    const activity = activityByDate.get(dateStr);
+    const github = Number(activity?.github) || 0;
+    const leetcode = Number(activity?.leetcode) || 0;
     const total = github + leetcode;
 
     days.push({
       date: new Date(current),
-      dateStr: current.toISOString().split("T")[0],
+      dateStr,
       dayOfWeek: current.getDay(), // 0 = Sun, 6 = Sat
       month: current.getMonth(),
       dayOfMonth: current.getDate(),
@@ -281,7 +269,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
 
         <section className="surface mt-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm font-extrabold text-slate-950">Connect your public profile links</p>
-          <p className="mt-1 text-sm text-slate-600">Newbert will sync these accounts with your permission. Demo activity is populated below.</p>
+          <p className="mt-1 text-sm text-slate-600">Newbert reads the public activity for these accounts when you sync and stores the verified result on your profile.</p>
           <div className="mt-5 grid gap-5 md:grid-cols-2">
             <Field label="GitHub link" value={form.github} onChange={(v) => update("github", v)} placeholder="https://github.com/username" />
             <Field label="LeetCode link" value={form.leetcode} onChange={(v) => update("leetcode", v)} placeholder="https://leetcode.com/username" />
@@ -403,7 +391,7 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
             </div>
           </div>
 
-          <StreakCalendarHeatmap />
+          <StreakCalendarHeatmap activityCalendar={profile.activityCalendar || []} lastSyncedAt={profile.lastSyncedAt} syncedCurrentStreak={profile.currentStreak} syncedLongestStreak={profile.longestStreak} />
         </section>
 
         {/* Skill Breakdown & Bookmarked Roles */}
@@ -448,14 +436,13 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
 function AccountStat({ title, value, detail }) { return <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-extrabold uppercase tracking-wider text-orange-600">{title}</p><p className="mt-1 font-extrabold text-slate-950">{value}</p>{detail && <p className="mt-1 text-xs text-slate-600">{detail}</p>}</div>; }
 
 // --- GitHub/LeetCode Style Heatmap Calendar & Streak Dashboard ---
-function StreakCalendarHeatmap() {
+function StreakCalendarHeatmap({ activityCalendar, lastSyncedAt, syncedCurrentStreak, syncedLongestStreak }) {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [theme, setTheme] = useState("orange"); // 'orange' | 'emerald' | 'fire'
+  const [theme, setTheme] = useState("emerald"); // 'orange' | 'emerald' | 'fire'
   const [hoveredDay, setHoveredDay] = useState(null);
 
-  // Generate full 365 days of data for the selected year
-  const daysData = useMemo(() => generateYearlyActivity(selectedYear), [selectedYear]);
+  const daysData = useMemo(() => buildYearlyActivity(selectedYear, activityCalendar), [selectedYear, activityCalendar]);
   const metrics = useMemo(() => computeYearMetrics(daysData), [daysData]);
   const weeks = useMemo(() => buildHeatmapWeeks(daysData), [daysData]);
 
@@ -510,10 +497,14 @@ function StreakCalendarHeatmap() {
 
       {/* Streak Metric Cards — High Contrast Fix */}
       <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <StreakMetricCard label="Current Streak" value={`${metrics.currentStreak} ${metrics.currentStreak === 1 ? "day" : "days"}`} icon="⚡" subtitle="Keep it going!" />
-        <StreakMetricCard label="Longest Streak" value={`${metrics.longestStreak} ${metrics.longestStreak === 1 ? "day" : "days"}`} icon="🏆" subtitle="Best run this year" />
+        <StreakMetricCard label={selectedYear === currentYear ? "Current Streak" : "Year-end Streak"} value={`${selectedYear === currentYear ? (syncedCurrentStreak || 0) : metrics.currentStreak} ${(selectedYear === currentYear ? (syncedCurrentStreak || 0) : metrics.currentStreak) === 1 ? "day" : "days"}`} icon="⚡" subtitle={selectedYear === currentYear ? "Across both platforms" : `End of ${selectedYear}`} />
+        <StreakMetricCard label="Longest Streak" value={`${syncedLongestStreak || 0} ${(syncedLongestStreak || 0) === 1 ? "day" : "days"}`} icon="🏆" subtitle="Best run in synced history" />
         <StreakMetricCard label="Active Days" value={`${metrics.activeDays} days`} icon="📅" subtitle={`${Math.round((metrics.activeDays / 365) * 100)}% of year`} />
       </div>
+
+      <p className={`mt-4 rounded-lg border px-3 py-2 text-xs font-semibold ${activityCalendar.length ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
+        {activityCalendar.length ? `Verified from synced GitHub and LeetCode activity${lastSyncedAt ? ` · updated ${new Date(lastSyncedAt).toLocaleString()}` : ""}. A green day means at least one platform recorded activity.` : "No verified activity yet. Edit your profile, add GitHub or LeetCode, and sync your public profiles."}
+      </p>
 
       {/* GitHub / LeetCode Heatmap Grid Container */}
       <div className="mt-6 overflow-x-auto pb-2">
