@@ -53,8 +53,8 @@ function calculateReadiness(profile, target, seniorMatch, alumni = []) {
   if (dsa) categories.dsa = dsa.currentScore;
   const projects = gaps.find((gap) => gap.type === "projects");
   if (projects) categories.projects = projects.currentScore;
-  if (profile.githubStats) {
-    const targetRepos = benchmark.seniorGithubRepos || Math.max(1, profile.githubStats.publicRepos || 1);
+  if (profile.githubStats && Number.isFinite(benchmark.seniorGithubRepos) && benchmark.seniorGithubRepos > 0) {
+    const targetRepos = benchmark.seniorGithubRepos;
     categories.github = Math.min(100, Math.round(((profile.githubStats.publicRepos || 0) / targetRepos) * 100));
   }
   if (Number.isFinite(profile.cgpa) && Number.isFinite(benchmark.seniorCgpa)) categories.profile = Math.min(100, Math.round((profile.cgpa / benchmark.seniorCgpa) * 100));

@@ -24,6 +24,7 @@ function calculateSeniorMatch(student, senior, target = {}) {
   if (Number.isFinite(student.projects) && Number.isFinite(senior.projects) && senior.projects > 0) criteria.push({ weight: 15, score: Math.min(100, (student.projects / senior.projects) * 100) });
   if (Number.isFinite(student.githubStats?.publicRepos) && Number.isFinite(senior.githubPublicRepos) && senior.githubPublicRepos > 0) criteria.push({ weight: 10, score: Math.min(100, (student.githubStats.publicRepos / senior.githubPublicRepos) * 100) });
   if (Number.isFinite(student.cgpa) && Number.isFinite(senior.cgpa) && senior.cgpa > 0) criteria.push({ weight: 5, score: Math.min(100, (student.cgpa / senior.cgpa) * 100) });
+  const comparableProfileSignals = criteria.length;
   const targetSignals = [];
   if (target.company?.trim()) targetSignals.push(senior.company?.trim().toLowerCase() === target.company.trim().toLowerCase() ? 100 : 0);
   if (target.role?.trim()) {
@@ -33,7 +34,7 @@ function calculateSeniorMatch(student, senior, target = {}) {
   }
   if (targetSignals.length) criteria.push({ weight: 10, score: Math.max(...targetSignals) });
 
-  if (!criteria.length) return null;
+  if (!comparableProfileSignals) return null;
   const availableWeight = criteria.reduce((sum, criterion) => sum + criterion.weight, 0);
   const score = Math.round(criteria.reduce((sum, criterion) => sum + criterion.score * criterion.weight, 0) / availableWeight);
   return {

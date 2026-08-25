@@ -42,7 +42,7 @@ function estimateTimeline(gaps, weeklyHours, deadline) {
     const base = gap.priority === "high" ? 18 : gap.priority === "medium" ? 12 : 6;
     return sum + Math.max(3, Math.round(base * ((100 - gap.currentScore) / 100)));
   }, 12);
-  let minWeeks = Math.max(4, Math.min(24, Math.ceil(work / weeklyHours)));
+  let minWeeks = Math.max(5, Math.min(24, Math.ceil(work / weeklyHours)));
   let maxWeeks = Math.max(minWeeks, Math.min(28, Math.ceil(minWeeks * 1.25)));
   let deadlineConstrained = false;
   if (deadline) {

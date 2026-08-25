@@ -27,7 +27,14 @@ function serialize(plan, options = {}) {
   const value = plan.toObject ? plan.toObject() : plan;
   const start = new Date(value.timeline.startDate || value.createdAt || Date.now());
   const currentWeek = Math.max(1, Math.min(value.timeline.estimatedWeeks, Math.floor((Date.now() - start.getTime()) / 604800000) + 1));
-  const currentPhase = value.phases.find((phase) => currentWeek >= phase.startWeek && currentWeek <= phase.endWeek) || value.phases.at(-1) || null;
+  let currentPhase = value.phases.find((phase) => currentWeek >= phase.startWeek && currentWeek <= phase.endWeek) || value.phases.at(-1) || null;
+  let phaseIndex = value.phases.findIndex((phase) => phase.id === currentPhase?.id);
+  while (phaseIndex >= 0 && phaseIndex < value.phases.length - 1) {
+    const phaseTasks = value.tasks.filter((task) => !task.archived && task.phaseId === value.phases[phaseIndex].id);
+    if (!phaseTasks.length || !phaseTasks.every((task) => task.completed)) break;
+    phaseIndex += 1;
+    currentPhase = value.phases[phaseIndex];
+  }
   return { ...value, currentWeek, currentPhase, needsRecalculation: false, recalculated: Boolean(options.recalculated) };
 }
 
