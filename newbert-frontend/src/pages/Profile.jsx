@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { getSavedJobs } from "../utils/jobApplications";
 import API, { AUTH_TOKEN_KEY } from "../Services/api";
@@ -153,17 +153,21 @@ const HEATMAP_THEMES = {
 
 export default function Profile() {
   const [profile, setProfile] = useState(() => JSON.parse(localStorage.getItem("newbert-profile") || "null"));
+  const [profileLoading, setProfileLoading] = useState(() => Boolean(localStorage.getItem(AUTH_TOKEN_KEY)));
+  const [profileError, setProfileError] = useState("");
   const [editing, setEditing] = useState(!profile?.github);
   const [syncing, setSyncing] = useState(false);
   const [savedJobs] = useState(getSavedJobs);
 
   useEffect(() => {
-    if (!localStorage.getItem(AUTH_TOKEN_KEY)) return;
-    API.get("/profiles/me").then(({ data }) => {
+    if (!localStorage.getItem(AUTH_TOKEN_KEY)) { setProfileLoading(false); return undefined; }
+    const controller = new AbortController();
+    API.get("/profiles/me", { signal: controller.signal }).then(({ data }) => {
       localStorage.setItem("newbert-profile", JSON.stringify(data));
       setProfile(data);
       window.dispatchEvent(new Event("newbert-profile-updated"));
-    }).catch(() => {});
+    }).catch((error) => { if (error.code !== "ERR_CANCELED") setProfileError(error.response?.data?.message || "Unable to load your profile."); }).finally(() => setProfileLoading(false));
+    return () => controller.abort();
   }, []);
 
   const save = async (next) => {
@@ -173,7 +177,8 @@ export default function Profile() {
     window.dispatchEvent(new Event("newbert-profile-updated"));
   };
 
-  if (!profile) return <GuestProfile />;
+  if (profileLoading) return <ProfileLoading />;
+  if (!profile) return <GuestProfile error={profileError} />;
   if (editing)
     return (
       <ProfileSetup
@@ -189,7 +194,9 @@ export default function Profile() {
   return <ProfileDashboard profile={profile} savedJobs={savedJobs} onEdit={() => setEditing(true)} />;
 }
 
-function GuestProfile() {
+function ProfileLoading() { return <main className="profile-page min-h-screen px-5 py-12"><div className="mx-auto max-w-6xl animate-pulse space-y-5"><div className="h-44 rounded-2xl bg-slate-200/70"/><div className="grid gap-6 lg:grid-cols-2"><div className="h-80 rounded-2xl bg-slate-200/70"/><div className="h-80 rounded-2xl bg-slate-200/70"/></div></div></main>; }
+
+function GuestProfile({ error }) {
   return (
     <main className="profile-page min-h-screen px-5 py-12">
       <div className="mx-auto max-w-xl text-center">
@@ -198,6 +205,7 @@ function GuestProfile() {
         <p className="mt-3 text-sm leading-6 text-slate-600">
           Your profile starts with your name and email, then grows through the public accounts and learning activity you choose to connect.
         </p>
+        {error && <p className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</p>}
         <Link to="/" className="mt-7 inline-block rounded-lg bg-orange-500 px-6 py-3 text-sm font-extrabold text-white shadow-md transition hover:bg-orange-600">
           Return to Newbert
         </Link>
@@ -207,6 +215,8 @@ function GuestProfile() {
 }
 
 function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
+  const syncControllerRef = useRef(null);
+  const [syncErrors, setSyncErrors] = useState(profile.syncErrors || {});
   const [form, setForm] = useState({
     name: profile.name || "",
     email: profile.email || "",
@@ -221,18 +231,28 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
     avatar: profile.avatar || "",
     cover: profile.cover || "",
     skills: profile.skills || [],
+    projects: profile.projects ?? "",
+    cgpa: profile.cgpa ?? "",
   });
+
+  useEffect(() => () => syncControllerRef.current?.abort(), []);
 
   const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
   const syncProfiles = async () => {
+    syncControllerRef.current?.abort();
+    const controller = new AbortController();
+    syncControllerRef.current = controller;
+    const requestedGithub = form.github;
+    const requestedLeetcode = form.leetcode;
+    setSyncErrors({});
     setSyncing(true);
     try {
-      const { data } = await API.post("/profiles/sync", { github: form.github, leetcode: form.leetcode });
-      setForm((current) => ({ ...current, ...data.profile, skills: data.profile.skills || current.skills }));
-      if (data.errors?.length) window.alert(data.errors.join("\n"));
+      const { data } = await API.post("/profiles/sync", { github: requestedGithub, leetcode: requestedLeetcode }, { signal: controller.signal });
+      setForm((current) => current.github === requestedGithub && current.leetcode === requestedLeetcode ? ({ ...current, ...data.profile, skills: data.profile.skills || current.skills }) : current);
+      setSyncErrors(data.syncErrors || {});
     } catch (error) {
-      window.alert(error.response?.data?.message || "Could not sync your public profiles.");
-    } finally { setSyncing(false); }
+      if (error.code !== "ERR_CANCELED") setSyncErrors({ [error.response?.data?.source || "general"]: error.response?.data?.message || "Could not sync your public profiles." });
+    } finally { if (syncControllerRef.current === controller) setSyncing(false); }
   };
   const canSave = form.name.trim() && form.college.trim();
 
@@ -252,6 +272,8 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
             <Field label="College" value={form.college} onChange={(v) => update("college", v)} placeholder="Example: AKTU Lucknow" />
             <Field label="Branch" value={form.branch} onChange={(v) => update("branch", v)} placeholder="Example: Information Technology" />
             <Field label="Graduation year" value={form.graduationYear} onChange={(v) => update("graduationYear", v)} placeholder="2026" />
+            <Field label="Completed projects" value={form.projects} onChange={(v) => update("projects", v)} placeholder="Example: 3" type="number" />
+            <Field label="CGPA" value={form.cgpa} onChange={(v) => update("cgpa", v)} placeholder="Example: 8.2" type="number" />
             <label className="text-sm font-bold text-slate-800">
               Target company
               <select value={form.targetCompany} onChange={(e) => update("targetCompany", e.target.value)} className="control mt-2 w-full rounded-md border border-slate-300 p-2 text-sm text-slate-900 focus:border-orange-500 focus:outline-none">
@@ -272,14 +294,14 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
           <p className="mt-1 text-sm text-slate-600">Newbert reads the public activity for these accounts when you sync and stores the verified result on your profile.</p>
           <div className="mt-5 grid gap-5 md:grid-cols-2">
             <Field label="GitHub link" value={form.github} onChange={(v) => update("github", v)} placeholder="https://github.com/username" />
-            <Field label="LeetCode link" value={form.leetcode} onChange={(v) => update("leetcode", v)} placeholder="https://leetcode.com/username" />
+            <Field label="LeetCode link or username" value={form.leetcode} onChange={(v) => update("leetcode", v)} placeholder="https://leetcode.com/u/username" />
             <Field label="LinkedIn link" value={form.linkedin} onChange={(v) => update("linkedin", v)} placeholder="https://linkedin.com/in/username" />
             <Field label="Profile image URL" value={form.avatar} onChange={(v) => update("avatar", v)} placeholder="Optional image URL" />
             <Field label="Cover image URL" value={form.cover} onChange={(v) => update("cover", v)} placeholder="Optional cover image URL" />
           </div>
           <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
             <button onClick={syncProfiles} disabled={(!form.github && !form.leetcode) || syncing} className={`rounded-lg px-4 py-2.5 text-sm font-extrabold shadow-sm transition ${(form.github || form.leetcode) && !syncing ? "bg-orange-500 text-white hover:bg-orange-600" : "bg-slate-100 text-slate-400"}`}>
-              {syncing ? "Reading public profiles..." : "Detect skills from profiles"}
+              {syncing ? "Syncing GitHub and LeetCode..." : "Sync public profiles"}
             </button>
             {form.skills.length > 0 && (
               <div className="flex flex-wrap gap-2">
@@ -291,6 +313,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
               </div>
             )}
           </div>
+          {(syncErrors.github || syncErrors.leetcode || syncErrors.general) && <div className="mt-4 space-y-2">{syncErrors.github && <SyncMessage label="GitHub" message={syncErrors.github}/>} {syncErrors.leetcode && <SyncMessage label="LeetCode" message={syncErrors.leetcode}/>} {syncErrors.general && <SyncMessage label="Sync" message={syncErrors.general}/>}</div>}
         </section>
 
         <button onClick={() => onSave(form)} disabled={!canSave} className={`mt-6 w-full rounded-lg px-5 py-3 text-sm font-extrabold text-white shadow-md transition sm:w-auto ${canSave ? "bg-orange-500 hover:bg-orange-600" : "bg-slate-300 text-slate-500 cursor-not-allowed"}`}>
@@ -302,12 +325,20 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
 }
 
 function ProfileDashboard({ profile, savedJobs, onEdit }) {
-  const [company, setCompany] = useState(profile.targetCompany || "TCS Digital");
   const skills = (profile.skills?.length ? profile.skills : detectedSkills).map((skill) => skill.name || skill);
   const ratedSkills = profile.skills?.length ? profile.skills.map((skill) => ({ name: skill.name || skill, score: skill.score || 60 })) : skillScores;
-  const requirements = companies[company] || [];
-  const skillMatch = requirements.filter((skill) => skills.includes(skill)).length;
-  const readiness = Math.min(94, 45 + skillMatch * 10 + 7);
+  const [seniorMatch, setSeniorMatch] = useState({ loading: true, match: null, reason: "", error: "" });
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setSeniorMatch({ loading: true, match: null, reason: "", error: "" });
+    API.get("/profiles/senior-match", { signal: controller.signal }).then(({ data }) => {
+      setSeniorMatch({ loading: false, match: data.match || null, reason: data.reason || "", error: "" });
+    }).catch((error) => {
+      if (error.code !== "ERR_CANCELED") setSeniorMatch({ loading: false, match: null, reason: "", error: error.response?.data?.message || "Unable to calculate your senior match." });
+    });
+    return () => controller.abort();
+  }, [profile.college, profile.lastSyncedAt]);
   const initials = profile.name
     .split(" ")
     .map((part) => part[0])
@@ -339,57 +370,17 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
             </div>
             {profile.bio && <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">{profile.bio}</p>}
             <div className="mt-4 flex flex-wrap gap-2">
-              {["GitHub", "LeetCode", "LinkedIn"].map((label) => (
-                <span key={label} className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">
-                  ✓ {label} connected
-                </span>
-              ))}
+              {profile.githubStats && <span className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">✓ GitHub synced</span>}
+              {profile.leetcodeStats && <span className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">✓ LeetCode synced</span>}
+              {profile.linkedin && <span className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">✓ LinkedIn connected</span>}
             </div>
-            {(profile.githubStats || profile.leetcodeStats) && <div className="mt-5 grid gap-3 sm:grid-cols-2"><AccountStat title="GitHub" value={profile.githubStats ? `${profile.githubStats.publicRepos} public repos` : "Not synced"} detail={profile.githubStats ? `${profile.githubStats.followers} followers · ${profile.githubStats.languages?.join(", ") || "No languages"}` : ""}/><AccountStat title="LeetCode" value={profile.leetcodeStats ? `${profile.leetcodeStats.solved} problems solved` : "Not synced"} detail={profile.leetcodeStats ? `Easy ${profile.leetcodeStats.easy} · Medium ${profile.leetcodeStats.medium} · Hard ${profile.leetcodeStats.hard}` : ""}/></div>}
+            {(profile.githubStats || profile.leetcodeStats) && <div className="mt-5 grid gap-3 sm:grid-cols-2"><AccountStat title="GitHub" value={profile.githubStats ? `${profile.githubStats.publicRepos} public repos` : "Not synced"} detail={profile.githubStats ? `@${profile.githubStats.username} · ${profile.githubStats.followers} followers · ${profile.githubStats.languages?.join(", ") || "No languages"}` : ""}/><AccountStat title="LeetCode" value={profile.leetcodeStats ? `${profile.leetcodeStats.totalSolved} problems solved` : "Not synced"} detail={profile.leetcodeStats ? `@${profile.leetcodeStats.username} · Easy ${profile.leetcodeStats.easySolved} · Medium ${profile.leetcodeStats.mediumSolved} · Hard ${profile.leetcodeStats.hardSolved}` : ""}/></div>}
           </div>
         </section>
 
-        {/* Readiness + GitHub Heatmap Streak Section */}
+        {/* Senior match + verified activity */}
         <section className="grid gap-6 lg:grid-cols-[.8fr_1.2fr]">
-          <div className="surface flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Placement readiness</p>
-                  <h2 className="mt-1 text-xl font-extrabold text-slate-950">Signal for {company}</h2>
-                </div>
-                <p className="text-4xl font-black text-orange-500">{readiness}%</p>
-              </div>
-
-              <label className="mt-5 block text-xs font-bold uppercase tracking-wider text-slate-500">
-                Target company
-                <select value={company} onChange={(e) => setCompany(e.target.value)} className="control mt-2 w-full rounded-lg border border-slate-300 p-2.5 text-sm font-bold text-slate-900 focus:border-orange-500 focus:outline-none">
-                  {Object.keys(companies).map((item) => (
-                    <option key={item}>{item}</option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="mt-5 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-                <div style={{ width: `${readiness}%` }} className="h-full rounded-full bg-orange-500 transition-all duration-500" />
-              </div>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                <strong className="text-slate-950">{skillMatch} of {requirements.length}</strong> required signals matched in your connected profiles.
-              </p>
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              {requirements.map((skill) => {
-                const matched = skills.includes(skill);
-                return (
-                  <span key={skill} className={`rounded-md px-2.5 py-1 text-xs font-extrabold ${matched ? "border border-orange-200 bg-orange-50 text-orange-950" : "bg-slate-100 text-slate-600"}`}>
-                    {matched ? "✓ Matched: " : "+ Build: "}
-                    {skill}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
+          <SeniorMatchCard state={seniorMatch} />
 
           <StreakCalendarHeatmap activityCalendar={profile.activityCalendar || []} lastSyncedAt={profile.lastSyncedAt} syncedCurrentStreak={profile.currentStreak} syncedLongestStreak={profile.longestStreak} />
         </section>
@@ -434,6 +425,15 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
 }
 
 function AccountStat({ title, value, detail }) { return <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-extrabold uppercase tracking-wider text-orange-600">{title}</p><p className="mt-1 font-extrabold text-slate-950">{value}</p>{detail && <p className="mt-1 text-xs text-slate-600">{detail}</p>}</div>; }
+
+function SyncMessage({ label, message }) { return <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900"><strong>{label}:</strong> {message}</p>; }
+
+function SeniorMatchCard({ state }) {
+  if (state.loading) return <div className="surface rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Senior match</p><div className="mt-5 animate-pulse space-y-3"><div className="h-8 w-3/4 rounded bg-slate-200"/><div className="h-4 w-1/2 rounded bg-slate-200"/><div className="h-20 rounded bg-slate-100"/><div className="h-10 rounded bg-slate-200"/></div><p className="mt-4 text-sm font-semibold text-slate-500">Finding your closest senior match...</p></div>;
+  if (!state.match) return <div className="surface flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Senior match</p><h2 className="mt-4 text-xl font-extrabold text-slate-950">No verified senior match available yet.</h2><p className="mt-3 text-sm leading-6 text-slate-600">{state.error || state.reason || "We're adding more alumni from your college."}</p><Link to="/alumni-wall" className="mt-auto pt-8 text-sm font-extrabold text-orange-600 hover:text-orange-700">Browse verified alumni →</Link></div>;
+  const { score, matchedSkills, missingSkills, senior } = state.match;
+  return <div className="surface flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Senior match</p><p className="mt-2 text-sm text-slate-600">You match <strong className="text-slate-950">{score}%</strong> with</p><h2 className="mt-1 text-2xl font-extrabold text-slate-950">{senior.name}</h2></div><span className="text-4xl font-black text-orange-500">{score}%</span></div><p className="mt-3 text-sm font-bold text-slate-700">{senior.company}{senior.package != null ? ` · ${senior.package} LPA` : ""}</p><p className="mt-1 text-xs text-slate-500">{senior.role} · Senior from {senior.college}</p><div className="mt-6"><p className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">Matched skills</p><div className="mt-2 flex flex-wrap gap-2">{matchedSkills.length ? matchedSkills.map((skill) => <span key={skill} className="rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800">✓ {skill}</span>) : <span className="text-xs text-slate-500">No shared skills yet</span>}</div></div><div className="mt-5"><p className="text-[11px] font-extrabold uppercase tracking-wider text-orange-600">To build</p><div className="mt-2 flex flex-wrap gap-2">{missingSkills.length ? missingSkills.map((skill) => <span key={skill} className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">+ {skill}</span>) : <span className="text-xs font-semibold text-emerald-700">All listed senior skills matched</span>}</div></div><Link to={`/alumni-wall/${senior.id}`} className="mt-7 inline-flex w-fit rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-extrabold text-[#171918] hover:bg-orange-400">View Senior Profile →</Link></div>;
+}
 
 // --- GitHub/LeetCode Style Heatmap Calendar & Streak Dashboard ---
 function StreakCalendarHeatmap({ activityCalendar, lastSyncedAt, syncedCurrentStreak, syncedLongestStreak }) {

@@ -13,10 +13,16 @@ async function requestLeetcode(query, variables) {
 }
 
 async function getLeetcodeStats(username, years) {
-  const data = await requestLeetcode(
-    "query profile($username:String!){matchedUser(username:$username){username profile{ranking} submitStats:submitStatsGlobal{acSubmissionNum{difficulty count}} languageProblemCount{languageName problemsSolved}} userContestRanking(username:$username){attendedContestsCount rating globalRanking topPercentage}}",
-    { username },
-  );
+  let data;
+  try {
+    data = await requestLeetcode(
+      "query profile($username:String!){matchedUser(username:$username){username profile{ranking} submitStats:submitStatsGlobal{acSubmissionNum{difficulty count}} languageProblemCount{languageName problemsSolved}} userContestRanking(username:$username){attendedContestsCount rating globalRanking topPercentage}}",
+      { username },
+    );
+  } catch (error) {
+    if (/does not exist|not found/i.test(error.message)) throw new Error("LeetCode profile not found. Check the username and try again.");
+    throw error;
+  }
   const user = data.matchedUser;
   if (!user) throw new Error("LeetCode profile not found. Check the username and try again.");
 
