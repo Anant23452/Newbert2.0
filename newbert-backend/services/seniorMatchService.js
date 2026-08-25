@@ -12,18 +12,26 @@ function normalizeSkill(value) {
   return SKILL_ALIASES.get(normalized) || normalized.replace(/[ .]/g, "");
 }
 
-function calculateSeniorMatch(student, senior) {
+function calculateSeniorMatch(student, senior, target = {}) {
   const studentSkills = new Map((student.skills || []).map((skill) => [normalizeSkill(skill.name || skill), skill.name || skill]));
   const seniorSkills = new Map((senior.skills || []).map((skill) => [normalizeSkill(skill), skill]));
   const matchedSkills = [...seniorSkills].filter(([key]) => studentSkills.has(key)).map(([, label]) => label);
   const missingSkills = [...seniorSkills].filter(([key]) => !studentSkills.has(key)).map(([, label]) => label);
   const criteria = [];
 
-  if (studentSkills.size && seniorSkills.size) criteria.push({ weight: 50, score: (matchedSkills.length / seniorSkills.size) * 100 });
+  if (studentSkills.size && seniorSkills.size) criteria.push({ weight: 40, score: (matchedSkills.length / seniorSkills.size) * 100 });
   if (Number.isFinite(student.leetcodeStats?.totalSolved) && Number.isFinite(senior.dsaSolved) && senior.dsaSolved > 0) criteria.push({ weight: 20, score: Math.min(100, (student.leetcodeStats.totalSolved / senior.dsaSolved) * 100) });
   if (Number.isFinite(student.projects) && Number.isFinite(senior.projects) && senior.projects > 0) criteria.push({ weight: 15, score: Math.min(100, (student.projects / senior.projects) * 100) });
   if (Number.isFinite(student.githubStats?.publicRepos) && Number.isFinite(senior.githubPublicRepos) && senior.githubPublicRepos > 0) criteria.push({ weight: 10, score: Math.min(100, (student.githubStats.publicRepos / senior.githubPublicRepos) * 100) });
   if (Number.isFinite(student.cgpa) && Number.isFinite(senior.cgpa) && senior.cgpa > 0) criteria.push({ weight: 5, score: Math.min(100, (student.cgpa / senior.cgpa) * 100) });
+  const targetSignals = [];
+  if (target.company?.trim()) targetSignals.push(senior.company?.trim().toLowerCase() === target.company.trim().toLowerCase() ? 100 : 0);
+  if (target.role?.trim()) {
+    const wanted = normalizeSkill(target.role);
+    const actual = normalizeSkill(senior.role);
+    targetSignals.push(actual.includes(wanted) || wanted.includes(actual) ? 100 : 0);
+  }
+  if (targetSignals.length) criteria.push({ weight: 10, score: Math.max(...targetSignals) });
 
   if (!criteria.length) return null;
   const availableWeight = criteria.reduce((sum, criterion) => sum + criterion.weight, 0);
@@ -32,6 +40,16 @@ function calculateSeniorMatch(student, senior) {
     score,
     matchedSkills,
     missingSkills,
+    comparison: {
+      studentDsa: Number.isFinite(student.leetcodeStats?.totalSolved) ? student.leetcodeStats.totalSolved : null,
+      seniorDsa: Number.isFinite(senior.dsaSolved) ? senior.dsaSolved : null,
+      studentProjects: Number.isFinite(student.projects) ? student.projects : null,
+      seniorProjects: Number.isFinite(senior.projects) ? senior.projects : null,
+      studentGithubRepos: Number.isFinite(student.githubStats?.publicRepos) ? student.githubStats.publicRepos : null,
+      seniorGithubRepos: Number.isFinite(senior.githubPublicRepos) ? senior.githubPublicRepos : null,
+      studentCgpa: Number.isFinite(student.cgpa) ? student.cgpa : null,
+      seniorCgpa: Number.isFinite(senior.cgpa) ? senior.cgpa : null,
+    },
     senior: {
       id: String(senior._id),
       name: senior.name,
@@ -44,8 +62,8 @@ function calculateSeniorMatch(student, senior) {
   };
 }
 
-function findBestSeniorMatch(student, alumni) {
-  return alumni.map((senior) => calculateSeniorMatch(student, senior)).filter(Boolean).sort((a, b) => b.score - a.score)[0] || null;
+function findBestSeniorMatch(student, alumni, target) {
+  return alumni.map((senior) => calculateSeniorMatch(student, senior, target)).filter(Boolean).sort((a, b) => b.score - a.score)[0] || null;
 }
 
 module.exports = { normalizeSkill, calculateSeniorMatch, findBestSeniorMatch };
