@@ -6,11 +6,16 @@ const bcrypt = require("bcryptjs");
 const { OAuth2Client } = require("google-auth-library");
 const requireAuth = require("../middleWare/authMiddleware");
 const Profile = require("../Models/Profile");
+const { isProfileComplete } = require("../services/profileCompletionService");
 
 function publicUser(user) { return { id: user._id, name: user.name, email: user.email, avatar: user.avatarUrl || "" }; }
 function createToken(user) { return jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" }); }
 async function ensureProfile(user, avatarUrl) {
   return Profile.findOneAndUpdate({ userId: user._id }, { $setOnInsert: { avatarUrl: avatarUrl || user.avatarUrl || "" } }, { upsert: true, new: true, setDefaultsOnInsert: true });
+}
+
+function authenticationResponse(user, profile) {
+  return { token: createToken(user), user: publicUser(user), onboardingCompleted: isProfileComplete(profile) };
 }
 
 router.post("/register", async (req, res, next) => {
@@ -20,8 +25,8 @@ router.post("/register", async (req, res, next) => {
     const normalizedEmail = email.trim().toLowerCase();
     if (await User.exists({ email: normalizedEmail })) return res.status(409).json({ message: "An account with this email already exists." });
     const user = await User.create({ name: name.trim(), email: normalizedEmail, passwordHash: await bcrypt.hash(password, 12) });
-    await ensureProfile(user);
-    return res.status(201).json({ token: createToken(user), user: publicUser(user) });
+    const profile = await ensureProfile(user);
+    return res.status(201).json(authenticationResponse(user, profile));
   } catch (error) { return next(error); }
 });
 
@@ -35,8 +40,8 @@ router.post("/google", async (req, res, next) => {
     let user = await User.findOne({ $or: [{ googleId: google.sub }, { email: google.email.toLowerCase() }] }).select("+googleId");
     if (!user) user = await User.create({ name: google.name || google.email.split("@")[0], email: google.email.toLowerCase(), googleId: google.sub, avatarUrl: google.picture || "" });
     else if (!user.googleId) { user.googleId = google.sub; if (!user.avatarUrl && google.picture) user.avatarUrl = google.picture; await user.save(); }
-    await ensureProfile(user, google.picture);
-    return res.json({ token: createToken(user), user: publicUser(user) });
+    const profile = await ensureProfile(user, google.picture);
+    return res.json(authenticationResponse(user, profile));
   } catch (error) {
     if (error.message?.toLowerCase().includes("token") || error.message?.toLowerCase().includes("audience")) return res.status(401).json({ message: "Google credential verification failed. Check that GOOGLE_CLIENT_ID in Render exactly matches VITE_GOOGLE_CLIENT_ID in Netlify." });
     return next(error);
@@ -47,7 +52,8 @@ router.post("/login", async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email?.trim().toLowerCase() }).select("+passwordHash");
     if (!user || !(await bcrypt.compare(req.body.password || "", user.passwordHash))) return res.status(401).json({ message: "Invalid email or password." });
-    return res.json({ token: createToken(user), user: publicUser(user) });
+    const profile = await ensureProfile(user);
+    return res.json(authenticationResponse(user, profile));
   } catch (error) { return next(error); }
 });
 
@@ -55,7 +61,8 @@ router.get("/me", requireAuth, async (req, res, next) => {
   try {
     const user = await User.findById(req.auth.id);
     if (!user) return res.status(404).json({ message: "User not found." });
-    return res.json({ user: publicUser(user) });
+    const profile = await ensureProfile(user);
+    return res.json({ user: publicUser(user), onboardingCompleted: isProfileComplete(profile) });
   } catch (error) { return next(error); }
 });
 

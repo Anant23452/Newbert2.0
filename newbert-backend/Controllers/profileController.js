@@ -5,6 +5,7 @@ const { parseProfileUsername } = require("../services/profileIdentityService");
 const { getGithubActivity } = require("../services/githubService");
 const { getLeetcodeStats } = require("../services/leetcodeService");
 const { findBestSeniorMatch } = require("../services/seniorMatchService");
+const { isProfileComplete, profileStrength } = require("../services/profileCompletionService");
 
 const INVALID_LEETCODE_USERNAMES = new Set(["u", "profile"]);
 
@@ -72,6 +73,7 @@ function response(profile, user) {
     branch: profile.branch || "",
     graduationYear: profile.graduationYear || "",
     bio: profile.bio || "",
+    targetRole: profile.targetRole || "",
     targetCompany: profile.targetCompany || "",
     github: profile.githubUrl || "",
     githubUsername: profile.githubUsername || profile.githubStats?.username || "",
@@ -88,6 +90,13 @@ function response(profile, user) {
     activityCalendar,
     syncErrors: profile.syncErrors || null,
     lastSyncedAt: profile.lastSyncedAt || null,
+    onboardingCompleted: isProfileComplete(profile),
+    profileStrength: profileStrength(profile),
+    connections: {
+      github: { connected: Boolean(profile.githubUsername || profile.githubUrl), synced: Boolean(profile.githubStats), error: profile.syncErrors?.github || null },
+      leetcode: { connected: Boolean(profile.leetcodeUsername || profile.leetcodeUrl), synced: Boolean(leetcodeStats), error: profile.syncErrors?.leetcode || null },
+      linkedin: { connected: Boolean(profile.linkedinUrl), synced: Boolean(profile.linkedinUrl), error: null },
+    },
     ...streaks,
   };
 }
@@ -101,8 +110,12 @@ function extractStoredActivity(profile, source) {
   return (profile.activityCalendar || []).map((day) => ({ date: day.date, count: Number(day[source]) || 0 })).filter((day) => day.count > 0);
 }
 
-function buildRatedSkills(githubStats, leetcodeStats) {
+function buildRatedSkills(githubStats, leetcodeStats, existingSkills = []) {
   const rated = new Map();
+  for (const skill of existingSkills) {
+    const item = typeof skill === "string" ? { name: skill, source: "manual" } : skill;
+    if (item?.name) rated.set(item.name.trim().toLowerCase(), { name: item.name.trim(), score: item.score ?? 0, source: item.source || "manual" });
+  }
   for (const [name, count] of Object.entries(githubStats?.languageCounts || {})) rated.set(name.toLowerCase(), { name, score: Math.min(95, 40 + count * 12), source: "github" });
   for (const [name, count] of Object.entries(leetcodeStats?.languageCounts || {})) {
     const key = name.toLowerCase();
@@ -121,7 +134,13 @@ exports.getMyProfile = async (req, res, next) => {
   try {
     const [user, profile] = await Promise.all([User.findById(req.auth.id), Profile.findOne({ userId: req.auth.id })]);
     if (!user) return res.status(404).json({ message: "User not found." });
-    return res.json(response(profile || new Profile({ userId: user._id }), user));
+    const savedProfile = profile || await Profile.create({ userId: user._id, avatarUrl: user.avatarUrl || "" });
+    const complete = isProfileComplete(savedProfile);
+    if (savedProfile.onboardingCompleted !== complete) {
+      savedProfile.onboardingCompleted = complete;
+      await savedProfile.save();
+    }
+    return res.json(response(savedProfile, user));
   } catch (error) { return next(error); }
 };
 
@@ -131,13 +150,53 @@ exports.updateMyProfile = async (req, res, next) => {
     if (typeof req.body.name === "string" && req.body.name.trim()) userUpdates.name = req.body.name.trim();
     if (typeof req.body.email === "string" && req.body.email.trim()) userUpdates.email = req.body.email.trim().toLowerCase();
     if (Object.keys(userUpdates).length) await User.findByIdAndUpdate(req.auth.id, { $set: userUpdates }, { runValidators: true });
-    const githubUsername = safeUsername(req.body.github, "github");
-    const leetcodeUsername = safeUsername(req.body.leetcode, "leetcode");
-    const profile = await Profile.findOneAndUpdate(
+    const existing = await Profile.findOne({ userId: req.auth.id });
+    const optionalText = (value) => typeof value === "string" && value.trim() ? value.trim() : null;
+    const githubUsername = req.body.github ? safeUsername(req.body.github, "github") : null;
+    const leetcodeUsername = req.body.leetcode ? safeUsername(req.body.leetcode, "leetcode") : null;
+    if (req.body.github && !githubUsername) return res.status(400).json({ message: "Enter a valid GitHub username or profile URL.", source: "github" });
+    if (req.body.leetcode && !leetcodeUsername) return res.status(400).json({ message: "Enter a valid LeetCode username or profile URL.", source: "leetcode" });
+    const normalizeSkills = (skills) => {
+      if (!Array.isArray(skills)) return [];
+      const unique = new Map();
+      for (const skill of skills) {
+        const item = typeof skill === "string" ? { name: skill } : skill;
+        const name = optionalText(item?.name);
+        if (!name) continue;
+        const key = name.toLocaleLowerCase();
+        if (!unique.has(key)) unique.set(key, { name, score: Number.isFinite(Number(item.score)) ? Number(item.score) : 0, source: item.source || "manual" });
+      }
+      return [...unique.values()];
+    };
+    const set = {
+      college: optionalText(req.body.college), branch: optionalText(req.body.branch), graduationYear: req.body.graduationYear === "" || req.body.graduationYear == null ? null : Number(req.body.graduationYear),
+      bio: optionalText(req.body.bio), targetRole: optionalText(req.body.targetRole), targetCompany: optionalText(req.body.targetCompany),
+      githubUrl: optionalText(req.body.github), githubUsername, leetcodeUrl: optionalText(req.body.leetcode), leetcodeUsername, linkedinUrl: optionalText(req.body.linkedin),
+      avatarUrl: optionalText(req.body.avatar), coverUrl: optionalText(req.body.cover), projects: req.body.projects === "" || req.body.projects == null ? null : Number(req.body.projects), cgpa: req.body.cgpa === "" || req.body.cgpa == null ? null : Number(req.body.cgpa),
+      skills: normalizeSkills(req.body.skills),
+    };
+    const githubChanged = (existing?.githubUsername || null) !== githubUsername;
+    const leetcodeChanged = (existing?.leetcodeUsername || null) !== leetcodeUsername;
+    if (githubChanged) set.githubStats = null;
+    if (leetcodeChanged) set.leetcodeStats = null;
+    if (githubChanged || leetcodeChanged) {
+      const activityCalendar = (existing?.activityCalendar || []).map((day) => ({
+        date: day.date,
+        github: githubChanged ? 0 : Number(day.github) || 0,
+        leetcode: leetcodeChanged ? 0 : Number(day.leetcode) || 0,
+      })).map((day) => ({ ...day, total: day.github + day.leetcode })).filter((day) => day.total > 0);
+      Object.assign(set, { activityCalendar, ...calculateStreaks(activityCalendar) });
+    }
+    let profile = await Profile.findOneAndUpdate(
       { userId: req.auth.id },
-      { $set: { college: req.body.college, branch: req.body.branch, graduationYear: req.body.graduationYear, bio: req.body.bio, targetCompany: req.body.targetCompany, githubUrl: req.body.github, ...(githubUsername && { githubUsername }), leetcodeUrl: req.body.leetcode, ...(leetcodeUsername && { leetcodeUsername }), linkedinUrl: req.body.linkedin, avatarUrl: req.body.avatar, coverUrl: req.body.cover, projects: req.body.projects, cgpa: req.body.cgpa, skills: req.body.skills } },
+      { $set: set },
       { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
     );
+    const complete = isProfileComplete(profile);
+    if (profile.onboardingCompleted !== complete) {
+      profile.onboardingCompleted = complete;
+      await profile.save();
+    }
     const user = await User.findById(req.auth.id);
     return res.json(response(profile, user));
   } catch (error) { return next(error); }
@@ -180,7 +239,7 @@ exports.syncPublicProfiles = async (req, res, next) => {
     const leetcodeActivity = leetcodeFresh?.activity || (sameLeetcode ? extractStoredActivity(existing, "leetcode") : []);
     const activityCalendar = mergeActivity(githubActivity, leetcodeActivity);
     const streaks = calculateStreaks(activityCalendar);
-    const skills = buildRatedSkills(githubStats, leetcodeStats);
+    const skills = buildRatedSkills(githubStats, leetcodeStats, existing.skills);
     const githubForStorage = githubStats ? { ...githubStats, activity: undefined } : null;
     const leetcodeForStorage = leetcodeStats ? { ...leetcodeStats, activity: undefined } : null;
 

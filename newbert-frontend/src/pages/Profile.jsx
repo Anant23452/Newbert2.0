@@ -1,13 +1,9 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getSavedJobs } from "../utils/jobApplications";
-import API, { AUTH_TOKEN_KEY } from "../Services/api";
-
-const companies = {
-  "TCS Digital": ["JavaScript", "React", "DSA", "SQL"],
-  "Infosys SP": ["Java", "SQL", "DSA", "Spring Boot"],
-  "Wipro Elite": ["React", "DSA", "SQL", "Git"],
-};
+import API from "../Services/api";
+import useAuth from "../hook/useAuth";
+import { BRANCH_OPTIONS, TARGET_ROLE_OPTIONS, getSkillSuggestions, normalizeSkillName } from "../data/profileOptions";
 
 // Build a complete year from authenticated, server-synced activity records.
 function buildYearlyActivity(year, activityCalendar) {
@@ -126,29 +122,30 @@ const HEATMAP_LEVELS = {
 };
 
 export default function Profile() {
-  const [profile, setProfile] = useState(() => JSON.parse(localStorage.getItem("newbert-profile") || "null"));
-  const [profileLoading, setProfileLoading] = useState(() => Boolean(localStorage.getItem(AUTH_TOKEN_KEY)));
-  const [profileError, setProfileError] = useState("");
-  const [editing, setEditing] = useState(!profile?.github);
+  const { profile, loading: profileLoading, error: profileError, saveProfile, logout } = useAuth();
+  const [editing, setEditing] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [savedJobs] = useState(getSavedJobs);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!localStorage.getItem(AUTH_TOKEN_KEY)) { setProfileLoading(false); return undefined; }
-    const controller = new AbortController();
-    API.get("/profiles/me", { signal: controller.signal }).then(({ data }) => {
-      localStorage.setItem("newbert-profile", JSON.stringify(data));
-      setProfile(data);
-      window.dispatchEvent(new Event("newbert-profile-updated"));
-    }).catch((error) => { if (error.code !== "ERR_CANCELED") setProfileError(error.response?.data?.message || "Unable to load your profile."); }).finally(() => setProfileLoading(false));
-    return () => controller.abort();
-  }, []);
+    if (profileLoading || !profile) return;
+    if (!profile.onboardingCompleted) {
+      setEditing(true);
+      if (location.pathname !== "/complete-profile") navigate("/complete-profile", { replace: true });
+    } else if (location.pathname === "/complete-profile") {
+      setEditing(false);
+      navigate("/profile", { replace: true });
+    }
+  }, [profileLoading, profile, location.pathname, navigate]);
 
   const save = async (next) => {
-    const { data } = await API.put("/profiles/me", next);
-    localStorage.setItem("newbert-profile", JSON.stringify(data));
-    setProfile(data);
-    window.dispatchEvent(new Event("newbert-profile-updated"));
+    const saved = await saveProfile(next);
+    if (saved.onboardingCompleted) {
+      setEditing(false);
+      navigate("/profile", { replace: true });
+    }
   };
 
   if (profileLoading) return <ProfileLoading />;
@@ -157,15 +154,13 @@ export default function Profile() {
     return (
       <ProfileSetup
         profile={profile}
-        onSave={(next) => {
-          save(next).then(() => setEditing(false));
-        }}
+        onSave={save}
         syncing={syncing}
         setSyncing={setSyncing}
       />
     );
 
-  return <ProfileDashboard profile={profile} savedJobs={savedJobs} onEdit={() => setEditing(true)} />;
+  return <ProfileDashboard profile={profile} savedJobs={savedJobs} onEdit={() => setEditing(true)} onLogout={() => { logout(); navigate("/", { replace: true }); }} />;
 }
 
 function ProfileLoading() { return <main className="profile-page min-h-screen px-5 py-12"><div className="mx-auto max-w-6xl animate-pulse space-y-5"><div className="h-44 rounded-2xl bg-slate-200/70"/><div className="grid gap-6 lg:grid-cols-2"><div className="h-80 rounded-2xl bg-slate-200/70"/><div className="h-80 rounded-2xl bg-slate-200/70"/></div></div></main>; }
@@ -191,13 +186,21 @@ function GuestProfile({ error }) {
 function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
   const syncControllerRef = useRef(null);
   const [syncErrors, setSyncErrors] = useState(profile.syncErrors || {});
+  const [saveError, setSaveError] = useState("");
+  const knownBranch = BRANCH_OPTIONS.slice(0, -1).includes(profile.branch);
+  const [branchChoice, setBranchChoice] = useState(knownBranch ? profile.branch : profile.branch ? "Other" : "");
+  const [customBranch, setCustomBranch] = useState(knownBranch ? "" : profile.branch || "");
+  const knownTarget = TARGET_ROLE_OPTIONS.slice(0, -1).includes(profile.targetRole);
+  const [targetChoice, setTargetChoice] = useState(knownTarget ? profile.targetRole : profile.targetRole ? "Other" : "");
+  const [customTarget, setCustomTarget] = useState(knownTarget ? "" : profile.targetRole || "");
   const [form, setForm] = useState({
     name: profile.name || "",
     email: profile.email || "",
     college: profile.college || "",
     branch: profile.branch || "",
-    graduationYear: profile.graduationYear || "2026",
-    targetCompany: profile.targetCompany || "TCS Digital",
+    graduationYear: profile.graduationYear || "",
+    targetRole: profile.targetRole || "",
+    targetCompany: profile.targetCompany || "",
     bio: profile.bio || "",
     github: profile.github || "",
     leetcode: profile.leetcode || "",
@@ -212,6 +215,11 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
   useEffect(() => () => syncControllerRef.current?.abort(), []);
 
   const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
+  const save = async () => {
+    setSaveError("");
+    try { await onSave(form); }
+    catch (error) { setSaveError(error.response?.data?.message || "Unable to save your profile. Please try again."); }
+  };
   const syncProfiles = async () => {
     syncControllerRef.current?.abort();
     const controller = new AbortController();
@@ -228,12 +236,12 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
       if (error.code !== "ERR_CANCELED") setSyncErrors({ [error.response?.data?.source || "general"]: error.response?.data?.message || "Could not sync your public profiles." });
     } finally { if (syncControllerRef.current === controller) setSyncing(false); }
   };
-  const canSave = form.name.trim() && form.college.trim();
+  const canSave = Boolean(form.name.trim() && form.college.trim() && form.branch.trim());
 
   return (
     <main className="profile-page min-h-screen px-5 py-12 md:py-16">
       <div className="mx-auto max-w-4xl">
-        <p className="eyebrow text-orange-600 font-extrabold uppercase tracking-widest text-xs">Complete your profile</p>
+        <p className="eyebrow text-orange-600 font-extrabold uppercase tracking-widest text-xs">{profile.onboardingCompleted ? "Edit your profile" : "Complete your profile"}</p>
         <h1 className="mt-3 text-3xl font-extrabold text-slate-950 md:text-4xl">
           Hi, {form.name || "student"}. Let’s make your preparation visible.
         </h1>
@@ -243,33 +251,40 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
           <div className="grid gap-5 md:grid-cols-2">
             <Field label="Full name" value={form.name} onChange={(v) => update("name", v)} />
             <Field label="Email" value={form.email} onChange={(v) => update("email", v)} type="email" />
-            <Field label="College" value={form.college} onChange={(v) => update("college", v)} placeholder="Example: AKTU Lucknow" />
-            <Field label="Branch" value={form.branch} onChange={(v) => update("branch", v)} placeholder="Example: Information Technology" />
-            <Field label="Graduation year" value={form.graduationYear} onChange={(v) => update("graduationYear", v)} placeholder="2026" />
-            <Field label="Completed projects" value={form.projects} onChange={(v) => update("projects", v)} placeholder="Example: 3" type="number" />
-            <Field label="CGPA" value={form.cgpa} onChange={(v) => update("cgpa", v)} placeholder="Example: 8.2" type="number" />
-            <label className="text-sm font-bold text-slate-800">
-              Target company
-              <select value={form.targetCompany} onChange={(e) => update("targetCompany", e.target.value)} className="control mt-2 w-full rounded-md border border-slate-300 p-2 text-sm text-slate-900 focus:border-orange-500 focus:outline-none">
-                {Object.keys(companies).map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
+            <Field label="College *" value={form.college} onChange={(v) => update("college", v)} placeholder="Example: AKTU Lucknow" />
+            <label className="text-sm font-bold text-slate-800">Branch *
+              <select value={branchChoice} onChange={(event) => { const value = event.target.value; setBranchChoice(value); update("branch", value === "Other" ? customBranch : value); }} className="control mt-2 w-full rounded-md border border-slate-300 p-2 text-sm text-slate-900 focus:border-orange-500 focus:outline-none">
+                <option value="">Select your branch</option>
+                {BRANCH_OPTIONS.map((branch) => <option key={branch} value={branch}>{branch}</option>)}
               </select>
             </label>
+            {branchChoice === "Other" && <Field label="Your branch *" value={customBranch} onChange={(value) => { setCustomBranch(value); update("branch", value); }} placeholder="Type your branch" />}
+            <Field label="Graduation year (optional)" value={form.graduationYear} onChange={(v) => update("graduationYear", v)} placeholder="2027" type="number" />
+            <Field label="Completed projects" value={form.projects} onChange={(v) => update("projects", v)} placeholder="Example: 3" type="number" />
+            <Field label="CGPA" value={form.cgpa} onChange={(v) => update("cgpa", v)} placeholder="Example: 8.2" type="number" />
+            <label className="text-sm font-bold text-slate-800">Career target (optional)
+              <select value={targetChoice} onChange={(event) => { const value = event.target.value; setTargetChoice(value); update("targetRole", value === "Other" ? customTarget : value); }} className="control mt-2 w-full rounded-md border border-slate-300 p-2 text-sm text-slate-900 focus:border-orange-500 focus:outline-none">
+                <option value="">Choose a career target</option>
+                {TARGET_ROLE_OPTIONS.map((role) => <option key={role} value={role}>{role}</option>)}
+              </select>
+            </label>
+            {targetChoice === "Other" && <Field label="Your career target" value={customTarget} onChange={(value) => { setCustomTarget(value); update("targetRole", value); }} placeholder="Example: Product Design" />}
+            <Field label="Target company (optional)" value={form.targetCompany} onChange={(v) => update("targetCompany", v)} placeholder="Example: Siemens" />
             <label className="text-sm font-bold text-slate-800 md:col-span-2">
               Short bio
               <textarea value={form.bio} onChange={(e) => update("bio", e.target.value)} className="control mt-2 min-h-24 w-full rounded-md border border-slate-300 p-2 text-sm text-slate-900 focus:border-orange-500 focus:outline-none" placeholder="Target role, strongest project, and what you are currently learning..." />
             </label>
           </div>
+          <SkillInput skills={form.skills} branch={form.branch} targetRole={form.targetRole} onChange={(skills) => update("skills", skills)} />
         </section>
 
         <section className="surface mt-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm font-extrabold text-slate-950">Connect your public profile links</p>
-          <p className="mt-1 text-sm text-slate-600">Newbert reads the public activity for these accounts when you sync and stores the verified result on your profile.</p>
+          <p className="text-sm font-extrabold text-slate-950">Connect public profiles <span className="font-semibold text-slate-500">(optional)</span></p>
+          <p className="mt-1 text-sm text-slate-600">Skip this section if you do not use these platforms. Newbert only calls an external service after you provide its username and choose sync.</p>
           <div className="mt-5 grid gap-5 md:grid-cols-2">
-            <Field label="GitHub link" value={form.github} onChange={(v) => update("github", v)} placeholder="https://github.com/username" />
-            <Field label="LeetCode link or username" value={form.leetcode} onChange={(v) => update("leetcode", v)} placeholder="https://leetcode.com/u/username" />
-            <Field label="LinkedIn link" value={form.linkedin} onChange={(v) => update("linkedin", v)} placeholder="https://linkedin.com/in/username" />
+            <Field label="GitHub username or link (optional)" value={form.github} onChange={(v) => update("github", v)} placeholder="https://github.com/username" />
+            <Field label="LeetCode username or link (optional)" value={form.leetcode} onChange={(v) => update("leetcode", v)} placeholder="https://leetcode.com/u/username" />
+            <Field label="LinkedIn profile (optional)" value={form.linkedin} onChange={(v) => update("linkedin", v)} placeholder="https://linkedin.com/in/username" />
             <Field label="Profile image URL" value={form.avatar} onChange={(v) => update("avatar", v)} placeholder="Optional image URL" />
             <Field label="Cover image URL" value={form.cover} onChange={(v) => update("cover", v)} placeholder="Optional cover image URL" />
           </div>
@@ -277,31 +292,55 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
             <button onClick={syncProfiles} disabled={(!form.github && !form.leetcode) || syncing} className={`rounded-lg px-4 py-2.5 text-sm font-extrabold shadow-sm transition ${(form.github || form.leetcode) && !syncing ? "bg-orange-500 text-white hover:bg-orange-600" : "bg-slate-100 text-slate-400"}`}>
               {syncing ? "Syncing GitHub and LeetCode..." : "Sync public profiles"}
             </button>
-            {form.skills.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {form.skills.map((skill) => (
-                  <span key={skill.name || skill} className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">
-                    {skill.name || skill}
-                  </span>
-                ))}
-              </div>
-            )}
+            <span className="text-xs font-semibold text-slate-500">No account is required to finish your profile.</span>
           </div>
           {syncing && <div className="mt-4 grid gap-2 text-xs font-semibold text-slate-600 sm:grid-cols-2">{form.github && <p className="rounded-lg bg-slate-100 px-3 py-2">Syncing GitHub activity...</p>}{form.leetcode && <p className="rounded-lg bg-slate-100 px-3 py-2">Syncing LeetCode profile...</p>}</div>}
           {(syncErrors.github || syncErrors.leetcode || syncErrors.general) && <div className="mt-4 space-y-2">{syncErrors.github && <SyncMessage label="GitHub" message={syncErrors.github}/>} {syncErrors.leetcode && <SyncMessage label="LeetCode" message={syncErrors.leetcode}/>} {syncErrors.general && <SyncMessage label="Sync" message={syncErrors.general}/>}</div>}
         </section>
 
-        <button onClick={() => onSave(form)} disabled={!canSave} className={`mt-6 w-full rounded-lg px-5 py-3 text-sm font-extrabold text-white shadow-md transition sm:w-auto ${canSave ? "bg-orange-500 hover:bg-orange-600" : "bg-slate-300 text-slate-500 cursor-not-allowed"}`}>
-          Open my placement dashboard
-        </button>
+        {saveError && <p className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{saveError}</p>}
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <button onClick={save} disabled={!canSave} className={`w-full rounded-lg px-5 py-3 text-sm font-extrabold text-white shadow-md transition sm:w-auto ${canSave ? "bg-orange-500 hover:bg-orange-600" : "bg-slate-300 text-slate-500 cursor-not-allowed"}`}>{profile.onboardingCompleted ? "Save profile" : "Open my placement dashboard"}</button>
+          {!form.github && !form.leetcode && !form.linkedin && <button onClick={save} disabled={!canSave} className="text-sm font-extrabold text-orange-700 disabled:text-slate-400">Skip account connections for now →</button>}
+        </div>
       </div>
     </main>
   );
 }
 
-function ProfileDashboard({ profile, savedJobs, onEdit }) {
+function SkillInput({ skills, branch, targetRole, onChange }) {
+  const [query, setQuery] = useState("");
+  const skillNames = skills.map((skill) => skill.name || skill);
+  const existing = new Set(skillNames.map((name) => String(name).trim().toLowerCase()));
+  const suggestions = getSkillSuggestions(branch, targetRole)
+    .filter((name) => !existing.has(name.toLowerCase()) && (!query.trim() || name.toLowerCase().includes(query.trim().toLowerCase())))
+    .slice(0, 8);
+
+  const add = (value) => {
+    const name = normalizeSkillName(value);
+    if (!name || existing.has(name.toLowerCase())) { setQuery(""); return; }
+    onChange([...skills, { name, score: 0, source: "manual" }]);
+    setQuery("");
+  };
+  const remove = (name) => onChange(skills.filter((skill) => (skill.name || skill).toLowerCase() !== name.toLowerCase()));
+
+  return (
+    <div className="mt-6 border-t border-slate-100 pt-5">
+      <p className="text-sm font-extrabold text-slate-950">Your skills <span className="font-semibold text-slate-500">(optional)</span></p>
+      <p className="mt-1 text-xs leading-5 text-slate-500">Search suggestions or type any custom academic, technical, design, or career skill.</p>
+      {skillNames.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{skillNames.map((name) => <span key={name} className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-extrabold text-orange-950">{name}<button type="button" onClick={() => remove(name)} aria-label={`Remove ${name}`} className="text-orange-500 hover:text-red-600">×</button></span>)}</div>}
+      <div className="mt-3 flex gap-2">
+        <input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === ",") { event.preventDefault(); add(query); } }} className="control min-w-0 flex-1 rounded-md border border-slate-300 p-2 text-sm text-slate-900 focus:border-orange-500 focus:outline-none" placeholder="Type a skill and press Enter" />
+        <button type="button" onClick={() => add(query)} disabled={!query.trim()} className="rounded-md bg-slate-900 px-4 py-2 text-sm font-extrabold text-white disabled:bg-slate-300">Add</button>
+      </div>
+      {suggestions.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{suggestions.map((name) => <button key={name} type="button" onClick={() => add(name)} className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-700 hover:border-orange-300 hover:text-orange-700">+ {name}</button>)}</div>}
+    </div>
+  );
+}
+
+function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
   const skills = (profile.skills || []).map((skill) => skill.name || skill);
-  const ratedSkills = (profile.skills || []).map((skill) => ({ name: skill.name || skill, score: skill.score ?? 0 }));
+  const ratedSkills = (profile.skills || []).map((skill) => ({ name: skill.name || skill, score: skill.score ?? 0 })).filter((skill) => skill.score > 0);
   const [seniorMatch, setSeniorMatch] = useState({ loading: true, match: null, reason: "", error: "" });
 
   useEffect(() => {
@@ -337,11 +376,11 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
                   <p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Career pulse · {profile.branch || "AKTU student"}</p>
                   <h1 className="mt-1 text-2xl font-extrabold text-slate-950">{profile.name}</h1>
                   <p className="mt-1 text-sm font-medium text-slate-600">
-                    {profile.college} · Class of {profile.graduationYear}
+                    {profile.college}{profile.graduationYear ? ` · Class of ${profile.graduationYear}` : ""}{profile.targetRole ? ` · ${profile.targetRole}` : ""}
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2"><button onClick={onEdit} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:border-orange-500 hover:text-orange-600">Edit profile</button><button onClick={() => { localStorage.removeItem(AUTH_TOKEN_KEY); localStorage.removeItem("newbert-profile"); window.location.assign("/"); }} className="rounded-lg border border-red-200 px-4 py-2 text-sm font-extrabold text-red-700 transition hover:border-red-500">Log out</button></div>
+              <div className="flex gap-2"><button onClick={onEdit} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:border-orange-500 hover:text-orange-600">Edit profile</button><button onClick={onLogout} className="rounded-lg border border-red-200 px-4 py-2 text-sm font-extrabold text-red-700 transition hover:border-red-500">Log out</button></div>
             </div>
             {profile.bio && <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">{profile.bio}</p>}
             <div className="mt-4 flex flex-wrap gap-2">
@@ -349,7 +388,12 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
               {profile.leetcodeStats && <span className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">✓ LeetCode synced</span>}
               {profile.linkedin && <span className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">✓ LinkedIn connected</span>}
             </div>
-            {(profile.githubStats || profile.leetcodeStats) && <div className="mt-5 grid gap-3 sm:grid-cols-2"><AccountStat title="GitHub" value={profile.githubStats ? `${profile.githubStats.publicRepos} public repos` : "Not synced"} detail={profile.githubStats ? `@${profile.githubStats.username} · ${profile.githubStats.followers} followers · ${profile.githubStats.languages?.join(", ") || "No languages"}` : ""}/><AccountStat title="LeetCode" value={profile.leetcodeStats ? `${profile.leetcodeStats.totalSolved} problems solved` : "Not synced"} detail={profile.leetcodeStats ? `@${profile.leetcodeStats.username} · Easy ${profile.leetcodeStats.easySolved} · Medium ${profile.leetcodeStats.mediumSolved} · Hard ${profile.leetcodeStats.hardSolved}` : ""}/></div>}
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <ConnectionCard platform="GitHub" connection={profile.connections?.github} username={profile.githubUsername} stats={profile.githubStats ? `${profile.githubStats.publicRepos} public repos` : ""} onEdit={onEdit} />
+              <ConnectionCard platform="LeetCode" connection={profile.connections?.leetcode} username={profile.leetcodeUsername} stats={profile.leetcodeStats ? `${profile.leetcodeStats.totalSolved} solved` : ""} onEdit={onEdit} />
+              <ConnectionCard platform="LinkedIn" connection={profile.connections?.linkedin} username="" stats={profile.linkedin ? "Profile added" : ""} onEdit={onEdit} />
+            </div>
+            <p className="mt-4 text-xs font-bold text-slate-500">Profile strength: <span className="text-orange-700">{profile.profileStrength ?? 0}%</span> · Optional accounts improve strength but never block access.</p>
           </div>
         </section>
 
@@ -400,7 +444,10 @@ function ProfileDashboard({ profile, savedJobs, onEdit }) {
   );
 }
 
-function AccountStat({ title, value, detail }) { return <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-extrabold uppercase tracking-wider text-orange-600">{title}</p><p className="mt-1 font-extrabold text-slate-950">{value}</p>{detail && <p className="mt-1 text-xs text-slate-600">{detail}</p>}</div>; }
+function ConnectionCard({ platform, connection, username, stats, onEdit }) {
+  if (!connection?.connected) return <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-extrabold uppercase tracking-wider text-slate-500">{platform}</p><p className="mt-1 text-sm font-extrabold text-slate-900">Not connected</p><button onClick={onEdit} className="mt-2 text-xs font-extrabold text-orange-700">Add profile →</button></div>;
+  return <div className={`rounded-lg border p-3 ${connection.error ? "border-amber-200 bg-amber-50" : "border-emerald-200 bg-emerald-50"}`}><p className="text-xs font-extrabold uppercase tracking-wider text-slate-600">{platform}</p><p className="mt-1 text-sm font-extrabold text-slate-950">{username ? `@${username}` : "Connected"}</p><p className="mt-1 text-xs font-semibold text-slate-600">{connection.error || stats || (connection.synced ? "Connected" : "Saved · sync optional")}</p>{connection.error && <button onClick={onEdit} className="mt-2 text-xs font-extrabold text-orange-700">Check profile →</button>}</div>;
+}
 
 function SyncMessage({ label, message }) { return <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900"><strong>{label}:</strong> {message}</p>; }
 

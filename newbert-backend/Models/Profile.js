@@ -12,10 +12,11 @@ const profileSchema = new mongoose.Schema({
   branch: { type: String, trim: true, maxlength: 80 },
   graduationYear: { type: Number, min: 2020, max: 2040 },
   bio: { type: String, trim: true, maxlength: 600 },
+  targetRole: { type: String, trim: true, maxlength: 120, default: null },
   targetCompany: { type: String, trim: true, maxlength: 120 },
-  githubUrl: { type: String, trim: true }, githubUsername: { type: String, trim: true },
-  leetcodeUrl: { type: String, trim: true }, leetcodeUsername: { type: String, trim: true },
-  linkedinUrl: { type: String, trim: true },
+  githubUrl: { type: String, trim: true, default: null }, githubUsername: { type: String, trim: true, default: null },
+  leetcodeUrl: { type: String, trim: true, default: null }, leetcodeUsername: { type: String, trim: true, default: null },
+  linkedinUrl: { type: String, trim: true, default: null },
   avatarUrl: { type: String, trim: true }, coverUrl: { type: String, trim: true },
   projects: { type: Number, min: 0 }, cgpa: { type: Number, min: 0, max: 10 },
   skills: { type: [skillSchema], default: [] },
@@ -25,6 +26,7 @@ const profileSchema = new mongoose.Schema({
   syncErrors: { type: mongoose.Schema.Types.Mixed, default: null },
   lastSyncedAt: Date,
   currentStreak: { type: Number, default: 0, min: 0 }, longestStreak: { type: Number, default: 0, min: 0 },
+  onboardingCompleted: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Profile", profileSchema);

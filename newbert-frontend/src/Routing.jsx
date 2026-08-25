@@ -19,6 +19,7 @@ function Routing() {
         <Route path="/alumni-wall" element={<AllumniWall/> }/>
         <Route path="/alumni-wall/:alumniId" element={<AlumniProfile/> }/>
         <Route path="/profile" element={<Profile/> }/>
+        <Route path="/complete-profile" element={<Profile/> }/>
         <Route path="/roadmap" element={<Roadmap/> }/>
         < Route path="/jobs" element={<Jobs/> }/>
         < Route path="/leaderboard" element={<LeaderBoard/> }/>
