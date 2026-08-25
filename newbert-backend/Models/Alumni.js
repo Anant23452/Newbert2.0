@@ -10,6 +10,11 @@ const alumniSchema = new mongoose.Schema({
   package: { type: Number, min: 0 },
   gateAIR: { type: Number, min: 1 },
   skills: { type: [String], default: [] },
+  dsaSolved: { type: Number, min: 0 },
+  projects: { type: Number, min: 0 },
+  githubPublicRepos: { type: Number, min: 0 },
+  cgpa: { type: Number, min: 0, max: 10 },
+  avatarUrl: { type: String, trim: true },
   journey: { type: String, trim: true, maxlength: 5000 },
   verified: { type: Boolean, default: false },
 }, { timestamps: true });
