@@ -18,7 +18,7 @@ AI-powered Placement Intelligence Platform for Tier-2 & Tier-3 Students
 
 <p align="center">
 
-<a href="https://agent-6a54c2f7b683a600c--lucent-bubblegum-3fb5b2.netlify.app/">
+<a href="https://newbert.netlify.app/">
 <img src="https://img.shields.io/badge/🌍 Live Demo-orange?style=for-the-badge">
 </a>
 
