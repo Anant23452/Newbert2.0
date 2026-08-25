@@ -37,7 +37,10 @@ router.post("/google", async (req, res, next) => {
     else if (!user.googleId) { user.googleId = google.sub; if (!user.avatarUrl && google.picture) user.avatarUrl = google.picture; await user.save(); }
     await ensureProfile(user, google.picture);
     return res.json({ token: createToken(user), user: publicUser(user) });
-  } catch (error) { return next(error); }
+  } catch (error) {
+    if (error.message?.toLowerCase().includes("token") || error.message?.toLowerCase().includes("audience")) return res.status(401).json({ message: "Google credential verification failed. Check that GOOGLE_CLIENT_ID in Render exactly matches VITE_GOOGLE_CLIENT_ID in Netlify." });
+    return next(error);
+  }
 });
 
 router.post("/login", async (req, res, next) => {
