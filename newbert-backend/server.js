@@ -35,6 +35,7 @@ app.use("/api/profiles", require("./routes/profileRoutes"));
 app.use("/api/jobs", require("./routes/jobRoutes"));
 app.use("/api/alumni", require("./routes/alumniRoutes"));
 app.use("/api/plans", require("./routes/planRoutes"));
+app.use("/api/ai", require("./routes/aiRoutes"));
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 app.use((error, req, res, next) => { console.error(error); res.status(error.status || 500).json({ message: error.status ? error.message : "Something went wrong on the server." }); });
 

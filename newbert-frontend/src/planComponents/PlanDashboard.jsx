@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const statusTone = { Ready: "bg-emerald-100 text-emerald-800", "Needs Improvement": "bg-amber-100 text-amber-900", Missing: "bg-red-100 text-red-800", Optional: "bg-slate-100 text-slate-700" };
 
-export default function PlanDashboard({ plan, busyTask, recalculating, onTaskToggle, onChangeGoal, onRecalculate }) {
+export default function PlanDashboard({ plan, busyTask, recalculating, aiExplanation, aiLoading, aiError, onExplainPlan, onTaskToggle, onChangeGoal, onRecalculate }) {
   const activeTasks = plan.tasks.filter((task) => !task.archived);
   const weekTasks = activeTasks.filter((task) => task.scheduledWeek === plan.currentWeek);
   const fallbackTasks = activeTasks.filter((task) => !task.completed).slice(0, 5);
@@ -16,12 +16,17 @@ export default function PlanDashboard({ plan, busyTask, recalculating, onTaskTog
     {plan.recalculated && <p className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-200">Your plan was recalculated from meaningful profile or verified-activity changes. Completed work was preserved.</p>}
     <header className="overflow-hidden rounded-2xl border border-white/10 bg-[#172033]"><div className="grid gap-7 p-6 md:grid-cols-[1.3fr_.7fr] md:p-9"><div><p className="text-xs font-extrabold uppercase tracking-[.22em] text-orange-400">Build my plan</p><p className="mt-5 text-sm font-extrabold uppercase tracking-wider text-slate-400">{plan.target.company || plan.target.type.replaceAll("-", " ")}</p><h1 className="mt-2 text-3xl font-black md:text-5xl">{plan.target.role}</h1><div className="mt-6 flex flex-wrap gap-x-7 gap-y-3 text-sm text-slate-300"><span><strong className="text-white">Target:</strong> {deadline}</span><span><strong className="text-white">Available:</strong> {plan.target.weeklyHours} hours/week</span><span><strong className="text-white">Estimate:</strong> {plan.timeline.minWeeks}–{plan.timeline.maxWeeks} weeks</span></div><p className="mt-4 text-xs leading-5 text-slate-400">{plan.timeline.disclaimer}</p></div><div className="rounded-2xl border border-orange-400/25 bg-orange-400/10 p-6"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-300">Current readiness</p><p className="mt-3 text-6xl font-black text-white">{plan.readiness.total}%</p><p className="mt-3 text-xs leading-5 text-slate-300">Based on current skills and available verified benchmark data—not task checkboxes.</p></div></div><div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 bg-black/10 px-6 py-4 md:px-9"><p className="text-sm font-semibold text-slate-300">Measure → Compare → Plan → Act → Track</p><div className="flex gap-2"><button onClick={onRecalculate} disabled={recalculating} className="rounded-lg border border-white/15 px-3 py-2 text-xs font-extrabold text-slate-200 disabled:opacity-50">{recalculating ? "Recalculating…" : "Recalculate"}</button><button onClick={onChangeGoal} className="rounded-lg bg-orange-500 px-3 py-2 text-xs font-extrabold text-slate-950">Change goal</button></div></div></header>
 
+    <AIInsight explanation={aiExplanation} loading={aiLoading} error={aiError} onExplain={onExplainPlan}/>
     <section className="grid gap-6 lg:grid-cols-[.85fr_1.15fr]"><SeniorMatch match={plan.seniorMatch}/><ReadinessBreakdown readiness={plan.readiness} profileSnapshot={plan.profileSnapshot}/></section>
     <GapAnalysis gaps={plan.gaps}/>
     <Timeline phases={plan.phases} currentPhase={plan.currentPhase}/>
     <section className="grid gap-6 lg:grid-cols-2"><TaskSection eyebrow={`Week ${plan.currentWeek}`} title="This week's priorities" tasks={shownWeekTasks} busyTask={busyTask} onToggle={onTaskToggle}/><TaskSection eyebrow="Today" title="Today's tasks" tasks={shownTodayTasks} busyTask={busyTask} onToggle={onTaskToggle}/></section>
     <Progress plan={plan}/>
   </div></main>;
+}
+
+function AIInsight({ explanation, loading, error, onExplain }) {
+  return <section className="rounded-2xl border border-violet-400/25 bg-gradient-to-br from-violet-400/10 to-[#172033] p-6 md:p-8"><div className="flex flex-wrap items-start justify-between gap-5"><div className="max-w-2xl"><p className="text-xs font-extrabold uppercase tracking-widest text-violet-300">Newbert AI insight</p><h2 className="mt-2 text-2xl font-black">Understand your plan</h2><p className="mt-2 text-sm leading-6 text-slate-300">Gemini explains your saved plan and deterministic readiness signals. It does not calculate or replace your scores.</p></div><button type="button" onClick={onExplain} disabled={loading} className="rounded-lg bg-violet-300 px-4 py-2.5 text-sm font-extrabold text-slate-950 transition hover:bg-violet-200 disabled:cursor-not-allowed disabled:opacity-60">{loading ? "Newbert AI is analyzing your plan…" : explanation ? "Refresh explanation" : "✨ Explain My Plan"}</button></div>{error && <p className="mt-5 rounded-lg border border-red-300/30 bg-red-400/10 px-4 py-3 text-sm font-semibold text-red-200">{error} Your roadmap and readiness data are still available.</p>}{explanation && <div className="mt-6 whitespace-pre-wrap rounded-xl border border-white/10 bg-black/15 p-5 text-sm leading-7 text-slate-200">{explanation}</div>}</section>;
 }
 
 function SeniorMatch({ match }) {

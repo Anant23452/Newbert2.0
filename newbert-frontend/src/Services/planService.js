@@ -19,3 +19,8 @@ export async function setPlanTaskCompleted(taskId, completed) {
   const { data } = await API.patch(`/plans/tasks/${taskId}`, { completed });
   return data.plan;
 }
+
+export async function getPlanExplanation() {
+  const { data } = await API.post("/ai/plan-explanation");
+  return data.explanation;
+}
