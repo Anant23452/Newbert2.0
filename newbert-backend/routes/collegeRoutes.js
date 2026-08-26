@@ -1,3 +1,3 @@
-const router = require("express").Router(); const { searchColleges } = require("../data/aktuColleges");
-router.get("/search", (req, res) => res.json({ colleges: searchColleges(req.query.q).map(({ id, name, shortName, university, city }) => ({ id, name, shortName, university, city })) }));
+const router = require("express").Router(); const requireAuth = require("../middleWare/authMiddleware"); const { list, search, requestCollege } = require("../Controllers/collegeController");
+router.get("/", list); router.get("/search", search); router.post("/request", requireAuth, requestCollege);
 module.exports = router;

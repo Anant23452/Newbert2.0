@@ -1,6 +1,6 @@
 const Profile = require("../Models/Profile");
 const User = require("../Models/User");
-const { matchCollege } = require("../data/aktuColleges");
+const { resolveProfileCollege } = require("./collegeService");
 
 const SCORE_FORMULA = Object.freeze({ leetcodeLifetimeCap: 500, leetcodeLifetimePoints: 400, githubLifetimeCap: 1000, githubLifetimePoints: 250, streakCap: 60, streakPoints: 150, leetcodeTodayCap: 10, leetcodeTodayPoints: 100, githubTodayCap: 20, githubTodayPoints: 100 });
 function indiaDate(offset = 0) { const date = new Date(Date.now() + offset * 86400000); const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date); const value = Object.fromEntries(parts.map((part) => [part.type, part.value])); return `${value.year}-${value.month}-${value.day}`; }
@@ -11,20 +11,16 @@ function buildLeaderboardEntry(profile, user) { const current = activity(profile
 function ranked(entries, metric, userId, search) { const all = entries.slice().sort((a, b) => metric(b) - metric(a) || b.overallScore - a.overallScore || a.name.localeCompare(b.name)).map((entry, index) => ({ ...entry, rank: index + 1 })); const current = all.find((entry) => entry.userId === String(userId)) || null; const users = search ? all.filter((entry) => `${entry.name} ${entry.branch}`.toLowerCase().includes(search.toLowerCase())) : all; return { currentUser: current, users }; }
 async function normalizeKnownColleges() {
   const legacy = await Profile.find({ $or: [{ collegeId: null }, { collegeId: { $exists: false } }], college: { $type: "string", $ne: "" } }).select("college").lean();
-  const operations = legacy.map((profile) => ({ profile, college: matchCollege(profile.college) })).filter(({ college }) => college).map(({ profile, college }) => ({ updateOne: { filter: { _id: profile._id, $or: [{ collegeId: null }, { collegeId: { $exists: false } }] }, update: { $set: { collegeId: college.id, collegeName: college.name, college: college.name } } } }));
-  if (operations.length) await Profile.bulkWrite(operations);
+  await Promise.all(legacy.map((profile) => resolveProfileCollege(profile, { persist: true })));
 }
 async function getLeaderboard({ userId, scope, search }) {
   await normalizeKnownColleges();
   let mine = await Profile.findOne({ userId }).lean();
-  if (mine && !mine.collegeId) {
-    const canonical = matchCollege(mine.college);
-    if (canonical) {
-      await Profile.updateOne({ _id: mine._id, collegeId: null }, { $set: { collegeId: canonical.id, collegeName: canonical.name, college: canonical.name } });
-      mine = { ...mine, collegeId: canonical.id, collegeName: canonical.name, college: canonical.name };
-    }
+  const canonical = await resolveProfileCollege(mine, { persist: true });
+  if (canonical) {
+    mine = { ...mine, collegeId: canonical.collegeId, collegeName: canonical.name, college: canonical.name };
   }
-  const resolvedCollege = mine?.collegeId ? { id: mine.collegeId, name: mine.collegeName || mine.college } : null;
+  const resolvedCollege = canonical ? { id: canonical.collegeId, collegeId: canonical.collegeId, name: canonical.name, shortName: canonical.shortName || "" } : null;
   if (scope === "college" && !resolvedCollege) return { scope, needsCollege: true, resolvedCollege: null, college: null, overall: { currentUser: null, top: [] }, streak: { currentUser: null, users: [] }, leetcode: { currentUser: null, users: [] }, github: { currentUser: null, users: [] } };
   const query = { ...(scope === "college" ? { collegeId: resolvedCollege.id } : {}) };
   const profiles = await Profile.find(query).lean();

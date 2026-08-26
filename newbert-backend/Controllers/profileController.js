@@ -6,7 +6,8 @@ const { getGithubActivity } = require("../services/githubService");
 const { getLeetcodeStats } = require("../services/leetcodeService");
 const { findBestSeniorMatch } = require("../services/seniorMatchService");
 const { isProfileComplete, profileStrength } = require("../services/profileCompletionService");
-const { getCollege, matchCollege } = require("../data/aktuColleges");
+const College = require("../Models/College");
+const { findCollegeByText, resolveProfileCollege } = require("../services/collegeService");
 
 const INVALID_LEETCODE_USERNAMES = new Set(["u", "profile"]);
 const kolkataDay = () => { const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date()); const value = Object.fromEntries(parts.map((part) => [part.type, part.value])); return `${value.year}-${value.month}-${value.day}`; };
@@ -150,6 +151,8 @@ exports.getMyProfile = async (req, res, next) => {
     const [user, profile] = await Promise.all([User.findById(req.auth.id), Profile.findOne({ userId: req.auth.id })]);
     if (!user) return res.status(404).json({ message: "User not found." });
     const savedProfile = profile || await Profile.create({ userId: user._id, avatarUrl: user.avatarUrl || "" });
+    const resolvedCollege = await resolveProfileCollege(savedProfile.toObject(), { persist: true });
+    if (resolvedCollege) { savedProfile.collegeId = resolvedCollege.collegeId; savedProfile.collegeName = resolvedCollege.name; savedProfile.college = resolvedCollege.name; }
     const complete = isProfileComplete(savedProfile);
     if (savedProfile.onboardingCompleted !== complete) {
       savedProfile.onboardingCompleted = complete;
@@ -183,9 +186,11 @@ exports.updateMyProfile = async (req, res, next) => {
       }
       return [...unique.values()];
     };
-    const canonicalCollege = getCollege(optionalText(req.body.collegeId)) || matchCollege(req.body.collegeName || req.body.college);
+    const requestedCollegeId = optionalText(req.body.collegeId);
+    const canonicalCollege = requestedCollegeId ? await College.findOne({ collegeId: requestedCollegeId.toLowerCase(), active: true }).lean() : await findCollegeByText(req.body.collegeName || req.body.college);
+    if (requestedCollegeId && !canonicalCollege) return res.status(400).json({ message: "Invalid college selection." });
     const set = {
-      college: canonicalCollege?.name || optionalText(req.body.college), collegeId: canonicalCollege?.id || null, collegeName: canonicalCollege?.name || optionalText(req.body.collegeName) || optionalText(req.body.college), branch: optionalText(req.body.branch), graduationYear: req.body.graduationYear === "" || req.body.graduationYear == null ? null : Number(req.body.graduationYear),
+      college: canonicalCollege?.name || optionalText(req.body.college), collegeId: canonicalCollege?.collegeId || null, collegeName: canonicalCollege?.name || optionalText(req.body.college), branch: optionalText(req.body.branch), graduationYear: req.body.graduationYear === "" || req.body.graduationYear == null ? null : Number(req.body.graduationYear),
       bio: optionalText(req.body.bio), targetRole: optionalText(req.body.targetRole), targetCompany: optionalText(req.body.targetCompany),
       githubUrl: optionalText(req.body.github), githubUsername, leetcodeUrl: optionalText(req.body.leetcode), leetcodeUsername, linkedinUrl: optionalText(req.body.linkedin),
       avatarUrl: optionalText(req.body.avatar), coverUrl: optionalText(req.body.cover), projects: req.body.projects === "" || req.body.projects == null ? null : Number(req.body.projects), cgpa: req.body.cgpa === "" || req.body.cgpa == null ? null : Number(req.body.cgpa),
