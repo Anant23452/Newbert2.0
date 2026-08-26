@@ -1,0 +1,1 @@
+const express = require("express"); const requireAuth = require("../middleWare/authMiddleware"); const { list } = require("../Controllers/leaderboardController"); const router = express.Router(); router.use(requireAuth); router.get("/", list); module.exports = router;

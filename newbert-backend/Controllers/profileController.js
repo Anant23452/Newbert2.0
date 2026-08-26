@@ -9,7 +9,6 @@ const { isProfileComplete, profileStrength } = require("../services/profileCompl
 
 const INVALID_LEETCODE_USERNAMES = new Set(["u", "profile"]);
 const kolkataDay = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
-const activityToday = (items) => Array.isArray(items) ? items.filter((item) => item.date === kolkataDay()).reduce((sum, item) => sum + (Number(item.count) || 0), 0) : null;
 
 function normalizeLeetcodeStats(stats) {
   if (!stats || INVALID_LEETCODE_USERNAMES.has(String(stats.username || "").toLowerCase())) return null;
@@ -27,7 +26,8 @@ exports.getPublicProfile = async (req, res, next) => {
     const [profile, user] = await Promise.all([Profile.findOne({ userId: req.params.userId }).lean(), User.findById(req.params.userId).select("name avatarUrl").lean()]);
     if (!profile || !user) return res.status(404).json({ message: "Profile not found." });
     const skills = (profile.skills || []).map((skill) => skill.name || skill).filter(Boolean);
-    res.json({ userId: String(user._id), name: user.name, avatar: profile.avatarUrl || user.avatarUrl || "", college: { id: profile.collegeId || null, name: profile.collegeName || profile.college || "" }, branch: profile.branch || "", graduationYear: profile.graduationYear || null, skills, projects: profile.projects ?? null, careerGoal: profile.targetRole || null, leetcode: profile.leetcodeStats ? { connected: Boolean(profile.leetcodeUsername), totalSolved: Number(profile.leetcodeStats.totalSolved) || 0, today: activityToday(profile.leetcodeStats.activity) } : { connected: false }, github: profile.githubStats ? { connected: Boolean(profile.githubUsername), today: activityToday(profile.githubStats.activity) } : { connected: false }, leaderboard: { streakDays: Number(profile.currentStreak) || 0, lastSyncedAt: profile.lastSyncedAt || null } });
+    const today = (profile.activityCalendar || []).find((day) => day.date === kolkataDay());
+    res.json({ userId: String(user._id), name: user.name, avatar: profile.avatarUrl || user.avatarUrl || "", college: { id: profile.collegeId || null, name: profile.collegeName || profile.college || "" }, branch: profile.branch || "", graduationYear: profile.graduationYear || null, skills, projects: profile.projects ?? null, careerGoal: profile.targetRole || null, leetcode: profile.leetcodeStats ? { connected: Boolean(profile.leetcodeUsername), totalSolved: Number(profile.leetcodeStats.totalSolved) || 0, today: Number(today?.leetcode) || 0, todayLabel: "submissions today" } : { connected: false }, github: profile.githubStats ? { connected: Boolean(profile.githubUsername), today: Number(today?.github) || 0 } : { connected: false }, leaderboard: { streakDays: Number(profile.currentStreak) || 0, lastSyncedAt: profile.lastSyncedAt || null } });
   } catch (error) { next(error); }
 };
 
@@ -78,9 +78,12 @@ function response(profile, user) {
   const activityCalendar = sanitizedActivity(profile, leetcodeStats);
   const streaks = calculateStreaks(activityCalendar);
   return {
+    userId: String(user._id),
     name: user.name,
     email: user.email,
     college: profile.college || "",
+    collegeId: profile.collegeId || null,
+    collegeName: profile.collegeName || profile.college || "",
     branch: profile.branch || "",
     graduationYear: profile.graduationYear || "",
     bio: profile.bio || "",
