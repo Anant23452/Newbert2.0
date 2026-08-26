@@ -1,5 +1,5 @@
 const Job = require("../Models/Job");
-const SavedJob = require("../models/SavedJob");
+const SavedJob = require("../Models/SavedJob");
 const Profile = require("../Models/Profile");
 const Plan = require("../Models/Plan");
 const Alumni = require("../Models/Alumni");
