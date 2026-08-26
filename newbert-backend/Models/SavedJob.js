@@ -8,3 +8,4 @@ const savedJobSchema = new mongoose.Schema({
 
 savedJobSchema.index({ userId: 1, jobId: 1 }, { unique: true });
 module.exports = mongoose.model("SavedJob", savedJobSchema);
+// /add save job 

@@ -22,6 +22,7 @@ function activeQuery(query = {}) {
   return filters;
 }
 function serializeJob(job) { const value = job.toObject ? job.toObject() : job; return { ...value, application: value.application || { officialUrl: value.applyUrl, deadline: value.deadline || null }, verification: value.verification || { status: "pending", sourceType: "unknown", lastCheckedAt: null } }; }
+function validHttpUrl(value) { try { return ["http:", "https:"].includes(new URL(value).protocol); } catch { return false; } }
 
 exports.listJobs = async (req, res, next) => {
   try {

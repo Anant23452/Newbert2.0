@@ -8,7 +8,7 @@ const requireAuth = require("../middleWare/authMiddleware");
 const Profile = require("../Models/Profile");
 const { isProfileComplete } = require("../services/profileCompletionService");
 
-function publicUser(user) { return { id: user._id, name: user.name, email: user.email, avatar: user.avatarUrl || "" }; }
+function publicUser(user) { const admins = (process.env.ADMIN_EMAILS || "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean); return { id: user._id, name: user.name, email: user.email, avatar: user.avatarUrl || "", isAdmin: admins.includes(String(user.email || "").toLowerCase()) }; }
 function createToken(user) { return jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" }); }
 async function ensureProfile(user, avatarUrl) {
   return Profile.findOneAndUpdate({ userId: user._id }, { $setOnInsert: { avatarUrl: avatarUrl || user.avatarUrl || "" } }, { upsert: true, new: true, setDefaultsOnInsert: true });
