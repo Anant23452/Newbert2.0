@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js"
+    ,"seed:courses": "node scripts/seedCourses.js"
   },
   "dependencies": {
     "@google/genai": "^2.18.0",

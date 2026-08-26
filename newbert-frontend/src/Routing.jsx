@@ -12,6 +12,8 @@ import Notes, { BranchNotes } from './pages/Notes';
 import AlumniProfile from './pages/AlumniProfile';
 import AdminJobs from './pages/AdminJobs';
 import PublicProfile from './pages/PublicProfile';
+import CourseDetail from './pages/CourseDetail';
+import AdminCourses from './pages/AdminCourses';
 
 
 function Routing() {
@@ -26,9 +28,11 @@ function Routing() {
         <Route path="/roadmap" element={<Roadmap/> }/>
         < Route path="/jobs" element={<Jobs/> }/>
         <Route path="/admin/jobs" element={<AdminJobs/> }/>
+        <Route path="/admin/courses" element={<AdminCourses/>}/>
         < Route path="/leaderboard" element={<LeaderBoard/> }/>
         < Route path="/resume-ai" element={<ResumeAi/> }/>
         < Route path="/courses" element={<Courses/> }/>
+        <Route path="/courses/:courseId" element={<CourseDetail/>}/>
         < Route path="/notes" element={<Notes/> }/>
         < Route path="/notes/:branchId" element={<BranchNotes/> }/>
         <Route path="*" element={<NotFound/>}/>
