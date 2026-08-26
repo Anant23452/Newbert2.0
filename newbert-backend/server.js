@@ -33,6 +33,7 @@ app.use(express.json());
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/profiles", require("./routes/profileRoutes"));
 app.use("/api/jobs", require("./routes/jobRoutes"));
+app.use("/api/admin", require("./routes/adminJobRoutes"));
 app.use("/api/alumni", require("./routes/alumniRoutes"));
 app.use("/api/plans", require("./routes/planRoutes"));
 app.use("/api/ai", require("./routes/aiRoutes"));

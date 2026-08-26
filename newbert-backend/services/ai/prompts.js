@@ -77,6 +77,10 @@ function buildCurrentStageAnalysisPrompt({ profile, target, selfAssessment }) {
   return `You are Newbert AI. Extract only what the student explicitly states from the supplied facts. Respect the selected goal: software placement, GATE, core placement, internship, data/AI, government/PSU, or custom. Do not invent completion, scores, companies, experience, or dates. Return valid JSON only with this exact shape: {"completed":[],"inProgress":[],"strengths":[],"weakAreas":[],"notStarted":[],"blockers":[],"target":[]}. Use concise topic names.\n\nFacts:\n${JSON.stringify(facts)}`;
 }
 
+function buildJobDescriptionPrompt({ title, company, description }) {
+  return `Extract only explicitly stated job requirements from this job description. Return valid JSON only: {"requiredSkills":[],"preferredSkills":[],"csFundamentals":[],"minimumCgpa":null,"allowedBranches":[],"graduationYears":[],"experienceLevel":"unspecified","responsibilities":[]}. Never infer a skill, CGPA, branch, year, or experience level that is not stated.\n\nTitle: ${title}\nCompany: ${company}\nDescription:\n${description}`;
+}
+
 function buildFeaturePrompt(feature, facts, specificRules) {
   return `You are Newbert AI preparing ${feature}. Use only the supplied server facts. Never invent personal data, scores, evidence, outcomes, or guarantees. Clearly label suggestions as suggestions. ${specificRules}\n\nServer facts:\n${JSON.stringify(facts || {})}`;
 }
@@ -103,6 +107,7 @@ module.exports = {
   buildJobMatchExplanationPrompt,
   buildPlanExplanationPrompt,
   buildCurrentStageAnalysisPrompt,
+  buildJobDescriptionPrompt,
   buildResumeImprovementPrompt,
   buildSeniorMatchExplanationPrompt,
   buildTestPrompt,
