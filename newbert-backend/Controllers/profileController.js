@@ -6,9 +6,10 @@ const { getGithubActivity } = require("../services/githubService");
 const { getLeetcodeStats } = require("../services/leetcodeService");
 const { findBestSeniorMatch } = require("../services/seniorMatchService");
 const { isProfileComplete, profileStrength } = require("../services/profileCompletionService");
+const { getCollege, matchCollege } = require("../data/aktuColleges");
 
 const INVALID_LEETCODE_USERNAMES = new Set(["u", "profile"]);
-const kolkataDay = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+const kolkataDay = () => { const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date()); const value = Object.fromEntries(parts.map((part) => [part.type, part.value])); return `${value.year}-${value.month}-${value.day}`; };
 
 function normalizeLeetcodeStats(stats) {
   if (!stats || INVALID_LEETCODE_USERNAMES.has(String(stats.username || "").toLowerCase())) return null;
@@ -53,13 +54,13 @@ function calculateStreaks(activity) {
     longestStreak = Math.max(longestStreak, running);
     previous = current;
   }
-  const cursor = new Date();
-  cursor.setUTCHours(0, 0, 0, 0);
-  if (!activeDates.has(cursor.toISOString().slice(0, 10))) cursor.setUTCDate(cursor.getUTCDate() - 1);
+  const previousDay = (value) => { const date = new Date(`${value}T00:00:00Z`); date.setUTCDate(date.getUTCDate() - 1); return date.toISOString().slice(0, 10); };
+  let cursor = kolkataDay();
+  if (!activeDates.has(cursor)) cursor = previousDay(cursor);
   let currentStreak = 0;
-  while (activeDates.has(cursor.toISOString().slice(0, 10))) {
+  while (activeDates.has(cursor)) {
     currentStreak += 1;
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
+    cursor = previousDay(cursor);
   }
   return { currentStreak, longestStreak };
 }
@@ -182,8 +183,9 @@ exports.updateMyProfile = async (req, res, next) => {
       }
       return [...unique.values()];
     };
+    const canonicalCollege = getCollege(optionalText(req.body.collegeId)) || matchCollege(req.body.collegeName || req.body.college);
     const set = {
-      college: optionalText(req.body.college), collegeId: optionalText(req.body.collegeId), collegeName: optionalText(req.body.collegeName) || optionalText(req.body.college), branch: optionalText(req.body.branch), graduationYear: req.body.graduationYear === "" || req.body.graduationYear == null ? null : Number(req.body.graduationYear),
+      college: canonicalCollege?.name || optionalText(req.body.college), collegeId: canonicalCollege?.id || null, collegeName: canonicalCollege?.name || optionalText(req.body.collegeName) || optionalText(req.body.college), branch: optionalText(req.body.branch), graduationYear: req.body.graduationYear === "" || req.body.graduationYear == null ? null : Number(req.body.graduationYear),
       bio: optionalText(req.body.bio), targetRole: optionalText(req.body.targetRole), targetCompany: optionalText(req.body.targetCompany),
       githubUrl: optionalText(req.body.github), githubUsername, leetcodeUrl: optionalText(req.body.leetcode), leetcodeUsername, linkedinUrl: optionalText(req.body.linkedin),
       avatarUrl: optionalText(req.body.avatar), coverUrl: optionalText(req.body.cover), projects: req.body.projects === "" || req.body.projects == null ? null : Number(req.body.projects), cgpa: req.body.cgpa === "" || req.body.cgpa == null ? null : Number(req.body.cgpa),
@@ -219,6 +221,8 @@ exports.updateMyProfile = async (req, res, next) => {
 exports.syncPublicProfiles = async (req, res, next) => {
   try {
     const existing = await Profile.findOne({ userId: req.auth.id }) || new Profile({ userId: req.auth.id });
+    const isRefreshOnly = !req.body.githubUsername && !req.body.github && !req.body.leetcodeUsername && !req.body.leetcode;
+    if (isRefreshOnly && existing.lastSyncedAt && Date.now() - new Date(existing.lastSyncedAt).getTime() < 120000) return res.status(429).json({ message: "Your stats were refreshed recently. Try again in a couple of minutes." });
     const githubInput = req.body.githubUsername || req.body.github || existing.githubUsername || existing.githubUrl;
     const leetcodeInput = req.body.leetcodeUsername || req.body.leetcode || existing.leetcodeUsername || existing.leetcodeUrl;
     let githubUsername = "";

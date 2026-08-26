@@ -183,6 +183,12 @@ function GuestProfile({ error }) {
   );
 }
 
+function CollegeField({ form, update }) {
+  const [suggestions, setSuggestions] = useState([]);
+  useEffect(() => { let active = true; const query = form.college.trim(); if (query.length < 2) { setSuggestions([]); return undefined; } const timer = setTimeout(() => API.get("/colleges/search", { params: { q: query } }).then(({ data }) => { if (active) setSuggestions(data.colleges || []); }).catch(() => { if (active) setSuggestions([]); }), 180); return () => { active = false; clearTimeout(timer); }; }, [form.college]);
+  return <label className="relative text-sm font-bold text-slate-800">College *<input value={form.college} onChange={(event) => { update("college", event.target.value); update("collegeId", ""); update("collegeName", ""); }} placeholder="Type your AKTU college" className="control mt-2 w-full rounded-md border border-slate-300 p-2 text-sm text-slate-900 focus:border-orange-500 focus:outline-none"/>{suggestions.length ? <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-slate-200 bg-white shadow-xl">{suggestions.map((college) => <button type="button" key={college.id} onClick={() => { update("college", college.name); update("collegeName", college.name); update("collegeId", college.id); setSuggestions([]); }} className="block w-full border-b border-slate-100 px-3 py-2 text-left hover:bg-orange-50"><span className="block text-sm font-bold text-slate-900">{college.name}</span><span className="text-xs text-slate-500">{college.university} · {college.city}</span></button>)}</div> : null}</label>;
+}
+
 function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
   const syncControllerRef = useRef(null);
   const [syncErrors, setSyncErrors] = useState(profile.syncErrors || {});
@@ -197,6 +203,8 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
     name: profile.name || "",
     email: profile.email || "",
     college: profile.college || "",
+    collegeId: profile.collegeId || "",
+    collegeName: profile.collegeName || profile.college || "",
     branch: profile.branch || "",
     graduationYear: profile.graduationYear || "",
     targetRole: profile.targetRole || "",
@@ -251,7 +259,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
           <div className="grid gap-5 md:grid-cols-2">
             <Field label="Full name" value={form.name} onChange={(v) => update("name", v)} />
             <Field label="Email" value={form.email} onChange={(v) => update("email", v)} type="email" />
-            <Field label="College *" value={form.college} onChange={(v) => update("college", v)} placeholder="Example: AKTU Lucknow" />
+            <CollegeField form={form} update={update}/>
             <label className="text-sm font-bold text-slate-800">Branch *
               <select value={branchChoice} onChange={(event) => { const value = event.target.value; setBranchChoice(value); update("branch", value === "Other" ? customBranch : value); }} className="control mt-2 w-full rounded-md border border-slate-300 p-2 text-sm text-slate-900 focus:border-orange-500 focus:outline-none">
                 <option value="">Select your branch</option>
