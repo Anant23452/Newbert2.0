@@ -1,3 +1,4 @@
+const { calculateSimilarity, findClosestSeniors } = require("./alumniMatchingService");
 const SKILL_ALIASES = new Map([
   ["js", "javascript"], ["javascript", "javascript"],
   ["node", "nodejs"], ["nodejs", "nodejs"], ["node.js", "nodejs"],
@@ -13,6 +14,13 @@ function normalizeSkill(value) {
 }
 
 function calculateSeniorMatch(student, senior, target = {}) {
+  const goal = target.type === "gate" ? "gate" : target.type === "government-psu" ? "psu" : target.type === "core-placement" ? "core" : target.type === "data-ai" ? "data" : target.type === "internship" ? "internship" : "placement";
+  const upgraded = calculateSimilarity(student, senior, { target, goal });
+  if (upgraded.overallScore != null) {
+    const closest = findClosestSeniors(student, [senior], 1, { target, goal });
+    const details = closest[0] || {};
+    return { score: upgraded.overallScore, overallScore: upgraded.overallScore, label: upgraded.label, breakdown: upgraded.breakdown, matchedSkills: details.matchedSkills || [], missingSkills: (details.missingSkills || []).map((item) => item.skill), comparison: details ? { studentDsa: student.leetcodeStats?.totalSolved ?? null, seniorDsa: senior.dsa?.solved ?? senior.dsaSolved ?? null, studentProjects: student.projects ?? null, seniorProjects: senior.projects ?? null, studentGithubRepos: student.githubStats?.publicRepos ?? null, seniorGithubRepos: senior.github?.repositories ?? senior.githubPublicRepos ?? null, studentCgpa: student.cgpa ?? null, seniorCgpa: senior.cgpa ?? null } : {}, senior: { id: String(senior._id), name: senior.name, college: senior.college, company: senior.placement?.company || senior.company, role: senior.placement?.role || senior.role, package: senior.placement?.packageLpa ?? senior.package ?? null, avatar: senior.avatarUrl || "" } };
+  }
   const studentSkills = new Map((student.skills || []).map((skill) => [normalizeSkill(skill.name || skill), skill.name || skill]));
   const seniorSkills = new Map((senior.skills || []).map((skill) => [normalizeSkill(skill), skill]));
   const matchedSkills = [...seniorSkills].filter(([key]) => studentSkills.has(key)).map(([, label]) => label);
