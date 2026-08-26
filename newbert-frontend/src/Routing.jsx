@@ -10,6 +10,7 @@ import Home from './pages/Home';
 import Courses from './pages/Courses';
 import Notes, { BranchNotes } from './pages/Notes';
 import AlumniProfile from './pages/AlumniProfile';
+import AdminJobs from './pages/AdminJobs';
 
 
 function Routing() {
@@ -22,6 +23,7 @@ function Routing() {
         <Route path="/complete-profile" element={<Profile/> }/>
         <Route path="/roadmap" element={<Roadmap/> }/>
         < Route path="/jobs" element={<Jobs/> }/>
+        <Route path="/admin/jobs" element={<AdminJobs/> }/>
         < Route path="/leaderboard" element={<LeaderBoard/> }/>
         < Route path="/resume-ai" element={<ResumeAi/> }/>
         < Route path="/courses" element={<Courses/> }/>

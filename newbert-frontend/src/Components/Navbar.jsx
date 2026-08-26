@@ -43,6 +43,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
             <span>{theme === 'day' ? 'Night' : 'Day'}</span>
           </button>
           {identity ? <button onClick={() => navigate(profile?.onboardingCompleted ? "/profile" : "/complete-profile")} className="grid h-9 w-9 overflow-hidden rounded-full border-2 border-teal-700 bg-teal-50 text-xs font-extrabold text-teal-800" aria-label="Open my profile">{identity.avatar ? <img src={identity.avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : identity.name?.slice(0, 1).toUpperCase()}</button> : <button disabled={loading} onClick={onSignIn} className="text-sm font-semibold text-slate-700 hover:text-slate-950 disabled:opacity-50">{loading ? "Loading…" : "Sign in"}</button>}
+          {user?.isAdmin && <button onClick={() => navigate("/admin/jobs")} className="text-xs font-extrabold text-orange-700 hover:text-orange-900">Admin Jobs</button>}
           <button onClick={() => navigate("/roadmap")} className="hidden rounded-md bg-teal-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-teal-800 lg:inline-flex">Build my plan</button>
         </div>
 
@@ -54,6 +55,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
         <div className="mx-auto flex max-w-6xl flex-col gap-1">
           {links.map((link) => <NavLink key={link.to} onClick={() => setOpen(false)} to={link.to} className="rounded-md px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">{link.label}</NavLink>)}
           {identity ? <button onClick={() => { setOpen(false); navigate(profile?.onboardingCompleted ? "/profile" : "/complete-profile"); }} className="mt-2 rounded-md border border-teal-700 px-3 py-2 text-left text-sm font-bold text-teal-700 md:hidden">My profile</button> : <button disabled={loading} onClick={() => { setOpen(false); onSignIn(); }} className="mt-2 rounded-md border border-orange-400 px-3 py-2 text-left text-sm font-bold text-orange-700 md:hidden">{loading ? "Loading…" : "Sign in"}</button>}
+          {user?.isAdmin && <button onClick={() => { setOpen(false); navigate("/admin/jobs"); }} className="rounded-md border border-orange-400 px-3 py-2 text-left text-sm font-bold text-orange-700">Admin Jobs</button>}
           <button onClick={onThemeToggle} className="theme-toggle mt-2 justify-center md:hidden" aria-label={`Switch to ${theme === 'day' ? 'night' : 'day'} theme`}><span aria-hidden="true" className="theme-toggle-icon">{theme === 'day' ? 'Moon' : 'Sun'}</span><span>{theme === 'day' ? 'Night mode' : 'Day mode'}</span></button>
           <button onClick={() => { setOpen(false); navigate("/roadmap"); }} className="mt-2 rounded-md bg-teal-700 px-3 py-2 text-left text-sm font-bold text-white">Build my plan</button>
         </div>
