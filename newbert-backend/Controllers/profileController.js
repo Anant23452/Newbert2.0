@@ -8,6 +8,8 @@ const { findBestSeniorMatch } = require("../services/seniorMatchService");
 const { isProfileComplete, profileStrength } = require("../services/profileCompletionService");
 
 const INVALID_LEETCODE_USERNAMES = new Set(["u", "profile"]);
+const kolkataDay = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+const activityToday = (items) => Array.isArray(items) ? items.filter((item) => item.date === kolkataDay()).reduce((sum, item) => sum + (Number(item.count) || 0), 0) : null;
 
 function normalizeLeetcodeStats(stats) {
   if (!stats || INVALID_LEETCODE_USERNAMES.has(String(stats.username || "").toLowerCase())) return null;
@@ -19,6 +21,15 @@ function normalizeLeetcodeStats(stats) {
     hardSolved: stats.hardSolved ?? stats.hard ?? 0,
   };
 }
+
+exports.getPublicProfile = async (req, res, next) => {
+  try {
+    const [profile, user] = await Promise.all([Profile.findOne({ userId: req.params.userId }).lean(), User.findById(req.params.userId).select("name avatarUrl").lean()]);
+    if (!profile || !user) return res.status(404).json({ message: "Profile not found." });
+    const skills = (profile.skills || []).map((skill) => skill.name || skill).filter(Boolean);
+    res.json({ userId: String(user._id), name: user.name, avatar: profile.avatarUrl || user.avatarUrl || "", college: { id: profile.collegeId || null, name: profile.collegeName || profile.college || "" }, branch: profile.branch || "", graduationYear: profile.graduationYear || null, skills, projects: profile.projects ?? null, careerGoal: profile.targetRole || null, leetcode: profile.leetcodeStats ? { connected: Boolean(profile.leetcodeUsername), totalSolved: Number(profile.leetcodeStats.totalSolved) || 0, today: activityToday(profile.leetcodeStats.activity) } : { connected: false }, github: profile.githubStats ? { connected: Boolean(profile.githubUsername), today: activityToday(profile.githubStats.activity) } : { connected: false }, leaderboard: { streakDays: Number(profile.currentStreak) || 0, lastSyncedAt: profile.lastSyncedAt || null } });
+  } catch (error) { next(error); }
+};
 
 function mergeActivity(githubActivity = [], leetcodeActivity = []) {
   const days = new Map();
@@ -169,7 +180,7 @@ exports.updateMyProfile = async (req, res, next) => {
       return [...unique.values()];
     };
     const set = {
-      college: optionalText(req.body.college), branch: optionalText(req.body.branch), graduationYear: req.body.graduationYear === "" || req.body.graduationYear == null ? null : Number(req.body.graduationYear),
+      college: optionalText(req.body.college), collegeId: optionalText(req.body.collegeId), collegeName: optionalText(req.body.collegeName) || optionalText(req.body.college), branch: optionalText(req.body.branch), graduationYear: req.body.graduationYear === "" || req.body.graduationYear == null ? null : Number(req.body.graduationYear),
       bio: optionalText(req.body.bio), targetRole: optionalText(req.body.targetRole), targetCompany: optionalText(req.body.targetCompany),
       githubUrl: optionalText(req.body.github), githubUsername, leetcodeUrl: optionalText(req.body.leetcode), leetcodeUsername, linkedinUrl: optionalText(req.body.linkedin),
       avatarUrl: optionalText(req.body.avatar), coverUrl: optionalText(req.body.cover), projects: req.body.projects === "" || req.body.projects == null ? null : Number(req.body.projects), cgpa: req.body.cgpa === "" || req.body.cgpa == null ? null : Number(req.body.cgpa),

@@ -11,6 +11,7 @@ import Courses from './pages/Courses';
 import Notes, { BranchNotes } from './pages/Notes';
 import AlumniProfile from './pages/AlumniProfile';
 import AdminJobs from './pages/AdminJobs';
+import PublicProfile from './pages/PublicProfile';
 
 
 function Routing() {
@@ -20,6 +21,7 @@ function Routing() {
         <Route path="/alumni-wall" element={<AllumniWall/> }/>
         <Route path="/alumni-wall/:alumniId" element={<AlumniProfile/> }/>
         <Route path="/profile" element={<Profile/> }/>
+        <Route path="/profile/:userId" element={<PublicProfile/> }/>
         <Route path="/complete-profile" element={<Profile/> }/>
         <Route path="/roadmap" element={<Roadmap/> }/>
         < Route path="/jobs" element={<Jobs/> }/>

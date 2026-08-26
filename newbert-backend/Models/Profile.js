@@ -9,6 +9,8 @@ const skillSchema = new mongoose.Schema({
 const profileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true },
   college: { type: String, trim: true, maxlength: 120 },
+  collegeId: { type: String, trim: true, index: true, default: null },
+  collegeName: { type: String, trim: true, maxlength: 160, default: null },
   branch: { type: String, trim: true, maxlength: 80 },
   graduationYear: { type: Number, min: 2020, max: 2040 },
   bio: { type: String, trim: true, maxlength: 600 },
