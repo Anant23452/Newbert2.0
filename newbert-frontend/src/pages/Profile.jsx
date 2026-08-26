@@ -123,7 +123,7 @@ const HEATMAP_LEVELS = {
 };
 
 export default function Profile() {
-  const { profile, loading: profileLoading, error: profileError, saveProfile, refreshProfile, logout } = useAuth();
+  const { profile, loading: profileLoading, error: profileError, saveProfile, logout } = useAuth();
   const [editing, setEditing] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [savedJobs] = useState(getSavedJobs);
@@ -161,7 +161,7 @@ export default function Profile() {
       />
     );
 
-  return <ProfileDashboard profile={profile} savedJobs={savedJobs} onEdit={() => setEditing(true)} onPrivacySaved={refreshProfile} onLogout={() => { logout(); navigate("/", { replace: true }); }} />;
+  return <ProfileDashboard profile={profile} savedJobs={savedJobs} onEdit={() => setEditing(true)} onLogout={() => { logout(); navigate("/", { replace: true }); }} />;
 }
 
 function ProfileLoading() { return <main className="profile-page min-h-screen px-5 py-12"><div className="mx-auto max-w-6xl animate-pulse space-y-5"><div className="h-44 rounded-2xl bg-slate-200/70"/><div className="grid gap-6 lg:grid-cols-2"><div className="h-80 rounded-2xl bg-slate-200/70"/><div className="h-80 rounded-2xl bg-slate-200/70"/></div></div></main>; }
@@ -341,10 +341,29 @@ function SkillInput({ skills, branch, targetRole, onChange }) {
   );
 }
 
-function ProfileDashboard({ profile, savedJobs, onEdit, onPrivacySaved, onLogout }) {
+const DEFAULT_PROFILE_PRIVACY = { profileVisibility: "public", sections: { about: true, skills: true, projects: true, github: true, leetcode: true, achievements: true, education: true, careerGoal: true, courses: true } };
+
+function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
   const skills = (profile.skills || []).map((skill) => skill.name || skill);
   const ratedSkills = (profile.skills || []).map((skill) => ({ name: skill.name || skill, score: skill.score ?? 0 })).filter((skill) => skill.score > 0);
   const [seniorMatch, setSeniorMatch] = useState({ loading: true, match: null, closest: [], benchmark: null, reason: "", error: "" });
+  const [privacy, setPrivacy] = useState(profile.privacy || DEFAULT_PROFILE_PRIVACY);
+  const [privacyState, setPrivacyState] = useState({ saving: "", status: "" });
+
+  const updatePrivacy = async (key, value) => {
+    const previous = privacy;
+    const next = key === "profileVisibility" ? { ...privacy, profileVisibility: value } : { ...privacy, sections: { ...privacy.sections, [key]: value === "public" } };
+    setPrivacy(next);
+    setPrivacyState({ saving: key, status: "" });
+    try {
+      const { data } = await API.patch("/profiles/privacy", next);
+      setPrivacy(data.privacy);
+      setPrivacyState({ saving: "", status: "Saved" });
+    } catch {
+      setPrivacy(previous);
+      setPrivacyState({ saving: "", status: "Could not save" });
+    }
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -384,26 +403,33 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onPrivacySaved, onLogout
                   <p className="mt-1 text-sm font-medium text-slate-600">
                     {profile.college}{profile.graduationYear ? ` · Class of ${profile.graduationYear}` : ""}{profile.targetRole ? ` · ${profile.targetRole}` : ""}
                   </p>
+                  <div className="mt-3"><PrivacySelect label="Profile Visibility" value={privacy.profileVisibility} onChange={(value) => updatePrivacy("profileVisibility", value)} disabled={Boolean(privacyState.saving)}/></div>
                 </div>
               </div>
               <div className="flex gap-2"><button onClick={onEdit} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:border-orange-500 hover:text-orange-600">Edit profile</button><button onClick={onLogout} className="rounded-lg border border-red-200 px-4 py-2 text-sm font-extrabold text-red-700 transition hover:border-red-500">Log out</button></div>
             </div>
-            {profile.bio && <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600">{profile.bio}</p>}
+            <div className="mt-5 flex items-center justify-between gap-3 border-t border-slate-100 pt-4"><p className="text-sm font-extrabold text-slate-950">About</p><PrivacySelect value={privacy.sections.about ? "public" : "private"} onChange={(value) => updatePrivacy("about", value)} disabled={Boolean(privacyState.saving)}/></div>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">{profile.bio || "No bio added yet."}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {profile.githubStats && <span className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">✓ GitHub synced</span>}
               {profile.leetcodeStats && <span className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">✓ LeetCode synced</span>}
               {profile.linkedin && <span className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-950">✓ LinkedIn connected</span>}
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <ConnectionCard platform="GitHub" connection={profile.connections?.github} username={profile.githubUsername} stats={profile.githubStats ? `${profile.githubStats.publicRepos} public repos` : ""} onEdit={onEdit} />
-              <ConnectionCard platform="LeetCode" connection={profile.connections?.leetcode} username={profile.leetcodeUsername} stats={profile.leetcodeStats ? `${profile.leetcodeStats.totalSolved} solved` : ""} onEdit={onEdit} />
-              <ConnectionCard platform="LinkedIn" connection={profile.connections?.linkedin} username="" stats={profile.linkedin ? "Profile added" : ""} onEdit={onEdit} />
+              <ConnectionCard platform="GitHub" connection={profile.connections?.github} username={profile.githubUsername} stats={profile.githubStats ? `${profile.githubStats.publicRepos} public repos` : ""} onEdit={onEdit} visibility={privacy.sections.github} onVisibilityChange={(value) => updatePrivacy("github", value)} disabled={Boolean(privacyState.saving)} />
+              <ConnectionCard platform="LeetCode" connection={profile.connections?.leetcode} username={profile.leetcodeUsername} stats={profile.leetcodeStats ? `${profile.leetcodeStats.totalSolved} solved` : ""} onEdit={onEdit} visibility={privacy.sections.leetcode} onVisibilityChange={(value) => updatePrivacy("leetcode", value)} disabled={Boolean(privacyState.saving)} />
+              <ConnectionCard platform="LinkedIn" connection={profile.connections?.linkedin} username="" stats={profile.linkedin ? "Profile added" : ""} onEdit={onEdit} alwaysPrivate />
             </div>
+            {privacyState.status && <p className="mt-3 text-xs font-bold text-slate-500">Privacy: {privacyState.status}</p>}
             <p className="mt-4 text-xs font-bold text-slate-500">Profile strength: <span className="text-orange-700">{profile.profileStrength ?? 0}%</span> · Optional accounts improve strength but never block access.</p>
           </div>
         </section>
 
-        <PrivacySettings privacy={profile.privacy} onSaved={onPrivacySaved} />
+        <section className="surface grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:grid-cols-3">
+          <OwnerDetail title="Projects" value={profile.projects ?? "Not added"} visibility={privacy.sections.projects} onChange={(value) => updatePrivacy("projects", value)} disabled={Boolean(privacyState.saving)}/>
+          <OwnerDetail title="Education" value={profile.graduationYear ? `Class of ${profile.graduationYear}${profile.cgpa != null ? ` · ${profile.cgpa} CGPA` : ""}` : "Not added"} visibility={privacy.sections.education} onChange={(value) => updatePrivacy("education", value)} disabled={Boolean(privacyState.saving)}/>
+          <OwnerDetail title="Career Goal" value={profile.targetRole || "Not added"} visibility={privacy.sections.careerGoal} onChange={(value) => updatePrivacy("careerGoal", value)} disabled={Boolean(privacyState.saving)}/>
+        </section>
 
         {/* Senior match + verified activity */}
         <section className="grid gap-6 lg:grid-cols-[.8fr_1.2fr]">
@@ -422,7 +448,7 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onPrivacySaved, onLogout
                 <p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Skill signal</p>
                 <h2 className="mt-1 text-xl font-extrabold text-slate-950">Strengths you can show today</h2>
               </div>
-              <p className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Sync data</p>
+              <PrivacySelect value={privacy.sections.skills ? "public" : "private"} onChange={(value) => updatePrivacy("skills", value)} disabled={Boolean(privacyState.saving)}/>
             </div>
             <div className="mt-6 grid gap-x-7 gap-y-4 sm:grid-cols-2">
               {ratedSkills.map((skill) => (
@@ -454,43 +480,28 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onPrivacySaved, onLogout
   );
 }
 
-const PRIVACY_SECTIONS = [
-  ["about", "About"], ["skills", "Skills"], ["projects", "Projects"],
-  ["github", "GitHub"], ["leetcode", "LeetCode"], ["achievements", "Achievements"],
-  ["education", "Education"], ["careerGoal", "Career Goal"], ["courses", "Courses / Learning"],
-];
+function PrivacySelect({ label, value, onChange, disabled }) { return <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-500">{label && <span>{label}</span>}<select aria-label={label || "Section visibility"} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-extrabold capitalize text-slate-700 outline-none focus:border-orange-500 disabled:opacity-50"><option value="public">Public</option><option value="private">Private</option></select></label>; }
+function PrivateBadge() { return <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Always Private</span>; }
+function OwnerDetail({ title, value, visibility, onChange, disabled }) { return <div className="border-b border-slate-100 p-5 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0"><div className="flex items-center justify-between gap-3"><h2 className="text-sm font-extrabold text-slate-950">{title}</h2><PrivacySelect value={visibility ? "public" : "private"} onChange={onChange} disabled={disabled}/></div><p className="mt-3 text-sm font-semibold text-slate-600">{value}</p></div>; }
 
-function PrivacySettings({ privacy, onSaved }) {
-  const [form, setForm] = useState(privacy || { profileVisibility: "public", sections: Object.fromEntries(PRIVACY_SECTIONS.map(([key]) => [key, true])) });
-  const [status, setStatus] = useState("");
-  const [saving, setSaving] = useState(false);
-  useEffect(() => { if (privacy) setForm(privacy); }, [privacy]);
-  const save = async () => {
-    setSaving(true); setStatus("");
-    try { const { data } = await API.patch("/profiles/privacy", form); setForm(data.privacy); setStatus(data.message); await onSaved?.(); }
-    catch (error) { setStatus(error.response?.data?.message || "Unable to update privacy settings."); }
-    finally { setSaving(false); }
-  };
-  return <section className="surface rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Privacy</p><div className="mt-3 flex flex-wrap items-center justify-between gap-4"><div><h2 className="text-xl font-extrabold text-slate-950">Profile visibility</h2><p className="mt-1 text-sm text-slate-600">Private profiles expose only identity and leaderboard streak.</p></div><div className="flex border border-slate-200 p-1">{["public", "private"].map((value) => <button key={value} onClick={() => setForm((current) => ({ ...current, profileVisibility: value }))} className={`px-4 py-2 text-sm font-extrabold capitalize ${form.profileVisibility === value ? "bg-orange-500 text-slate-950" : "text-slate-600"}`}>{value}</button>)}</div></div><div className="mt-6"><p className="text-sm font-extrabold text-slate-950">Public sections</p><div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{PRIVACY_SECTIONS.map(([key, label]) => <button type="button" aria-pressed={Boolean(form.sections?.[key])} key={key} onClick={() => setForm((current) => ({ ...current, sections: { ...current.sections, [key]: !current.sections?.[key] } }))} className="flex items-center justify-between border border-slate-200 px-3 py-3 text-left"><span className="text-sm font-bold text-slate-800">{label}</span><span className={`h-5 w-9 rounded-full p-0.5 ${form.sections?.[key] ? "bg-orange-500" : "bg-slate-300"}`}><span className={`block h-4 w-4 rounded-full bg-white transition ${form.sections?.[key] ? "translate-x-4" : ""}`}/></span></button>)}</div></div><div className="mt-6 border-t border-slate-100 pt-5"><p className="text-sm font-extrabold text-slate-950">Always private</p><div className="mt-3 flex flex-wrap gap-2">{["Jobs and applications", "Build My Plan", "Best Senior Match", "Skill-gap analysis", "Personal AI recommendations"].map((item) => <span key={item} className="border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">{item} · Private by default</span>)}</div></div><div className="mt-5 flex items-center gap-3"><button onClick={save} disabled={saving} className="bg-orange-500 px-4 py-2.5 text-sm font-extrabold text-slate-950 disabled:opacity-50">{saving ? "Saving..." : "Save privacy"}</button>{status && <p className="text-sm font-semibold text-slate-600">{status}</p>}</div></section>;
-}
-
-function ConnectionCard({ platform, connection, username, stats, onEdit }) {
-  if (!connection?.connected) return <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-extrabold uppercase tracking-wider text-slate-500">{platform}</p><p className="mt-1 text-sm font-extrabold text-slate-900">Not connected</p><button onClick={onEdit} className="mt-2 text-xs font-extrabold text-orange-700">Add profile →</button></div>;
-  return <div className={`rounded-lg border p-3 ${connection.error ? "border-amber-200 bg-amber-50" : "border-emerald-200 bg-emerald-50"}`}><p className="text-xs font-extrabold uppercase tracking-wider text-slate-600">{platform}</p><p className="mt-1 text-sm font-extrabold text-slate-950">{username ? `@${username}` : "Connected"}</p><p className="mt-1 text-xs font-semibold text-slate-600">{connection.error || stats || (connection.synced ? "Connected" : "Saved · sync optional")}</p>{connection.error && <button onClick={onEdit} className="mt-2 text-xs font-extrabold text-orange-700">Check profile →</button>}</div>;
+function ConnectionCard({ platform, connection, username, stats, onEdit, visibility, onVisibilityChange, disabled, alwaysPrivate }) {
+  const control = alwaysPrivate ? <PrivateBadge/> : <PrivacySelect value={visibility ? "public" : "private"} onChange={onVisibilityChange} disabled={disabled}/>;
+  if (!connection?.connected) return <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><div className="flex items-center justify-between gap-2"><p className="text-xs font-extrabold uppercase tracking-wider text-slate-500">{platform}</p>{control}</div><p className="mt-1 text-sm font-extrabold text-slate-900">Not connected</p><button onClick={onEdit} className="mt-2 text-xs font-extrabold text-orange-700">Add profile →</button></div>;
+  return <div className={`rounded-lg border p-3 ${connection.error ? "border-amber-200 bg-amber-50" : "border-emerald-200 bg-emerald-50"}`}><div className="flex items-center justify-between gap-2"><p className="text-xs font-extrabold uppercase tracking-wider text-slate-600">{platform}</p>{control}</div><p className="mt-1 text-sm font-extrabold text-slate-950">{username ? `@${username}` : "Connected"}</p><p className="mt-1 text-xs font-semibold text-slate-600">{connection.error || stats || (connection.synced ? "Connected" : "Saved · sync optional")}</p>{connection.error && <button onClick={onEdit} className="mt-2 text-xs font-extrabold text-orange-700">Check profile →</button>}</div>;
 }
 
 function SyncMessage({ label, message }) { return <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900"><strong>{label}:</strong> {message}</p>; }
 
 function SeniorMatchCard({ state }) {
-  if (state.loading) return <div className="surface rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Senior match</p><div className="mt-5 animate-pulse space-y-3"><div className="h-8 w-3/4 rounded bg-slate-200"/><div className="h-4 w-1/2 rounded bg-slate-200"/><div className="h-20 rounded bg-slate-100"/><div className="h-10 rounded bg-slate-200"/></div><p className="mt-4 text-sm font-semibold text-slate-500">Finding your closest senior match...</p></div>;
-  if (!state.match) return <div className="surface flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Senior match</p><h2 className="mt-4 text-xl font-extrabold text-slate-950">No verified senior match available yet.</h2><p className="mt-3 text-sm leading-6 text-slate-600">{state.error || state.reason || "We're adding more alumni from your college."}</p><Link to="/alumni-wall" className="mt-auto pt-8 text-sm font-extrabold text-orange-600 hover:text-orange-700">Browse verified alumni →</Link></div>;
+  if (state.loading) return <div className="surface rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Senior match</p><PrivateBadge/></div><div className="mt-5 animate-pulse space-y-3"><div className="h-8 w-3/4 rounded bg-slate-200"/><div className="h-4 w-1/2 rounded bg-slate-200"/><div className="h-20 rounded bg-slate-100"/><div className="h-10 rounded bg-slate-200"/></div><p className="mt-4 text-sm font-semibold text-slate-500">Finding your closest senior match...</p></div>;
+  if (!state.match) return <div className="surface flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Senior match</p><PrivateBadge/></div><h2 className="mt-4 text-xl font-extrabold text-slate-950">No verified senior match available yet.</h2><p className="mt-3 text-sm leading-6 text-slate-600">{state.error || state.reason || "We're adding more alumni from your college."}</p><Link to="/alumni-wall" className="mt-auto pt-8 text-sm font-extrabold text-orange-600 hover:text-orange-700">Browse verified alumni →</Link></div>;
   const { score, matchedSkills, missingSkills, senior } = state.match;
-  return <div className="surface flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Closest senior to your profile</p><p className="mt-2 text-sm text-slate-600">You match <strong className="text-slate-950">{score}%</strong> with</p><h2 className="mt-1 text-2xl font-extrabold text-slate-950">{senior.name}</h2></div><span className="text-4xl font-black text-orange-500">{score}%</span></div><p className="mt-3 text-sm font-bold text-slate-700">{senior.company}{senior.package != null ? ` · ${senior.package} LPA` : ""}</p><p className="mt-1 text-xs text-slate-500">{senior.role} · Senior from {senior.college}</p><div className="mt-6"><p className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">Matched skills</p><div className="mt-2 flex flex-wrap gap-2">{matchedSkills.length ? matchedSkills.map((skill) => <span key={skill} className="rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800">✓ {skill}</span>) : <span className="text-xs text-slate-500">No shared skills yet</span>}</div></div><div className="mt-5"><p className="text-[11px] font-extrabold uppercase tracking-wider text-orange-600">Main differences</p><div className="mt-2 flex flex-wrap gap-2">{missingSkills.length ? missingSkills.map((skill) => <span key={skill} className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">+ {skill}</span>) : <span className="text-xs font-semibold text-emerald-700">All listed senior skills matched</span>}</div></div>{state.closest?.length > 1 && <div className="mt-5 border-t border-slate-100 pt-4"><p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Closest seniors</p><div className="mt-2 flex flex-wrap gap-2">{state.closest.slice(0, 3).map((item) => <Link key={item.alumni._id} to={`/alumni-wall/${item.alumni._id}`} className="rounded-md bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">{item.alumni.name.split(" ")[0]} · {item.match.overallScore}%</Link>)}</div></div>}<div className="mt-7 flex gap-3"><Link to={`/alumni-wall/${senior.id}`} className="inline-flex w-fit rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-extrabold text-[#171918] hover:bg-orange-400">View Senior</Link><Link to="/alumni-wall" className="inline-flex w-fit rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-extrabold text-slate-700">Compare journey</Link></div></div>;
+  return <div className="surface flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex items-start justify-between gap-4"><div><div className="flex items-center gap-3"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Closest senior to your profile</p><PrivateBadge/></div><p className="mt-2 text-sm text-slate-600">You match <strong className="text-slate-950">{score}%</strong> with</p><h2 className="mt-1 text-2xl font-extrabold text-slate-950">{senior.name}</h2></div><span className="text-4xl font-black text-orange-500">{score}%</span></div><p className="mt-3 text-sm font-bold text-slate-700">{senior.company}{senior.package != null ? ` · ${senior.package} LPA` : ""}</p><p className="mt-1 text-xs text-slate-500">{senior.role} · Senior from {senior.college}</p><div className="mt-6"><p className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">Matched skills</p><div className="mt-2 flex flex-wrap gap-2">{matchedSkills.length ? matchedSkills.map((skill) => <span key={skill} className="rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800">✓ {skill}</span>) : <span className="text-xs text-slate-500">No shared skills yet</span>}</div></div><div className="mt-5"><p className="text-[11px] font-extrabold uppercase tracking-wider text-orange-600">Main differences</p><div className="mt-2 flex flex-wrap gap-2">{missingSkills.length ? missingSkills.map((skill) => <span key={skill} className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">+ {skill}</span>) : <span className="text-xs font-semibold text-emerald-700">All listed senior skills matched</span>}</div></div>{state.closest?.length > 1 && <div className="mt-5 border-t border-slate-100 pt-4"><p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Closest seniors</p><div className="mt-2 flex flex-wrap gap-2">{state.closest.slice(0, 3).map((item) => <Link key={item.alumni._id} to={`/alumni-wall/${item.alumni._id}`} className="rounded-md bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">{item.alumni.name.split(" ")[0]} · {item.match.overallScore}%</Link>)}</div></div>}<div className="mt-7 flex gap-3"><Link to={`/alumni-wall/${senior.id}`} className="inline-flex w-fit rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-extrabold text-[#171918] hover:bg-orange-400">View Senior</Link><Link to="/alumni-wall" className="inline-flex w-fit rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-extrabold text-slate-700">Compare journey</Link></div></div>;
 }
 
 function PeerBenchmark({ benchmark }) {
   if (!benchmark) return null;
-  return <section className="surface rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Peer benchmark</p><h2 className="mt-1 text-xl font-extrabold text-slate-950">Your shortest path forward</h2><p className="mt-2 text-sm text-slate-600">Based on {benchmark.cohortSize} closest verified alumni profiles, not every outcome in Newbert.</p><div className="mt-5 grid gap-3 sm:grid-cols-3"><BenchmarkStat label="Average DSA" value={benchmark.averages.dsa ?? "Unavailable"}/><BenchmarkStat label="Average projects" value={benchmark.averages.projects ?? "Unavailable"}/><BenchmarkStat label="Had internship" value={`${benchmark.averages.internshipRate ?? 0}%`}/></div>{benchmark.commonSkills?.length ? <div className="mt-5 flex flex-wrap gap-2">{benchmark.commonSkills.map((item) => <span key={item.skill} className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-900">{item.skill} · {item.percent}%</span>)}</div> : null}{benchmark.insights?.length ? <ul className="mt-5 space-y-1 text-sm leading-6 text-slate-700">{benchmark.insights.map((insight) => <li key={insight}>• {insight}</li>)}</ul> : null}</section>;
+  return <section className="surface rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Peer benchmark</p><PrivateBadge/></div><h2 className="mt-1 text-xl font-extrabold text-slate-950">Your shortest path forward</h2><p className="mt-2 text-sm text-slate-600">Based on {benchmark.cohortSize} closest verified alumni profiles, not every outcome in Newbert.</p><div className="mt-5 grid gap-3 sm:grid-cols-3"><BenchmarkStat label="Average DSA" value={benchmark.averages.dsa ?? "Unavailable"}/><BenchmarkStat label="Average projects" value={benchmark.averages.projects ?? "Unavailable"}/><BenchmarkStat label="Had internship" value={`${benchmark.averages.internshipRate ?? 0}%`}/></div>{benchmark.commonSkills?.length ? <div className="mt-5 flex flex-wrap gap-2">{benchmark.commonSkills.map((item) => <span key={item.skill} className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-900">{item.skill} · {item.percent}%</span>)}</div> : null}{benchmark.insights?.length ? <ul className="mt-5 space-y-1 text-sm leading-6 text-slate-700">{benchmark.insights.map((insight) => <li key={insight}>• {insight}</li>)}</ul> : null}</section>;
 }
 function BenchmarkStat({ label, value }) { return <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-bold text-slate-500">{label}</p><p className="mt-1 text-lg font-extrabold text-slate-950">{value}</p></div>; }
 
@@ -653,7 +664,7 @@ function BookmarkedJobs({ jobs }) {
     <aside className="surface rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex items-end justify-between">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Job tracker</p>
+          <div className="flex items-center gap-3"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Job tracker</p><PrivateBadge/></div>
           <h2 className="mt-1 text-xl font-extrabold text-slate-950">Bookmarked roles</h2>
         </div>
         <Link to="/jobs" className="text-sm font-extrabold text-orange-600 hover:text-orange-700">

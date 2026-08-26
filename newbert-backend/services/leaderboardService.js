@@ -55,7 +55,7 @@ function rankEntries(entries, metric, userId, search = "") {
   return { currentUser: all.find((entry) => entry.userId === String(userId)) || null, users: search ? all.filter((entry) => `${entry.name} ${entry.branch}`.toLowerCase().includes(search.toLowerCase())) : all };
 }
 
-function sectionStatus(mine, integration, available) { if (!mine?.[integration]?.connected) return "not_connected"; return available(mine) ? "ranked" : "refresh_required"; }
+function sectionStatus(mine, integration, available, metric) { if (!mine?.[integration]?.connected) return "not_connected"; if (!available(mine)) return "refresh_required"; return metric(mine) > 0 ? "ranked" : "no_activity"; }
 async function normalizeKnownColleges() {
   const legacy = await Profile.find({ $or: [{ collegeId: null }, { collegeId: { $exists: false } }], college: { $type: "string", $ne: "" } }).select("college").lean();
   await Promise.all(legacy.map((profile) => resolveProfileCollege(profile, { persist: true })));
@@ -81,12 +81,12 @@ async function getLeaderboard({ userId, scope, search, leetcodeRange, githubRang
   const streak = rankEntries(entries, (entry) => entry.streak.current, userId, search); streak.top = streak.users.slice(0, 3);
   const lcAvailable = (entry) => lcRange === "overall" ? entry.leetcode.connected : entry.leetcode.activityAvailable;
   const lcMetric = (entry) => lcRange === "overall" ? entry.leetcode.totalSolved : entry.leetcode[lcRange];
-  const leetcode = rankEntries(entries.filter(lcAvailable), lcMetric, userId, search);
-  Object.assign(leetcode, { range: lcRange, label: rangeLabel(lcRange), metric: "questions", coverage: lcRange === "overall" ? "all solved problems" : "latest 100 accepted submissions", status: sectionStatus(mineEntry, "leetcode", lcAvailable) });
+  const leetcode = rankEntries(entries.filter((entry) => lcAvailable(entry) && lcMetric(entry) > 0), lcMetric, userId, search);
+  Object.assign(leetcode, { range: lcRange, label: rangeLabel(lcRange), metric: "questions", coverage: lcRange === "overall" ? "all solved problems" : "latest 100 accepted submissions", status: sectionStatus(mineEntry, "leetcode", lcAvailable, lcMetric) });
   const ghAvailable = (entry) => ghRange === "overall" ? entry.github.contributionActivityAvailable : entry.github.commitActivityAvailable;
   const ghMetric = (entry) => ghRange === "overall" ? entry.github.totalContributions : entry.github[ghRange];
-  const github = rankEntries(entries.filter(ghAvailable), ghMetric, userId, search);
-  Object.assign(github, { range: ghRange, label: rangeLabel(ghRange), metric: ghRange === "overall" ? "contributions" : "commits", status: sectionStatus(mineEntry, "github", ghAvailable) });
+  const github = rankEntries(entries.filter((entry) => ghAvailable(entry) && ghMetric(entry) > 0), ghMetric, userId, search);
+  Object.assign(github, { range: ghRange, label: rangeLabel(ghRange), metric: ghRange === "overall" ? "contributions" : "commits", status: sectionStatus(mineEntry, "github", ghAvailable, ghMetric) });
   return { scope, needsCollege: false, resolvedCollege, college: scope === "college" ? resolvedCollege : null, streak, leetcode, github };
 }
 module.exports = { VALID_RANGES, activityMetrics, buildLeaderboardEntry, rankEntries, getLeaderboard };
