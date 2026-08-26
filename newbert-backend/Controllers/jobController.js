@@ -23,9 +23,49 @@ function activeQuery(query = {}) {
 }
 function serializeJob(job) { const value = job.toObject ? job.toObject() : job; return { ...value, application: value.application || { officialUrl: value.applyUrl, deadline: value.deadline || null }, verification: value.verification || { status: "pending", sourceType: "unknown", lastCheckedAt: null } }; }
 function validHttpUrl(value) { try { return ["http:", "https:"].includes(new URL(value).protocol); } catch { return false; } }
+function cleanText(value, maxLength = 5000) { return typeof value === "string" ? value.trim().slice(0, maxLength) : ""; }
+function cleanList(value, maxLength = 40) { return Array.isArray(value) ? [...new Set(value.map((item) => cleanText(String(item), 100)).filter(Boolean))].slice(0, maxLength) : []; }
+function cleanDate(value) { if (!value) return null; const date = new Date(value); return Number.isNaN(date.getTime()) ? null : date; }
+function cleanNumber(value) { if (value == null || value === "") return null; const number = Number(value); return Number.isFinite(number) ? number : null; }
+function cleanLocation(value) {
+  if (value == null || value === "") return null;
+  if (typeof value === "string") return cleanText(value, 200) || null;
+  if (typeof value !== "object" || Array.isArray(value)) return null;
+  return {
+    city: cleanText(value.city, 100) || null,
+    state: cleanText(value.state, 100) || null,
+    country: cleanText(value.country, 100) || null,
+    raw: cleanText(value.raw, 200) || null,
+    remoteType: cleanText(value.remoteType, 40) || null,
+  };
+}
+function cleanSalary(value) {
+  if (value == null || value === "") return null;
+  if (typeof value !== "object" || Array.isArray(value)) return null;
+  const min = Number(value.min); const max = Number(value.max);
+  return {
+    min: Number.isFinite(min) && min >= 0 ? min : null,
+    max: Number.isFinite(max) && max >= 0 ? max : null,
+    currency: cleanText(value.currency, 10) || "INR",
+    period: cleanText(value.period, 20) || "year",
+  };
+}
+function cleanRequirements(input, extracted) {
+  const supplied = input && typeof input === "object" && !Array.isArray(input) ? input : {};
+  const analysis = extracted && typeof extracted === "object" ? extracted : {};
+  const requiredSkills = Array.isArray(supplied.requiredSkills) ? cleanList(supplied.requiredSkills) : cleanList(analysis.requiredSkills);
+  const preferredSkills = Array.isArray(supplied.preferredSkills) ? cleanList(supplied.preferredSkills) : cleanList(analysis.preferredSkills);
+  const csFundamentals = Array.isArray(supplied.csFundamentals) ? cleanList(supplied.csFundamentals) : cleanList(analysis.csFundamentals);
+  return { ...analysis, ...supplied, requiredSkills, preferredSkills, csFundamentals, allowedBranches: cleanList(supplied.allowedBranches ?? analysis.allowedBranches), graduationYears: cleanList(supplied.graduationYears ?? analysis.graduationYears).map(Number).filter(Number.isFinite), responsibilities: cleanList(supplied.responsibilities ?? analysis.responsibilities), minimumCgpa: cleanNumber(supplied.minimumCgpa ?? analysis.minimumCgpa), experienceYears: cleanNumber(supplied.experienceYears ?? analysis.experienceYears) };
+}
+async function expireDueJobs() {
+  const now = new Date();
+  await Job.updateMany({ active: true, $or: [{ expiresAt: { $lt: now } }, { "application.deadline": { $lt: now } }, { deadline: { $lt: now } }] }, { $set: { active: false, "verification.status": "expired", "verification.lastCheckedAt": now } });
+}
 
 exports.listJobs = async (req, res, next) => {
   try {
+    await expireDueJobs();
     const jobs = await Job.find(activeQuery(req.query)).sort({ postedAt: -1, createdAt: -1 }).lean();
     res.json({ jobs: jobs.map(serializeJob) });
   } catch (error) { next(error); }
@@ -41,11 +81,12 @@ exports.getJob = async (req, res, next) => {
 
 exports.recommendedJobs = async (req, res, next) => {
   try {
+    await expireDueJobs();
     const { profile, plan } = await studentContext(req.auth.id);
     const jobs = await Job.find(activeQuery(req.query)).lean();
     const saved = await SavedJob.find({ userId: req.auth.id }).lean();
     const savedByJob = new Map(saved.map((item) => [String(item.jobId), item]));
-    const results = jobs.map((job) => ({ job: serializeJob(job), match: analyzeJobMatch(profile, job), saved: savedByJob.get(String(job._id)) || null })).sort((a, b) => (b.match.eligible ? 1 : 0) - (a.match.eligible ? 1 : 0) || (b.match.overallScore ?? -1) - (a.match.overallScore ?? -1));
+    const results = jobs.map((job) => ({ job: serializeJob(job), match: analyzeJobMatch(profile, job), saved: savedByJob.get(String(job._id)) || null })).sort((a, b) => (b.match.overallScore ?? -1) - (a.match.overallScore ?? -1));
     res.json({ context: { goal: plan?.target?.type || profile.targetRole || null, skills: (profile.skills || []).map((skill) => skill.name || skill), projects: profile.projects ?? null, dsaSolved: profile.leetcodeStats?.totalSolved ?? null }, jobs: results });
   } catch (error) { next(error); }
 };
@@ -77,18 +118,29 @@ exports.updateSavedJob = async (req, res, next) => { try { const saved = await S
 exports.createAdminJob = async (req, res, next) => {
   try {
     const input = req.body || {};
-    if (!input.title || !input.company || !input.description || !(input.officialUrl || input.applyUrl)) return res.status(400).json({ message: "Title, company, job description, and official application URL are required." });
-    if (!validHttpUrl(input.officialUrl || input.applyUrl) || (input.sourceUrl && !validHttpUrl(input.sourceUrl))) return res.status(400).json({ message: "Use a valid http:// or https:// application and source URL." });
-    const duplicate = await Job.findOne({ $or: [{ applyUrl: input.officialUrl || input.applyUrl }, { company: new RegExp(`^${String(input.company).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"), title: new RegExp(`^${String(input.title).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") }] }).lean();
+    const title = cleanText(input.title, 140); const company = cleanText(input.company, 120); const description = cleanText(input.description, 5000); const applicationUrl = cleanText(input.officialUrl || input.applyUrl, 2000);
+    if (!title || !company || !description || !applicationUrl) return res.status(400).json({ message: "Title, company, job description, and official application URL are required." });
+    if (!validHttpUrl(applicationUrl) || (input.sourceUrl && !validHttpUrl(input.sourceUrl))) return res.status(400).json({ message: "Use a valid http:// or https:// application and source URL." });
+    if (input.deadline && !cleanDate(input.deadline)) return res.status(400).json({ message: "Use a valid application deadline." });
+    if (input.location != null && !cleanLocation(input.location)) return res.status(400).json({ message: "Location must be text or a location object." });
+    if (input.salary != null && !cleanSalary(input.salary)) return res.status(400).json({ message: "Salary must be an object with optional min and max values." });
+    const duplicate = await Job.findOne({ $or: [{ applyUrl: applicationUrl }, { company: new RegExp(`^${company.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"), title: new RegExp(`^${title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") }] }).lean();
     if (duplicate) return res.status(409).json({ message: "This job may already exist.", existingJobId: String(duplicate._id) });
-    const extracted = await analyzeJobDescription({ title: input.title, company: input.company, description: input.description });
-    const requirements = { ...extracted.analysis, ...(input.requirements || {}) };
-    const job = new Job({ title: input.title, company: input.company, description: input.description, applyUrl: input.officialUrl || input.applyUrl, employmentType: input.employmentType || "full-time", experienceLevel: input.experienceLevel || extracted.analysis.experienceLevel, location: input.location || null, salary: input.salary || null, deadline: input.deadline || null, application: { officialUrl: input.officialUrl || input.applyUrl, deadline: input.deadline || null }, source: { type: input.sourceType || "admin", provider: input.sourceProvider || "manual", sourceUrl: input.sourceUrl || input.officialUrl || input.applyUrl, externalJobId: input.externalJobId || null, rawText: input.rawSourceText || null, contact: input.contact || null, postedText: input.postedText || null, applicantText: input.applicantText || null, hiringActivity: input.hiringActivity || null }, requirements, responsibilities: requirements.responsibilities, skills: input.skills || [...requirements.requiredSkills, ...requirements.preferredSkills], jdAnalysis: { ...extracted.analysis, source: extracted.source } });
+    const extracted = await analyzeJobDescription({ title, company, description });
+    const requirements = cleanRequirements(input.requirements, extracted.analysis);
+    const skills = cleanList(input.skills).length ? cleanList(input.skills) : cleanList([...requirements.requiredSkills, ...requirements.preferredSkills]);
+    const deadline = cleanDate(input.deadline);
+    const sourceInput = input.source && typeof input.source === "object" && !Array.isArray(input.source) ? input.source : {};
+    const job = new Job({ title, company, description, applyUrl: applicationUrl, employmentType: ["internship", "full-time", "part-time", "contract"].includes(input.employmentType) ? input.employmentType : "full-time", experienceLevel: ["intern", "entry-level", "junior", "mid", "senior", "unspecified"].includes(input.experienceLevel) ? input.experienceLevel : extracted.analysis.experienceLevel, location: cleanLocation(input.location), salary: cleanSalary(input.salary), deadline, application: { officialUrl: applicationUrl, deadline }, source: { type: cleanText(input.sourceType || sourceInput.type, 50) || "admin", provider: cleanText(input.sourceProvider || sourceInput.provider, 80) || "manual", sourceUrl: cleanText(input.sourceUrl || sourceInput.sourceUrl, 2000) || applicationUrl, externalJobId: cleanText(input.externalJobId || sourceInput.externalJobId, 200) || null, rawText: cleanText(input.rawSourceText || sourceInput.rawText, 20000) || null, contact: input.contact && typeof input.contact === "object" && !Array.isArray(input.contact) ? input.contact : null, postedText: cleanText(input.postedText || sourceInput.postedText, 200) || null, applicantText: cleanText(input.applicantText || sourceInput.applicantText, 200) || null, hiringActivity: cleanText(input.hiringActivity || sourceInput.hiringActivity, 200) || null }, requirements, responsibilities: requirements.responsibilities, skills, jdAnalysis: { ...extracted.analysis, source: extracted.source } });
     job.verification = verifyJob(job);
     job.active = job.verification.status !== "expired";
     await job.save();
     res.status(201).json({ job: serializeJob(job) });
-  } catch (error) { next(error); }
+  } catch (error) {
+    console.error("Admin job create failed", { route: "POST /api/admin/jobs", message: error.message, stack: error.stack });
+    if (error.name === "ValidationError") return res.status(400).json({ message: `Invalid job data: ${Object.values(error.errors).map((item) => item.message).join(" ")}` });
+    return res.status(500).json({ message: "Unable to publish this job. Check the entered job details and try again." });
+  }
 };
 
 exports.refreshAdminJob = async (req, res, next) => { try { const job = await Job.findById(req.params.id); if (!job) return res.status(404).json({ message: "Job not found." }); job.verification = verifyJob(job); job.active = job.verification.status !== "expired"; await job.save(); res.json({ job: serializeJob(job) }); } catch (error) { next(error); } };

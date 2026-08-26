@@ -4,7 +4,8 @@ function hostname(url) { try { return new URL(url).hostname; } catch { return ""
 function sourceType(url) { const host = hostname(url); return OFFICIAL_HOSTS.some((pattern) => pattern.test(host)) ? "trusted-ats" : host ? "official-company" : "unknown"; }
 function verifyJob(job) {
   const now = new Date();
-  const expired = job.expiresAt && new Date(job.expiresAt) < now;
+  const expiryDate = job.expiresAt || job.application?.deadline || job.deadline || null;
+  const expired = expiryDate && new Date(expiryDate) < now;
   const applicationUrl = job.application?.officialUrl || job.applyUrl;
   const type = sourceType(applicationUrl);
   const isLinkedInSource = /linkedin/i.test(String(job.source?.type || "")) || /linkedin\.com/i.test(String(applicationUrl || ""));
