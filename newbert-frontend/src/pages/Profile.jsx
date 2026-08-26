@@ -4,7 +4,7 @@ import { getSavedJobs } from "../utils/jobApplications";
 import API from "../Services/api";
 import useAuth from "../hook/useAuth";
 import { BRANCH_OPTIONS, TARGET_ROLE_OPTIONS, getSkillSuggestions, normalizeSkillName } from "../data/profileOptions";
-import CollegeAutocomplete from "../components/CollegeAutocomplete";
+import CollegeAutocomplete from "../Components/CollegeAutocomplete";
 
 // Build a complete year from authenticated, server-synced activity records.
 function buildYearlyActivity(year, activityCalendar) {
