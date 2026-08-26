@@ -81,6 +81,10 @@ function buildJobDescriptionPrompt({ title, company, description }) {
   return `Extract only explicitly stated job requirements from this job description. Return valid JSON only: {"requiredSkills":[],"preferredSkills":[],"csFundamentals":[],"minimumCgpa":null,"allowedBranches":[],"graduationYears":[],"experienceLevel":"unspecified","responsibilities":[]}. Never infer a skill, CGPA, branch, year, or experience level that is not stated.\n\nTitle: ${title}\nCompany: ${company}\nDescription:\n${description}`;
 }
 
+function buildRawJobPostPrompt(rawText) {
+  return `You are Newbert Job Extraction AI. Convert this noisy raw job post into valid JSON only. Extract only explicit facts. Ignore tracking IDs, SVG/image URLs, UI labels, and unrelated metadata. Prefer an explicitly stated official apply URL over LinkedIn. Never decide verification or a student match. Use null for unavailable scalar values and [] for unavailable lists. Shape: {"title":null,"company":null,"location":{"city":null,"state":null,"country":null,"raw":null},"workMode":null,"employmentType":null,"experienceLevel":null,"education":[],"requiredSkills":[],"preferredSkills":[],"generalSkills":[],"csFundamentals":[],"responsibilities":[],"summary":null,"salary":null,"deadline":null,"postedText":null,"applicantText":null,"hiringActivity":null,"officialApplyUrl":null,"contact":{"email":null,"phone":null,"whatsapp":null},"source":{"detectedProvider":"unknown","linkedinJobId":null,"linkedinJobUrl":null,"sourceUrl":null}}\n\nRaw post:\n${rawText}`;
+}
+
 function buildFeaturePrompt(feature, facts, specificRules) {
   return `You are Newbert AI preparing ${feature}. Use only the supplied server facts. Never invent personal data, scores, evidence, outcomes, or guarantees. Clearly label suggestions as suggestions. ${specificRules}\n\nServer facts:\n${JSON.stringify(facts || {})}`;
 }
@@ -108,6 +112,7 @@ module.exports = {
   buildPlanExplanationPrompt,
   buildCurrentStageAnalysisPrompt,
   buildJobDescriptionPrompt,
+  buildRawJobPostPrompt,
   buildResumeImprovementPrompt,
   buildSeniorMatchExplanationPrompt,
   buildTestPrompt,

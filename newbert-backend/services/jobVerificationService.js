@@ -7,7 +7,8 @@ function verifyJob(job) {
   const expired = job.expiresAt && new Date(job.expiresAt) < now;
   const applicationUrl = job.application?.officialUrl || job.applyUrl;
   const type = sourceType(applicationUrl);
-  return { status: expired ? "expired" : type === "unknown" ? "pending" : type === "official-company" ? "verified" : "source_confirmed", sourceType: type, verifiedAt: type === "unknown" ? null : now, lastCheckedAt: now };
+  const isLinkedInSource = /linkedin/i.test(String(job.source?.type || "")) || /linkedin\.com/i.test(String(applicationUrl || ""));
+  return { status: expired ? "expired" : type === "unknown" ? "pending" : isLinkedInSource ? "source_confirmed" : type === "official-company" ? "verified" : "source_confirmed", sourceType: isLinkedInSource ? "linkedin" : type, verifiedAt: type === "unknown" ? null : now, lastCheckedAt: now };
 }
 function refreshVerification(job) { return verifyJob(job); }
 module.exports = { refreshVerification, verifyJob };

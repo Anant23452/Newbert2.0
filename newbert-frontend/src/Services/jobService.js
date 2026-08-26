@@ -12,3 +12,4 @@ export async function refreshAdminJob(id) { const { data } = await API.post(`/ad
 export async function updateAdminJob(id, payload) { const { data } = await API.patch(`/admin/jobs/${id}`, payload); return data.job; }
 export async function updateAdminJobStatus(id, status) { const { data } = await API.patch(`/admin/jobs/${id}/status`, { status }); return data.job; }
 export async function deleteAdminJob(id) { await API.delete(`/admin/jobs/${id}`); }
+export async function analyzeRawAdminJob(rawText) { const { data } = await API.post("/admin/jobs/analyze-raw", { rawText }); return data.draft; }
