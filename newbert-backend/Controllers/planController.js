@@ -1,7 +1,8 @@
 const Alumni = require("../Models/Alumni");
 const Plan = require("../Models/Plan");
 const Profile = require("../Models/Profile");
-const { buildPlan, calculatePlanStreak, calculateProgress, cleanTarget, needsRecalculation } = require("../services/planService");
+const { buildPlan, calculatePlanStreak, calculateProgress, cleanTarget, extractCurrentStage, needsRecalculation } = require("../services/planService");
+const { analyzeCurrentStage } = require("../services/ai/currentStageAnalysis");
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -43,6 +44,35 @@ async function saveGenerated(userId, profile, alumni, target, existing) {
   return Plan.findOneAndUpdate({ userId }, { $set: generated }, { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true });
 }
 
+function profileSignals(profile, target) {
+  const signals = [];
+  if (profile.graduationYear) signals.push(`${profile.graduationYear}-year ${profile.branch || "student"}`);
+  else if (profile.branch) signals.push(`${profile.branch} student`);
+  signals.push(`${target.type.replaceAll("-", " ")} selected as primary goal`);
+  if (Number.isFinite(profile.projects)) signals.push(`${profile.projects} project${profile.projects === 1 ? "" : "s"} already completed`);
+  if (profile.githubStats?.username) signals.push("GitHub connected");
+  if (profile.leetcodeStats?.username) signals.push("LeetCode connected");
+  if (Number.isFinite(profile.cgpa)) signals.push(`Current CGPA: ${profile.cgpa}`);
+  return signals;
+}
+
+exports.previewMyPlanContext = async (req, res, next) => {
+  try {
+    const { profile } = await loadPlanningContext(req.auth.id);
+    const input = req.body.target || req.body;
+    const target = cleanTarget(input, profile);
+    if (!target.role) return res.status(400).json({ message: "Choose a target role." });
+    const selfAssessment = {
+      currentStageStory: String(input.currentStageStory || "").trim().slice(0, 8000),
+      blockers: Array.isArray(input.blockers) ? input.blockers : [],
+      completedAreas: Array.isArray(input.completedAreas) ? input.completedAreas : [],
+    };
+    const fallback = extractCurrentStage(selfAssessment);
+    const interpretation = await analyzeCurrentStage({ profile, target, selfAssessment, fallback });
+    return res.json({ preview: { profileSignals: profileSignals(profile, target), goal: target, understoodCurrentStage: interpretation.analysis, analysisSource: interpretation.source } });
+  } catch (error) { return next(error); }
+};
+
 exports.getMyPlan = async (req, res, next) => {
   try {
     let plan = await Plan.findOne({ userId: req.auth.id });
@@ -60,13 +90,14 @@ exports.getMyPlan = async (req, res, next) => {
 exports.generateMyPlan = async (req, res, next) => {
   try {
     const { profile, alumni } = await loadPlanningContext(req.auth.id);
-    const target = cleanTarget(req.body.target || req.body, profile);
+    const sourceTarget = req.body.target || req.body;
+    const target = cleanTarget(sourceTarget, profile);
     if (!target.role) return res.status(400).json({ message: "Choose a target role." });
     const existing = await Plan.findOne({ userId: req.auth.id });
     if (existing && !sameGoal(existing.target, target) && req.body.confirmReplace !== true) {
       return res.status(409).json({ message: "You already have an active plan. Confirm that you want to update its goal.", requiresConfirmation: true });
     }
-    const plan = await saveGenerated(req.auth.id, profile, alumni, target, existing);
+    const plan = await saveGenerated(req.auth.id, profile, alumni, { ...sourceTarget, ...target }, existing);
     return res.status(existing ? 200 : 201).json({ plan: serialize(plan) });
   } catch (error) { return next(error); }
 };

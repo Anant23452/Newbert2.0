@@ -10,6 +10,11 @@ export async function generatePlan(target, confirmReplace = false) {
   return data.plan;
 }
 
+export async function previewPlanContext(target) {
+  const { data } = await API.post("/plans/preview", { target });
+  return data.preview;
+}
+
 export async function recalculatePlan() {
   const { data } = await API.post("/plans/recalculate");
   return data.plan;

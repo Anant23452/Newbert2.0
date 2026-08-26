@@ -61,6 +61,22 @@ function buildPlanExplanationPrompt({ profile, plan }) {
   return `You are Newbert AI, a careful career-plan explainer for a student.\n\nThe JSON below contains server-calculated facts. You must explain them; do not calculate, alter, replace, or second-guess any score, percentage, match, ranking, timeline, or gap.\n\nRules:\n- Use only facts present in the JSON. Never invent achievements, senior data, skills, activity, companies, probabilities, or guarantees.\n- Treat missing GitHub, LeetCode, senior-match, CGPA, project, or skill data as unavailable. Do not treat unavailable data as a weakness unless the deterministic gaps explicitly do so.\n- Clearly distinguish factual observations from your suggested next actions.\n- Do not claim that the student will get a job, placement, interview, or offer.\n- Keep the answer concise and professional: a short overview, the three highest-priority actions, and one encouraging closing sentence.\n- Use plain text only. Do not use HTML, tables, or JSON in the answer.\n- Preserve every numeric value exactly as supplied.\n\nServer facts:\n${JSON.stringify(facts)}`;
 }
 
+function buildCurrentStageAnalysisPrompt({ profile, target, selfAssessment }) {
+  const facts = {
+    profile: {
+      branch: profile.branch || null,
+      skills: (profile.skills || []).map((skill) => skill.name || skill),
+      projects: Number.isFinite(profile.projects) ? profile.projects : null,
+      cgpa: Number.isFinite(profile.cgpa) ? profile.cgpa : null,
+      github: profile.githubStats ? { connected: true, repositories: profile.githubStats.publicRepos ?? null, languages: profile.githubStats.languages || [] } : null,
+      leetcode: profile.leetcodeStats ? { connected: true, solved: profile.leetcodeStats.totalSolved ?? null } : null,
+    },
+    goal: target,
+    selfAssessment,
+  };
+  return `You are Newbert AI. Extract only what the student explicitly states from the supplied facts. Respect the selected goal: software placement, GATE, core placement, internship, data/AI, government/PSU, or custom. Do not invent completion, scores, companies, experience, or dates. Return valid JSON only with this exact shape: {"completed":[],"inProgress":[],"strengths":[],"weakAreas":[],"notStarted":[],"blockers":[],"target":[]}. Use concise topic names.\n\nFacts:\n${JSON.stringify(facts)}`;
+}
+
 function buildFeaturePrompt(feature, facts, specificRules) {
   return `You are Newbert AI preparing ${feature}. Use only the supplied server facts. Never invent personal data, scores, evidence, outcomes, or guarantees. Clearly label suggestions as suggestions. ${specificRules}\n\nServer facts:\n${JSON.stringify(facts || {})}`;
 }
@@ -86,6 +102,7 @@ module.exports = {
   buildInterviewPracticePrompt,
   buildJobMatchExplanationPrompt,
   buildPlanExplanationPrompt,
+  buildCurrentStageAnalysisPrompt,
   buildResumeImprovementPrompt,
   buildSeniorMatchExplanationPrompt,
   buildTestPrompt,

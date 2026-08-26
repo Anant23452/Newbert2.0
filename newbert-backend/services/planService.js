@@ -8,10 +8,63 @@ function cleanTarget(input = {}, profile = {}) {
   const role = String(input.role || profile.targetRole || (type === "core-placement" ? "Core Engineering" : "Software Developer")).trim();
   const weeklyHours = Math.min(60, Math.max(2, Number(input.weeklyHours) || 10));
   const deadline = input.deadline && !Number.isNaN(new Date(input.deadline).getTime()) ? new Date(input.deadline) : null;
-  return { type, role, company: String(input.company || profile.targetCompany || "").trim() || null, deadline, weeklyHours, customGoal: String(input.customGoal || "").trim() || null };
+  const allowedStyles = ["balanced", "aggressive", "college-friendly", "revision-heavy", "practice-heavy"];
+  const planStyle = allowedStyles.includes(input.planStyle) ? input.planStyle : "balanced";
+  return { type, role, company: String(input.company || profile.targetCompany || "").trim() || null, deadline, weeklyHours, planStyle, customGoal: String(input.customGoal || "").trim() || null };
 }
 
-function meaningfulSnapshot(profile, target) {
+function cleanList(values) {
+  return [...new Set((Array.isArray(values) ? values : []).map((value) => String(value || "").trim()).filter(Boolean))].slice(0, 30);
+}
+
+function splitTopics(value) {
+  return String(value || "").split(/,|\band\b|\n|\.|;/i).map((item) => item.trim().replace(/^(the|most of)\s+/i, "")).filter((item) => item.length > 1 && item.length < 80).slice(0, 12);
+}
+
+function extractCurrentStage(selfAssessment = {}) {
+  const story = String(selfAssessment.currentStageStory || "").trim().slice(0, 8000);
+  const buckets = { completed: cleanList(selfAssessment.completedAreas), inProgress: [], strengths: [], weakAreas: [], notStarted: [], blockers: cleanList(selfAssessment.blockers), target: [] };
+  const patterns = [
+    ["completed", /(?:completed|finished|covered|done with)\s+([^.!\n]+)/gi],
+    ["inProgress", /(?:working on|in progress|partially completed|around\s+\d+%\s+complete)\s+([^.!\n]+)/gi],
+    ["weakAreas", /(?:weak in|weak at|struggle with|not confident in)\s+([^.!\n]+)/gi],
+    ["notStarted", /(?:haven't started|have not started|not started)\s+([^.!\n]+)/gi],
+    ["strengths", /(?:comfortable with|strong in|know)\s+([^.!\n]+)/gi],
+    ["target", /(?:target is|target:|i want|my goal is|aiming for)\s+([^.!\n]+)/gi],
+  ];
+  for (const [bucket, expression] of patterns) {
+    for (const match of story.matchAll(expression)) buckets[bucket].push(...splitTopics(match[1]));
+  }
+  for (const key of Object.keys(buckets)) buckets[key] = cleanList(buckets[key]);
+  return buckets;
+}
+
+function topicMatches(label, topics) {
+  const normalized = normalizeSkill(label);
+  return topics.some((topic) => {
+    const current = normalizeSkill(topic);
+    return current && (normalized.includes(current) || current.includes(normalized));
+  });
+}
+
+function applyCurrentStageToGaps(gaps, stage) {
+  return gaps.map((gap) => {
+    if (topicMatches(gap.label, stage.completed)) return { ...gap, currentScore: Math.max(gap.currentScore || 0, 80), status: "Ready", detail: `${gap.detail} Your current-stage note says this is already completed; keep it for revision, not beginner study.` };
+    if (topicMatches(gap.label, stage.weakAreas) || topicMatches(gap.label, stage.notStarted)) return { ...gap, currentScore: Math.min(gap.currentScore || 0, 35), priority: "high", status: "Needs Improvement", detail: `${gap.detail} Your current-stage note identifies this as an active gap.` };
+    return gap;
+  });
+}
+
+function buildAIGuidance(gaps, tasks, stage) {
+  const priorities = gaps.filter((gap) => gap.status !== "Ready" && gap.status !== "Optional").slice(0, 3).map((gap) => ({ title: gap.label, why: gap.detail }));
+  const whatToAvoid = [];
+  if (stage.completed.length) whatToAvoid.push(`Do not restart ${stage.completed.slice(0, 3).join(", ")} from beginner level. Reserve it for revision or targeted practice.`);
+  if (stage.blockers.includes("Too many resources")) whatToAvoid.push("Do not switch between several resources. Finish one chosen source before adding another.");
+  if (stage.blockers.includes("Lack of consistency")) whatToAvoid.push("Do not create an unrealistic daily schedule. Protect a smaller routine you can repeat.");
+  return { topPriorities: priorities, whatToAvoid, nextSevenDays: tasks.filter((task) => !task.archived).slice(0, 7).map((task, index) => ({ day: index + 1, title: task.title, detail: task.description })) };
+}
+
+function meaningfulSnapshot(profile, target, selfAssessment = null) {
   const data = {
     branch: profile.branch || "",
     skills: (profile.skills || []).map((skill) => [normalizeSkill(skill.name || skill), Number(skill.score) || 0]).sort((a, b) => a[0].localeCompare(b[0])),
@@ -19,7 +72,8 @@ function meaningfulSnapshot(profile, target) {
     cgpa: Number.isFinite(profile.cgpa) ? profile.cgpa : null,
     leetcode: profile.leetcodeStats ? { username: profile.leetcodeStats.username, totalSolved: profile.leetcodeStats.totalSolved } : null,
     github: profile.githubStats ? { username: profile.githubStats.username, publicRepos: profile.githubStats.publicRepos } : null,
-    target: { type: target.type, role: target.role, company: target.company, deadline: target.deadline, weeklyHours: target.weeklyHours },
+    target: { type: target.type, role: target.role, company: target.company, deadline: target.deadline, weeklyHours: target.weeklyHours, planStyle: target.planStyle },
+    selfAssessment: selfAssessment || null,
   };
   const signature = crypto.createHash("sha256").update(JSON.stringify(data)).digest("hex");
   return { ...data, signature, capturedAt: new Date() };
@@ -133,8 +187,17 @@ function calculatePlanStreak(tasks) {
 
 function buildPlan(profile, alumni, targetInput, existingPlan = null) {
   const target = cleanTarget(targetInput, profile);
+  const selfAssessment = {
+    currentStageStory: String(targetInput.currentStageStory || existingPlan?.selfAssessment?.currentStageStory || "").trim().slice(0, 8000),
+    blockers: cleanList(targetInput.blockers || existingPlan?.selfAssessment?.blockers),
+    completedAreas: cleanList(targetInput.completedAreas || existingPlan?.selfAssessment?.completedAreas),
+  };
+  const understoodCurrentStage = targetInput.understoodCurrentStage && typeof targetInput.understoodCurrentStage === "object" ? {
+    completed: cleanList(targetInput.understoodCurrentStage.completed), inProgress: cleanList(targetInput.understoodCurrentStage.inProgress), strengths: cleanList(targetInput.understoodCurrentStage.strengths), weakAreas: cleanList(targetInput.understoodCurrentStage.weakAreas), notStarted: cleanList(targetInput.understoodCurrentStage.notStarted), blockers: cleanList(targetInput.understoodCurrentStage.blockers || selfAssessment.blockers), target: cleanList(targetInput.understoodCurrentStage.target),
+  } : extractCurrentStage(selfAssessment);
   const seniorMatch = selectSenior(profile, alumni, target);
   const readiness = calculateReadiness(profile, target, seniorMatch, alumni);
+  readiness.gaps = applyCurrentStageToGaps(readiness.gaps, understoodCurrentStage);
   const timeline = estimateTimeline(readiness.gaps, target.weeklyHours, target.deadline);
   const phases = buildPhases(readiness.gaps, timeline, readiness.targetType);
   const tasks = buildTasks(readiness.gaps, phases, existingPlan?.tasks || []);
@@ -148,14 +211,17 @@ function buildPlan(profile, alumni, targetInput, existingPlan = null) {
     tasks,
     timeline: { ...timeline, startDate: existingPlan?.timeline?.startDate || new Date() },
     progress: { ...calculateProgress(tasks), streak: calculatePlanStreak(tasks) },
-    profileSnapshot: meaningfulSnapshot(profile, target),
-    generationVersion: 1,
+    profileSnapshot: meaningfulSnapshot(profile, target, selfAssessment),
+    selfAssessment,
+    understoodCurrentStage,
+    aiGuidance: buildAIGuidance(readiness.gaps, tasks, understoodCurrentStage),
+    generationVersion: 2,
     lastCalculatedAt: new Date(),
   };
 }
 
 function needsRecalculation(plan, profile) {
-  return meaningfulSnapshot(profile, plan.target).signature !== plan.profileSnapshot?.signature;
+  return meaningfulSnapshot(profile, plan.target, plan.selfAssessment).signature !== plan.profileSnapshot?.signature;
 }
 
-module.exports = { buildPlan, calculatePlanStreak, calculateProgress, cleanTarget, estimateTimeline, meaningfulSnapshot, needsRecalculation, selectSenior };
+module.exports = { applyCurrentStageToGaps, buildPlan, calculatePlanStreak, calculateProgress, cleanTarget, estimateTimeline, extractCurrentStage, meaningfulSnapshot, needsRecalculation, selectSenior };

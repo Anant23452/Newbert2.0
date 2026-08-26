@@ -6,6 +6,7 @@ const targetSchema = new mongoose.Schema({
   company: { type: String, trim: true, maxlength: 120, default: null },
   deadline: { type: Date, default: null },
   weeklyHours: { type: Number, required: true, min: 2, max: 60, default: 10 },
+  planStyle: { type: String, trim: true, maxlength: 40, default: "balanced" },
   customGoal: { type: String, trim: true, maxlength: 240, default: null },
 }, { _id: false });
 
@@ -34,6 +35,9 @@ const planSchema = new mongoose.Schema({
   timeline: { type: mongoose.Schema.Types.Mixed, required: true },
   progress: { type: mongoose.Schema.Types.Mixed, required: true },
   profileSnapshot: { type: mongoose.Schema.Types.Mixed, required: true },
+  selfAssessment: { type: mongoose.Schema.Types.Mixed, default: null },
+  understoodCurrentStage: { type: mongoose.Schema.Types.Mixed, default: null },
+  aiGuidance: { type: mongoose.Schema.Types.Mixed, default: null },
   generationVersion: { type: Number, default: 1 },
   lastCalculatedAt: { type: Date, default: Date.now },
 }, { timestamps: true });
