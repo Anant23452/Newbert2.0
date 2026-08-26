@@ -123,7 +123,7 @@ const HEATMAP_LEVELS = {
 };
 
 export default function Profile() {
-  const { profile, loading: profileLoading, error: profileError, saveProfile, logout } = useAuth();
+  const { profile, loading: profileLoading, error: profileError, saveProfile, refreshProfile, logout } = useAuth();
   const [editing, setEditing] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [savedJobs] = useState(getSavedJobs);
@@ -161,7 +161,7 @@ export default function Profile() {
       />
     );
 
-  return <ProfileDashboard profile={profile} savedJobs={savedJobs} onEdit={() => setEditing(true)} onLogout={() => { logout(); navigate("/", { replace: true }); }} />;
+  return <ProfileDashboard profile={profile} savedJobs={savedJobs} onEdit={() => setEditing(true)} onPrivacySaved={refreshProfile} onLogout={() => { logout(); navigate("/", { replace: true }); }} />;
 }
 
 function ProfileLoading() { return <main className="profile-page min-h-screen px-5 py-12"><div className="mx-auto max-w-6xl animate-pulse space-y-5"><div className="h-44 rounded-2xl bg-slate-200/70"/><div className="grid gap-6 lg:grid-cols-2"><div className="h-80 rounded-2xl bg-slate-200/70"/><div className="h-80 rounded-2xl bg-slate-200/70"/></div></div></main>; }
@@ -341,7 +341,7 @@ function SkillInput({ skills, branch, targetRole, onChange }) {
   );
 }
 
-function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
+function ProfileDashboard({ profile, savedJobs, onEdit, onPrivacySaved, onLogout }) {
   const skills = (profile.skills || []).map((skill) => skill.name || skill);
   const ratedSkills = (profile.skills || []).map((skill) => ({ name: skill.name || skill, score: skill.score ?? 0 })).filter((skill) => skill.score > 0);
   const [seniorMatch, setSeniorMatch] = useState({ loading: true, match: null, closest: [], benchmark: null, reason: "", error: "" });
@@ -403,6 +403,8 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
           </div>
         </section>
 
+        <PrivacySettings privacy={profile.privacy} onSaved={onPrivacySaved} />
+
         {/* Senior match + verified activity */}
         <section className="grid gap-6 lg:grid-cols-[.8fr_1.2fr]">
           <SeniorMatchCard state={seniorMatch} />
@@ -450,6 +452,26 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
       </div>
     </main>
   );
+}
+
+const PRIVACY_SECTIONS = [
+  ["about", "About"], ["skills", "Skills"], ["projects", "Projects"],
+  ["github", "GitHub"], ["leetcode", "LeetCode"], ["achievements", "Achievements"],
+  ["education", "Education"], ["careerGoal", "Career Goal"], ["courses", "Courses / Learning"],
+];
+
+function PrivacySettings({ privacy, onSaved }) {
+  const [form, setForm] = useState(privacy || { profileVisibility: "public", sections: Object.fromEntries(PRIVACY_SECTIONS.map(([key]) => [key, true])) });
+  const [status, setStatus] = useState("");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { if (privacy) setForm(privacy); }, [privacy]);
+  const save = async () => {
+    setSaving(true); setStatus("");
+    try { const { data } = await API.patch("/profiles/privacy", form); setForm(data.privacy); setStatus(data.message); await onSaved?.(); }
+    catch (error) { setStatus(error.response?.data?.message || "Unable to update privacy settings."); }
+    finally { setSaving(false); }
+  };
+  return <section className="surface rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Privacy</p><div className="mt-3 flex flex-wrap items-center justify-between gap-4"><div><h2 className="text-xl font-extrabold text-slate-950">Profile visibility</h2><p className="mt-1 text-sm text-slate-600">Private profiles expose only identity and leaderboard streak.</p></div><div className="flex border border-slate-200 p-1">{["public", "private"].map((value) => <button key={value} onClick={() => setForm((current) => ({ ...current, profileVisibility: value }))} className={`px-4 py-2 text-sm font-extrabold capitalize ${form.profileVisibility === value ? "bg-orange-500 text-slate-950" : "text-slate-600"}`}>{value}</button>)}</div></div><div className="mt-6"><p className="text-sm font-extrabold text-slate-950">Public sections</p><div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{PRIVACY_SECTIONS.map(([key, label]) => <button type="button" aria-pressed={Boolean(form.sections?.[key])} key={key} onClick={() => setForm((current) => ({ ...current, sections: { ...current.sections, [key]: !current.sections?.[key] } }))} className="flex items-center justify-between border border-slate-200 px-3 py-3 text-left"><span className="text-sm font-bold text-slate-800">{label}</span><span className={`h-5 w-9 rounded-full p-0.5 ${form.sections?.[key] ? "bg-orange-500" : "bg-slate-300"}`}><span className={`block h-4 w-4 rounded-full bg-white transition ${form.sections?.[key] ? "translate-x-4" : ""}`}/></span></button>)}</div></div><div className="mt-6 border-t border-slate-100 pt-5"><p className="text-sm font-extrabold text-slate-950">Always private</p><div className="mt-3 flex flex-wrap gap-2">{["Jobs and applications", "Build My Plan", "Best Senior Match", "Skill-gap analysis", "Personal AI recommendations"].map((item) => <span key={item} className="border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">{item} · Private by default</span>)}</div></div><div className="mt-5 flex items-center gap-3"><button onClick={save} disabled={saving} className="bg-orange-500 px-4 py-2.5 text-sm font-extrabold text-slate-950 disabled:opacity-50">{saving ? "Saving..." : "Save privacy"}</button>{status && <p className="text-sm font-semibold text-slate-600">{status}</p>}</div></section>;
 }
 
 function ConnectionCard({ platform, connection, username, stats, onEdit }) {

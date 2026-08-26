@@ -8,6 +8,7 @@ const { findBestSeniorMatch } = require("../services/seniorMatchService");
 const { isProfileComplete, profileStrength } = require("../services/profileCompletionService");
 const College = require("../Models/College");
 const { findCollegeByText, resolveProfileCollege } = require("../services/collegeService");
+const { DEFAULT_SECTIONS, normalizePrivacy, serializePublicProfile } = require("../services/publicProfileService");
 
 const INVALID_LEETCODE_USERNAMES = new Set(["u", "profile"]);
 const kolkataDay = () => { const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date()); const value = Object.fromEntries(parts.map((part) => [part.type, part.value])); return `${value.year}-${value.month}-${value.day}`; };
@@ -27,21 +28,21 @@ exports.getPublicProfile = async (req, res, next) => {
   try {
     const [profile, user] = await Promise.all([Profile.findOne({ userId: req.params.userId }).lean(), User.findById(req.params.userId).select("name avatarUrl").lean()]);
     if (!profile || !user) return res.status(404).json({ message: "Profile not found." });
-    const skills = (profile.skills || []).map((skill) => skill.name || skill).filter(Boolean);
     const today = (profile.activityCalendar || []).find((day) => day.date === kolkataDay());
-    res.json({ userId: String(user._id), name: user.name, avatar: profile.avatarUrl || user.avatarUrl || "", college: { id: profile.collegeId || null, name: profile.collegeName || profile.college || "" }, branch: profile.branch || "", graduationYear: profile.graduationYear || null, skills, projects: profile.projects ?? null, careerGoal: profile.targetRole || null, leetcode: profile.leetcodeStats ? { connected: Boolean(profile.leetcodeUsername), totalSolved: Number(profile.leetcodeStats.totalSolved) || 0, today: Number(today?.leetcode) || 0, todayLabel: "submissions today" } : { connected: false }, github: profile.githubStats ? { connected: Boolean(profile.githubUsername), today: Number(today?.github) || 0 } : { connected: false }, leaderboard: { streakDays: Number(profile.currentStreak) || 0, lastSyncedAt: profile.lastSyncedAt || null } });
+    res.json(serializePublicProfile(profile, user, today));
   } catch (error) { next(error); }
 };
 
 function mergeActivity(githubActivity = [], leetcodeActivity = []) {
   const days = new Map();
-  for (const item of githubActivity) days.set(item.date, { date: item.date, github: Number(item.count) || 0, leetcode: 0 });
+  for (const item of githubActivity) days.set(item.date, { date: item.date, github: Number(item.count) || 0, githubCommits: Number(item.commits) || 0, leetcode: 0, leetcodeAcceptedProblems: [] });
   for (const item of leetcodeActivity) {
-    const day = days.get(item.date) || { date: item.date, github: 0, leetcode: 0 };
+    const day = days.get(item.date) || { date: item.date, github: 0, githubCommits: 0, leetcode: 0, leetcodeAcceptedProblems: [] };
     day.leetcode += Number(item.count) || 0;
+    day.leetcodeAcceptedProblems = [...new Set([...(day.leetcodeAcceptedProblems || []), ...(item.acceptedProblems || [])])];
     days.set(item.date, day);
   }
-  return [...days.values()].map((day) => ({ ...day, total: day.github + day.leetcode })).filter((day) => day.total > 0).sort((a, b) => a.date.localeCompare(b.date));
+  return [...days.values()].map((day) => ({ ...day, leetcodeAccepted: day.leetcodeAcceptedProblems.length, total: day.github + day.leetcode })).filter((day) => day.total > 0).sort((a, b) => a.date.localeCompare(b.date));
 }
 
 function calculateStreaks(activity) {
@@ -71,7 +72,7 @@ function sanitizedActivity(profile, leetcodeStats) {
   return (profile.activityCalendar || []).map((day) => {
     const github = Number(day.github) || 0;
     const leetcode = leetcodeIsValid ? Number(day.leetcode) || 0 : 0;
-    return { date: day.date, github, leetcode, total: github + leetcode };
+    return { date: day.date, github, githubCommits: Number(day.githubCommits) || 0, leetcode, leetcodeAccepted: Number(day.leetcodeAccepted) || 0, leetcodeAcceptedProblems: Array.isArray(day.leetcodeAcceptedProblems) ? day.leetcodeAcceptedProblems : [], total: github + leetcode };
   }).filter((day) => day.total > 0);
 }
 
@@ -113,6 +114,7 @@ function response(profile, user) {
       leetcode: { connected: Boolean(profile.leetcodeUsername || profile.leetcodeUrl), synced: Boolean(leetcodeStats), error: profile.syncErrors?.leetcode || null },
       linkedin: { connected: Boolean(profile.linkedinUrl), synced: Boolean(profile.linkedinUrl), error: null },
     },
+    privacy: normalizePrivacy(profile.privacy),
     ...streaks,
   };
 }
@@ -123,7 +125,10 @@ function safeUsername(value, platform) {
 }
 
 function extractStoredActivity(profile, source) {
-  return (profile.activityCalendar || []).map((day) => ({ date: day.date, count: Number(day[source]) || 0 })).filter((day) => day.count > 0);
+  return (profile.activityCalendar || []).map((day) => source === "github"
+    ? { date: day.date, count: Number(day.github) || 0, commits: Number(day.githubCommits) || 0 }
+    : { date: day.date, count: Number(day.leetcode) || 0, acceptedProblems: Array.isArray(day.leetcodeAcceptedProblems) ? day.leetcodeAcceptedProblems : [] })
+    .filter((day) => day.count > 0 || day.commits > 0 || day.acceptedProblems?.length);
 }
 
 function buildRatedSkills(githubStats, leetcodeStats, existingSkills = []) {
@@ -204,8 +209,10 @@ exports.updateMyProfile = async (req, res, next) => {
       const activityCalendar = (existing?.activityCalendar || []).map((day) => ({
         date: day.date,
         github: githubChanged ? 0 : Number(day.github) || 0,
+        githubCommits: githubChanged ? 0 : Number(day.githubCommits) || 0,
         leetcode: leetcodeChanged ? 0 : Number(day.leetcode) || 0,
-      })).map((day) => ({ ...day, total: day.github + day.leetcode })).filter((day) => day.total > 0);
+        leetcodeAcceptedProblems: leetcodeChanged ? [] : (day.leetcodeAcceptedProblems || []),
+      })).map((day) => ({ ...day, leetcodeAccepted: day.leetcodeAcceptedProblems.length, total: day.github + day.leetcode })).filter((day) => day.total > 0);
       Object.assign(set, { activityCalendar, ...calculateStreaks(activityCalendar) });
     }
     let profile = await Profile.findOneAndUpdate(
@@ -220,6 +227,29 @@ exports.updateMyProfile = async (req, res, next) => {
     }
     const user = await User.findById(req.auth.id);
     return res.json(response(profile, user));
+  } catch (error) { return next(error); }
+};
+
+exports.updatePrivacy = async (req, res, next) => {
+  try {
+    const visibility = req.body.profileVisibility;
+    if (!['public', 'private'].includes(visibility)) return res.status(400).json({ message: "Choose public or private profile visibility." });
+    const requestedSections = req.body.sections && typeof req.body.sections === "object" ? req.body.sections : {};
+    const invalidKey = Object.keys(requestedSections).find((key) => !Object.hasOwn(DEFAULT_SECTIONS, key));
+    if (invalidKey) return res.status(400).json({ message: `Privacy section '${invalidKey}' cannot be changed.` });
+    const existing = await Profile.findOne({ userId: req.auth.id }).lean();
+    const current = normalizePrivacy(existing?.privacy);
+    const sections = { ...current.sections };
+    for (const [key, value] of Object.entries(requestedSections)) {
+      if (typeof value !== "boolean") return res.status(400).json({ message: `Privacy section '${key}' must be true or false.` });
+      sections[key] = value;
+    }
+    await Profile.findOneAndUpdate(
+      { userId: req.auth.id },
+      { $set: { privacy: { profileVisibility: visibility, sections } } },
+      { upsert: true, runValidators: true, setDefaultsOnInsert: true },
+    );
+    return res.json({ message: "Privacy settings updated.", privacy: { profileVisibility: visibility, sections } });
   } catch (error) { return next(error); }
 };
 

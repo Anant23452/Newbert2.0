@@ -6,6 +6,23 @@ const skillSchema = new mongoose.Schema({
   source: { type: String, enum: ["manual", "github", "leetcode", "linkedin", "ai"], default: "manual" },
 }, { _id: false });
 
+const privacySectionsSchema = new mongoose.Schema({
+  about: { type: Boolean, default: true },
+  skills: { type: Boolean, default: true },
+  projects: { type: Boolean, default: true },
+  github: { type: Boolean, default: true },
+  leetcode: { type: Boolean, default: true },
+  achievements: { type: Boolean, default: true },
+  education: { type: Boolean, default: true },
+  careerGoal: { type: Boolean, default: true },
+  courses: { type: Boolean, default: true },
+}, { _id: false });
+
+const privacySchema = new mongoose.Schema({
+  profileVisibility: { type: String, enum: ["public", "private"], default: "public" },
+  sections: { type: privacySectionsSchema, default: () => ({}) },
+}, { _id: false });
+
 const profileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true },
   college: { type: String, trim: true, maxlength: 120 },
@@ -28,6 +45,7 @@ const profileSchema = new mongoose.Schema({
   syncErrors: { type: mongoose.Schema.Types.Mixed, default: null },
   lastSyncedAt: Date,
   currentStreak: { type: Number, default: 0, min: 0 }, longestStreak: { type: Number, default: 0, min: 0 },
+  privacy: { type: privacySchema, default: () => ({}) },
   onboardingCompleted: { type: Boolean, default: false },
 }, { timestamps: true });
 

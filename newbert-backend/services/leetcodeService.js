@@ -16,7 +16,7 @@ async function getLeetcodeStats(username, years) {
   let data;
   try {
     data = await requestLeetcode(
-      "query profile($username:String!){matchedUser(username:$username){username profile{ranking} submitStats:submitStatsGlobal{acSubmissionNum{difficulty count}} languageProblemCount{languageName problemsSolved}} userContestRanking(username:$username){attendedContestsCount rating globalRanking topPercentage}}",
+      "query profile($username:String!){matchedUser(username:$username){username profile{ranking} submitStats:submitStatsGlobal{acSubmissionNum{difficulty count}} languageProblemCount{languageName problemsSolved}} userContestRanking(username:$username){attendedContestsCount rating globalRanking topPercentage} recentAcSubmissionList(username:$username,limit:100){titleSlug timestamp}}",
       { username },
     );
   } catch (error) {
@@ -29,7 +29,14 @@ async function getLeetcodeStats(username, years) {
   const accepted = Object.fromEntries((user.submitStats?.acSubmissionNum || []).map((item) => [item.difficulty.toLowerCase(), Number(item.count) || 0]));
   const languageCounts = Object.fromEntries((user.languageProblemCount || []).filter((item) => item.problemsSolved > 0).map((item) => [item.languageName, Number(item.problemsSolved)]));
   const calendarResults = await Promise.allSettled(years.map((year) => fetchSubmissionYear(user.username, year)));
-  const activity = calendarResults.filter((result) => result.status === "fulfilled").flatMap((result) => result.value);
+  const activityByDate = new Map(calendarResults.filter((result) => result.status === "fulfilled").flatMap((result) => result.value).map((item) => [item.date, item]));
+  for (const submission of data.recentAcSubmissionList || []) {
+    const date = kolkataDate(Number(submission.timestamp) * 1000);
+    const item = activityByDate.get(date) || { date, count: 0, acceptedProblems: [] };
+    item.acceptedProblems = [...new Set([...(item.acceptedProblems || []), submission.titleSlug].filter(Boolean))];
+    activityByDate.set(date, item);
+  }
+  const activity = [...activityByDate.values()];
   const calendarFailure = calendarResults.find((result) => result.status === "rejected");
 
   return {
@@ -43,9 +50,17 @@ async function getLeetcodeStats(username, years) {
     attendedContests: data.userContestRanking?.attendedContestsCount ?? null,
     languageCounts,
     activity,
+    acceptedActivityAvailable: true,
+    acceptedActivityLimit: 100,
     activityError: calendarFailure?.reason?.message || null,
     lastSyncedAt: new Date().toISOString(),
   };
+}
+
+function kolkataDate(timestamp) {
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(timestamp));
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
 }
 
 async function fetchSubmissionYear(username, year) {
