@@ -7,6 +7,7 @@ const ALIASES = new Map([
   ["mongo", "mongodb"], ["mongo db", "mongodb"], ["mongodb", "mongodb"],
   ["postgres", "postgresql"], ["postgresql", "postgresql"], ["postgre sql", "postgresql"],
   ["mysql", "mysql"], ["my sql", "mysql"],
+  ["sklearn", "scikit-learn"], ["scikit learn", "scikit-learn"], ["scikit-learn", "scikit-learn"],
   ["rest", "rest-api"], ["rest api", "rest-api"], ["rest apis", "rest-api"], ["restful api", "rest-api"], ["restful apis", "rest-api"],
   ["git", "git"], ["github", "github"],
   ["cpp", "c++"], ["c++", "c++"],
@@ -26,6 +27,7 @@ const ALIASES = new Map([
 const LABELS = {
   javascript: "JavaScript", typescript: "TypeScript", nodejs: "Node.js", react: "React", express: "Express",
   mongodb: "MongoDB", postgresql: "PostgreSQL", mysql: "MySQL", "rest-api": "REST APIs", git: "Git", github: "GitHub",
+  "scikit-learn": "scikit-learn",
   "c++": "C++", dsa: "DSA", oop: "OOP", dbms: "DBMS", "operating-systems": "Operating Systems", "computer-networks": "Computer Networks",
   "computer-science-engineering": "Computer Science and Engineering", "information-technology": "Information Technology", "electronics-communication-engineering": "Electronics and Communication Engineering", "electrical-engineering": "Electrical Engineering", "mechanical-engineering": "Mechanical Engineering", "civil-engineering": "Civil Engineering",
 };

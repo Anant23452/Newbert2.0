@@ -7,7 +7,7 @@ const { findClosestSeniors } = require("../services/alumniMatchingService");
 const { analyzeJobMatch } = require("../services/jobMatchingService");
 const { explainJobMatch } = require("../services/jobMatchExplanationService");
 const { verifyJob } = require("../services/jobVerificationService");
-const { analyzeJobDescription, analyzeRawJobPost, compatibilityFields, mergeAdminRequirements } = require("../services/jobJdAnalysisService");
+const { analyzeJobDescription, analyzeRawJobPost, compatibilityFields, mergeAdminRequirements, normalizeStructuredAnalysis } = require("../services/jobJdAnalysisService");
 const { normalizeStudentProfile } = require("../services/studentProfileNormalizationService");
 
 async function studentContext(userId) {
@@ -49,16 +49,54 @@ function cleanSalary(value) {
     min: Number.isFinite(min) && min >= 0 ? min : null,
     max: Number.isFinite(max) && max >= 0 ? max : null,
     currency: cleanText(value.currency, 10) || "INR",
-    period: cleanText(value.period, 20) || "year",
+    period: cleanText(value.period, 20) || "yearly",
   };
 }
+function cleanCompensation(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const allowedTypes = ["salary", "stipend", "unknown"]; const allowedPeriods = ["hourly", "monthly", "yearly", "total", "unknown"];
+  let minAmount = cleanNumber(value.minAmount); let maxAmount = cleanNumber(value.maxAmount);
+  minAmount = minAmount != null && minAmount >= 0 ? minAmount : null; maxAmount = maxAmount != null && maxAmount >= 0 ? maxAmount : null;
+  if (minAmount != null && maxAmount != null && maxAmount < minAmount) [minAmount, maxAmount] = [maxAmount, minAmount];
+  return { type: allowedTypes.includes(value.type) ? value.type : "unknown", currency: cleanText(value.currency, 10).toUpperCase() || null, minAmount, maxAmount, period: allowedPeriods.includes(value.period) ? value.period : "unknown", ppoAvailable: typeof value.ppoAvailable === "boolean" ? value.ppoAvailable : null, bonus: cleanText(value.bonus, 300) || null, equity: cleanText(value.equity, 300) || null };
+}
+function cleanExperience(value) { if (!value || typeof value !== "object" || Array.isArray(value)) return null; let minYears = cleanNumber(value.minYears); let maxYears = cleanNumber(value.maxYears); minYears = minYears != null && minYears >= 0 && minYears <= 80 ? minYears : null; maxYears = maxYears != null && maxYears >= 0 && maxYears <= 80 ? maxYears : null; if (minYears != null && maxYears != null && maxYears < minYears) [minYears, maxYears] = [maxYears, minYears]; return { minYears, maxYears }; }
+function cleanDuration(value) { if (!value || typeof value !== "object" || Array.isArray(value)) return null; const amount = cleanNumber(value.value); const unit = ["days", "weeks", "months", "years"].includes(value.unit) ? value.unit : null; return amount > 0 && amount <= 120 && unit ? { value: amount, unit } : null; }
+function cleanManualOverrides(value) { if (!value || typeof value !== "object" || Array.isArray(value)) return {}; const allowed = new Set(["title", "company", "department", "roleCategory", "locationCity", "locationState", "locationCountry", "multipleLocations", "workMode", "employmentType", "experienceLevel", "experienceMin", "experienceMax", "compensationType", "currency", "salaryMin", "salaryMax", "compensationPeriod", "ppoAvailable", "bonus", "equity", "postedDate", "deadline", "joiningDate", "durationValue", "durationUnit", "degrees", "allowedBranches", "graduationYears", "minimumCgpa", "maximumCgpa", "backlogPolicy", "workAuthorization", "locationRestrictions", "otherEligibility", "criticalSkills", "requiredSkills", "preferredSkills", "optionalSkills", "csFundamentals", "responsibilities", "qualifications", "projectExpectations", "selectionProcess", "benefits", "companyDescription", "applicationInstructions", "officialUrl", "sourceUrl"]); return Object.fromEntries(Object.entries(value).filter(([key]) => allowed.has(key)).map(([key, item]) => [key, Array.isArray(item) ? cleanList(item) : typeof item === "boolean" ? item : cleanText(String(item ?? ""), 3000)])); }
 function cleanRequirements(input, extracted) {
   const supplied = input && typeof input === "object" && !Array.isArray(input) ? input : {};
   const analysis = extracted && typeof extracted === "object" ? extracted : {};
   const requiredSkills = Array.isArray(supplied.requiredSkills) ? cleanList(supplied.requiredSkills) : cleanList(analysis.requiredSkills);
   const preferredSkills = Array.isArray(supplied.preferredSkills) ? cleanList(supplied.preferredSkills) : cleanList(analysis.preferredSkills);
   const csFundamentals = Array.isArray(supplied.csFundamentals) ? cleanList(supplied.csFundamentals) : cleanList(analysis.csFundamentals);
-  return { requiredSkills, preferredSkills, csFundamentals, allowedBranches: cleanList(supplied.allowedBranches ?? analysis.allowedBranches), graduationYears: cleanList(supplied.graduationYears ?? analysis.graduationYears).map(Number).filter(Number.isFinite), responsibilities: cleanList(supplied.responsibilities ?? analysis.responsibilities), minimumCgpa: cleanNumber(supplied.minimumCgpa ?? analysis.minimumCgpa), experienceYears: cleanNumber(supplied.experienceYears ?? analysis.experienceYears), minimumProjects: cleanNumber(supplied.minimumProjects ?? analysis.minimumProjects) };
+  return { criticalSkills: cleanList(supplied.criticalSkills ?? analysis.criticalSkills), requiredSkills, preferredSkills, optionalSkills: cleanList(supplied.optionalSkills ?? analysis.optionalSkills), csFundamentals, degrees: cleanList(supplied.degrees ?? analysis.degrees), allowedBranches: cleanList(supplied.allowedBranches ?? analysis.allowedBranches), graduationYears: cleanList(supplied.graduationYears ?? analysis.graduationYears).map(Number).filter((year) => Number.isInteger(year) && year >= 2000 && year <= 2100), responsibilities: cleanList(supplied.responsibilities ?? analysis.responsibilities), qualifications: cleanList(supplied.qualifications ?? analysis.qualifications), projectExpectations: cleanList(supplied.projectExpectations ?? analysis.projectExpectations), selectionProcess: cleanList(supplied.selectionProcess ?? analysis.selectionProcess), benefits: cleanList(supplied.benefits ?? analysis.benefits), locationRestrictions: cleanList(supplied.locationRestrictions ?? analysis.locationRestrictions), otherEligibility: cleanList(supplied.otherEligibility ?? analysis.otherEligibility), minimumCgpa: (() => { const value = cleanNumber(supplied.minimumCgpa ?? analysis.minimumCgpa); return value != null && value >= 0 && value <= 10 ? value : null; })(), maximumCgpa: (() => { const value = cleanNumber(supplied.maximumCgpa ?? analysis.maximumCgpa); return value != null && value >= 0 && value <= 10 ? value : null; })(), backlogPolicy: cleanText(supplied.backlogPolicy ?? analysis.backlogPolicy, 500) || null, workAuthorization: cleanText(supplied.workAuthorization ?? analysis.workAuthorization, 500) || null, experienceYears: cleanNumber(supplied.experienceYears ?? analysis.experienceYears), minimumProjects: cleanNumber(supplied.minimumProjects ?? analysis.minimumProjects) };
+}
+function reviewedAnalysis(baseAnalysis, input, requirements, context) {
+  const analysis = mergeAdminRequirements(baseAnalysis, requirements, context);
+  const compensation = cleanCompensation(input.compensation) || analysis.compensation;
+  const experience = cleanExperience(input.experience) || analysis.basic?.experience || { minYears: null, maxYears: null };
+  analysis.basic = {
+    ...analysis.basic,
+    companyName: context.company,
+    jobTitle: context.title,
+    department: cleanText(input.department, 120) || null,
+    roleCategory: cleanText(input.roleCategory, 80) || null,
+    employmentType: ["full-time", "part-time", "internship", "contract", "apprenticeship", "temporary", "unknown"].includes(input.employmentType) ? input.employmentType : "unknown",
+    workMode: ["onsite", "hybrid", "remote", "unknown"].includes(input.workMode) ? input.workMode : "unknown",
+    location: cleanLocation(input.location) || { city: null, state: null, country: null, raw: null },
+    multipleLocations: Array.isArray(input.multipleLocations) ? input.multipleLocations.map(cleanLocation).filter(Boolean).slice(0, 20) : [],
+    experienceLevel: ["intern", "entry-level", "junior", "mid", "senior", "unspecified"].includes(input.experienceLevel) ? input.experienceLevel : "unspecified",
+    experience,
+  };
+  analysis.role = context.title; analysis.experience = experience; analysis.compensation = compensation;
+  analysis.dates = { ...analysis.dates, postedDate: input.postedDate || null, applicationDeadline: input.deadline || null, joiningDate: input.joiningDate || null, internshipDuration: cleanDuration(input.internshipDuration) || { value: null, unit: null } };
+  analysis.responsibilities = requirements.responsibilities; analysis.qualifications = requirements.qualifications; analysis.projectExpectations = requirements.projectExpectations; analysis.selectionProcess = requirements.selectionProcess; analysis.benefits = requirements.benefits;
+  analysis.companyDescription = cleanText(input.companyDescription, 3000) || null; analysis.applicationInstructions = cleanText(input.applicationInstructions, 3000) || null;
+  analysis.application = { officialApplyUrl: cleanText(input.officialUrl || input.applyUrl, 2000) || null, sourceUrl: cleanText(input.sourceUrl, 2000) || null };
+  analysis.adminOverrides = cleanManualOverrides(input.manualOverrides);
+  analysis.metadata = { ...baseAnalysis.metadata, ...analysis.metadata, extractionMethod: input.structuredAnalysis ? "admin_reviewed" : analysis.metadata?.extractionMethod || "deterministic", reviewedAt: new Date().toISOString() };
+  Object.assign(analysis, compatibilityFields(analysis));
+  return analysis;
 }
 async function expireDueJobs() {
   const now = new Date();
@@ -130,14 +168,17 @@ exports.createAdminJob = async (req, res, next) => {
     if (input.salary != null && !cleanSalary(input.salary)) return res.status(400).json({ message: "Salary must be an object with optional min and max values." });
     const duplicate = await Job.findOne({ $or: [{ applyUrl: applicationUrl }, { company: new RegExp(`^${company.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"), title: new RegExp(`^${title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") }] }).lean();
     if (duplicate) return res.status(409).json({ message: "This job may already exist.", existingJobId: String(duplicate._id) });
-    const extracted = await analyzeJobDescription({ title, company, description });
+    const analysisDescription = cleanText(input.rawSourceText, 20000) || description;
+    const reviewedDraft = input.structuredAnalysis && typeof input.structuredAnalysis === "object" && !Array.isArray(input.structuredAnalysis) ? normalizeStructuredAnalysis(input.structuredAnalysis, { title, company, description: analysisDescription }, "reviewed_ai_draft") : null;
+    const extracted = reviewedDraft ? { analysis: reviewedDraft, source: input.structuredAnalysis?.metadata?.extractionMethod === "gemini" ? "gemini" : "deterministic" } : await analyzeJobDescription({ title, company, description: analysisDescription });
     const requirements = cleanRequirements(input.requirements, extracted.analysis);
-    const jdAnalysis = mergeAdminRequirements(extracted.analysis, input.requirements, { title, company, description });
-    Object.assign(requirements, compatibilityFields(jdAnalysis));
+    const jdAnalysis = reviewedAnalysis(extracted.analysis, input, requirements, { title, company, description: analysisDescription });
+    Object.assign(requirements, compatibilityFields(jdAnalysis), { maximumCgpa: jdAnalysis.eligibility.maximumCgpa, degrees: jdAnalysis.eligibility.degrees, backlogPolicy: jdAnalysis.eligibility.backlogPolicy, workAuthorization: jdAnalysis.eligibility.workAuthorization, locationRestrictions: jdAnalysis.eligibility.locationRestrictions, otherEligibility: jdAnalysis.eligibility.otherEligibility });
     const skills = cleanList(input.skills).length ? cleanList(input.skills) : cleanList([...requirements.requiredSkills, ...requirements.preferredSkills]);
-    const deadline = cleanDate(input.deadline);
+    const deadline = cleanDate(input.deadline); const postedAt = cleanDate(input.postedDate); const joiningDate = cleanDate(input.joiningDate);
     const sourceInput = input.source && typeof input.source === "object" && !Array.isArray(input.source) ? input.source : {};
-    const job = new Job({ title, company, description, applyUrl: applicationUrl, employmentType: ["internship", "full-time", "part-time", "contract"].includes(input.employmentType) ? input.employmentType : "full-time", experienceLevel: ["intern", "entry-level", "junior", "mid", "senior", "unspecified"].includes(input.experienceLevel) ? input.experienceLevel : extracted.analysis.experienceLevel, location: cleanLocation(input.location), salary: cleanSalary(input.salary), deadline, application: { officialUrl: applicationUrl, deadline }, source: { type: cleanText(input.sourceType || sourceInput.type, 50) || "admin", provider: cleanText(input.sourceProvider || sourceInput.provider, 80) || "manual", sourceUrl: cleanText(input.sourceUrl || sourceInput.sourceUrl, 2000) || applicationUrl, externalJobId: cleanText(input.externalJobId || sourceInput.externalJobId, 200) || null, rawText: cleanText(input.rawSourceText || sourceInput.rawText, 20000) || null, contact: input.contact && typeof input.contact === "object" && !Array.isArray(input.contact) ? input.contact : null, postedText: cleanText(input.postedText || sourceInput.postedText, 200) || null, applicantText: cleanText(input.applicantText || sourceInput.applicantText, 200) || null, hiringActivity: cleanText(input.hiringActivity || sourceInput.hiringActivity, 200) || null }, requirements, responsibilities: requirements.responsibilities, skills, jdAnalysis });
+    const compensation = cleanCompensation(input.compensation); const salary = compensation && (compensation.minAmount != null || compensation.maxAmount != null) ? { min: compensation.minAmount, max: compensation.maxAmount, currency: compensation.currency, period: compensation.period } : cleanSalary(input.salary);
+    const job = new Job({ title, company, department: cleanText(input.department, 120) || null, roleCategory: cleanText(input.roleCategory, 80) || null, description, applyUrl: applicationUrl, employmentType: ["full-time", "part-time", "internship", "contract", "apprenticeship", "temporary", "unknown"].includes(input.employmentType) ? input.employmentType : "unknown", workMode: ["onsite", "hybrid", "remote", "unknown"].includes(input.workMode) ? input.workMode : "unknown", experienceLevel: ["intern", "entry-level", "junior", "mid", "senior", "unspecified"].includes(input.experienceLevel) ? input.experienceLevel : "unspecified", experience: cleanExperience(input.experience), location: cleanLocation(input.location), multipleLocations: Array.isArray(input.multipleLocations) ? input.multipleLocations.map(cleanLocation).filter(Boolean).slice(0, 20) : [], salary, compensation, deadline, postedAt, joiningDate, internshipDuration: cleanDuration(input.internshipDuration), application: { officialUrl: applicationUrl, deadline, instructions: cleanText(input.applicationInstructions, 3000) || null }, source: { type: cleanText(input.sourceType || sourceInput.type, 50) || "admin", provider: cleanText(input.sourceProvider || sourceInput.provider, 80) || "manual", sourceUrl: cleanText(input.sourceUrl || sourceInput.sourceUrl, 2000) || applicationUrl, externalJobId: cleanText(input.externalJobId || sourceInput.externalJobId, 200) || null, rawText: cleanText(input.rawSourceText || sourceInput.rawText, 20000) || description, contact: input.contact && typeof input.contact === "object" && !Array.isArray(input.contact) ? input.contact : null, postedText: cleanText(input.postedText || sourceInput.postedText, 200) || null, applicantText: cleanText(input.applicantText || sourceInput.applicantText, 200) || null, hiringActivity: cleanText(input.hiringActivity || sourceInput.hiringActivity, 200) || null }, requirements, responsibilities: requirements.responsibilities, qualifications: requirements.qualifications, projectExpectations: requirements.projectExpectations, selectionProcess: requirements.selectionProcess, benefits: requirements.benefits, companyDescription: cleanText(input.companyDescription, 3000) || null, applicationInstructions: cleanText(input.applicationInstructions, 3000) || null, skills, jdAnalysis });
     job.verification = verifyJob(job);
     job.active = job.verification.status !== "expired";
     await job.save();

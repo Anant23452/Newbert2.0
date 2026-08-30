@@ -109,27 +109,80 @@ function buildCurrentStageAnalysisPrompt({ profile, target, selfAssessment }) {
 }
 
 function buildJobDescriptionPrompt({ title, company, description }) {
-  return `You are Newbert JD Extraction AI. Extract only information explicitly present or strongly and directly implied by the supplied job description. If information is unavailable, return null or an empty array. Never fill missing requirements using general knowledge.
+  return buildStructuredJobExtractionPrompt({ title, company, rawText: description });
+}
 
-Rules:
-- Do not decide whether a student is qualified.
-- Do not calculate a match score, readiness bucket, hiring probability, or placement probability.
-- Do not add technologies merely because they are common for this role.
-- Do not invent a CGPA, degree, branch, graduation year, location restriction, experience, or responsibility.
-- Every requirement must include a short exact supporting excerpt copied from the supplied description in evidenceText.
-- Classify importance only from the JD wording: critical, required, preferred, or optional.
-- Use confidence high only when the wording and importance are explicit; otherwise use medium or low.
-- Return valid JSON only with this shape:
-{"role":null,"eligibility":{"degrees":[],"branches":[],"graduationYears":[],"minimumCgpa":null,"locationRestrictions":[],"other":[]},"requirements":[{"canonicalSkill":"","label":"","category":"technical","importance":"required","evidenceText":"","confidence":"medium"}],"experience":{},"responsibilities":[]}.
+function buildStructuredJobExtractionPrompt({ title = null, company = null, rawText }) {
+  return `You are Newbert Job Description Extraction AI. Convert the supplied job description into valid JSON only.
 
-Title: ${title}
-Company: ${company}
-Description:
-${description}`;
+NON-NEGOTIABLE RULES:
+- Extract only facts explicitly present in the supplied text. If a value is absent, return null, "unknown", or [] exactly as the schema requires.
+- Never fill missing information using role knowledge, company knowledge, typical salaries, likely locations, or common technology stacks.
+- Never decide job verification, student eligibility, requirement coverage, readiness, hiring probability, interview probability, or placement probability.
+- Ignore tracking IDs, image/SVG URLs, page controls, applicant counts, promoted labels, and unrelated page metadata.
+- Every non-null important field must have a matching fieldEvidence item containing a short exact excerpt copied from the supplied text.
+- Every requirement must have a short exact evidenceText excerpt. Do not output a requirement without provenance.
+- Use confidence "high" only for direct unambiguous wording, "medium" for clear but less precise wording, and "low" for uncertain wording.
+- Classify requirement importance only from wording: must/mandatory/essential can be critical; required/strong knowledge/proficiency is required; preferred/good to have is preferred; nice to have/bonus/plus is optional.
+- Do not promote preferred or optional skills to required.
+- Location must contain only geography. Work mode, posted time, applicants, and hiring activity are separate.
+- Use ISO YYYY-MM-DD dates only when an explicit calendar date is supplied. Do not convert relative dates such as "3 days ago" into a calendar date.
+- Compensation numbers must contain digits only in JSON. Preserve the stated currency and period.
+
+Allowed enums:
+employmentType = full-time | part-time | internship | contract | apprenticeship | temporary | unknown
+workMode = onsite | hybrid | remote | unknown
+experienceLevel = intern | entry-level | junior | mid | senior | unspecified
+compensation.type = salary | stipend | unknown
+compensation.period = hourly | monthly | yearly | total | unknown
+requirement.importance = critical | required | preferred | optional
+requirement.category = technical | cs-fundamental | tool | framework | cloud | database | soft-skill | domain | other
+confidence = high | medium | low
+
+Return exactly this JSON shape:
+{
+  "basic": {
+    "companyName": null,
+    "jobTitle": null,
+    "department": null,
+    "roleCategory": null,
+    "employmentType": "unknown",
+    "workMode": "unknown",
+    "location": {"city": null, "state": null, "country": null, "raw": null},
+    "multipleLocations": [],
+    "experienceLevel": "unspecified",
+    "experience": {"minYears": null, "maxYears": null}
+  },
+  "compensation": {"type":"unknown","currency":null,"minAmount":null,"maxAmount":null,"period":"unknown","ppoAvailable":null,"bonus":null,"equity":null},
+  "dates": {"postedDate":null,"applicationDeadline":null,"joiningDate":null,"internshipDuration":{"value":null,"unit":null}},
+  "eligibility": {"degrees":[],"branches":[],"graduationYears":[],"minimumCgpa":null,"maximumCgpa":null,"backlogPolicy":null,"workAuthorization":null,"locationRestrictions":[],"otherEligibility":[]},
+  "requirements": [{"canonicalSkill":"","label":"","category":"technical","importance":"required","evidenceText":"","confidence":"medium"}],
+  "responsibilities":[],
+  "qualifications":[],
+  "csFundamentals":[],
+  "projectExpectations":[],
+  "selectionProcess":[],
+  "benefits":[],
+  "companyDescription":null,
+  "applicationInstructions":null,
+  "application":{"officialApplyUrl":null,"sourceUrl":null},
+  "fieldEvidence":[{"field":"basic.workMode","evidenceText":"Remote role","confidence":"high"}],
+  "source":{"detectedProvider":"unknown","linkedinJobId":null,"linkedinJobUrl":null},
+  "contact":{"email":null,"phone":null,"whatsapp":null},
+  "postedText":null,
+  "applicantText":null,
+  "hiringActivity":null
+}
+
+Known title supplied by admin: ${title || "not supplied"}
+Known company supplied by admin: ${company || "not supplied"}
+
+JOB DESCRIPTION:
+${rawText}`;
 }
 
 function buildRawJobPostPrompt(rawText) {
-  return `You are Newbert Job Extraction AI. Convert this noisy raw job post into valid JSON only. Extract only explicit facts. Ignore tracking IDs, SVG/image URLs, UI labels, and unrelated metadata. Location must contain only the geographic place: never include posted time, applicant count, promoted status, hiring activity, employment type, or work mode. For example, "Bengaluru, Karnataka, India · 3 days ago · 100+ applicants" becomes location "Bengaluru, Karnataka, India", postedText "3 days ago", applicantText "100+ applicants". Prefer an explicitly stated official apply URL over LinkedIn. Never decide verification or a student match. Use null for unavailable scalar values and [] for unavailable lists. Shape: {"title":null,"company":null,"location":{"city":null,"state":null,"country":null,"raw":null},"workMode":null,"employmentType":null,"experienceLevel":null,"education":[],"requiredSkills":[],"preferredSkills":[],"generalSkills":[],"csFundamentals":[],"responsibilities":[],"summary":null,"salary":null,"deadline":null,"postedText":null,"applicantText":null,"hiringActivity":null,"officialApplyUrl":null,"contact":{"email":null,"phone":null,"whatsapp":null},"source":{"detectedProvider":"unknown","linkedinJobId":null,"linkedinJobUrl":null,"sourceUrl":null}}\n\nRaw post:\n${rawText}`;
+  return buildStructuredJobExtractionPrompt({ rawText });
 }
 
 function buildFeaturePrompt(feature, facts, specificRules) {
