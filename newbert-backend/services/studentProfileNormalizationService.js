@@ -1,4 +1,4 @@
-const { normalizeSkill } = require("./seniorMatchService");
+const { normalizeSkill } = require("./skillNormalizationService");
 
 function kolkataDate(value = new Date()) {
   const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(value));

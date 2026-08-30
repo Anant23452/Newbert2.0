@@ -1,17 +1,5 @@
 const { calculateSimilarity, findClosestSeniors } = require("./alumniMatchingService");
-const SKILL_ALIASES = new Map([
-  ["js", "javascript"], ["javascript", "javascript"],
-  ["node", "nodejs"], ["nodejs", "nodejs"], ["node.js", "nodejs"],
-  ["reactjs", "react"], ["react.js", "react"], ["react", "react"],
-  ["expressjs", "express"], ["express.js", "express"],
-  ["mongo", "mongodb"], ["mongo db", "mongodb"],
-  ["data structures and algorithms", "dsa"], ["algorithms", "dsa"],
-]);
-
-function normalizeSkill(value) {
-  const normalized = String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
-  return SKILL_ALIASES.get(normalized) || normalized.replace(/[ .]/g, "");
-}
+const { normalizeSkill } = require("./skillNormalizationService");
 
 function calculateSeniorMatch(student, senior, target = {}) {
   const goal = target.type === "gate" ? "gate" : target.type === "government-psu" ? "psu" : target.type === "core-placement" ? "core" : target.type === "data-ai" ? "data" : target.type === "internship" ? "internship" : "placement";

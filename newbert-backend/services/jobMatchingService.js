@@ -1,35 +1,58 @@
-const { normalizeSkill, normalizeSkillList } = require("./alumniMatchingService");
+const { COVERAGE_RULES, IMPORTANCE_WEIGHTS, STATUS_CREDIT } = require("../config/jobMatchingConfig");
+const { normalizeStructuredAnalysis } = require("./jobJdAnalysisService");
+const { areRelatedSkills, normalizeSkill } = require("./skillNormalizationService");
+const { normalizeStudentProfile } = require("./studentProfileNormalizationService");
 
-function numeric(value) { const number = Number(value); return Number.isFinite(number) ? number : null; }
+function numeric(value) { const number = value == null || value === "" ? null : Number(value); return Number.isFinite(number) ? number : null; }
 function list(value) { return Array.isArray(value) ? value : []; }
-function studentSkills(profile) { return normalizeSkillList([...(profile.skills || []), ...(profile.githubStats?.languages || [])]); }
-function scoreOverlap(mine, required) { return mine.length && required.length ? Math.round((required.filter((skill) => mine.includes(skill)).length / required.length) * 100) : null; }
-function boundedEvidence(actual, expected) { const value = numeric(actual); const target = numeric(expected); return value != null && target != null && target > 0 ? Math.max(0, Math.min(100, Math.round((value / target) * 100))) : null; }
-function eligibility(profile, requirements = {}) {
-  const failedRequirements = [];
-  if (numeric(requirements.minimumCgpa) != null && numeric(profile.cgpa) != null && Number(profile.cgpa) < Number(requirements.minimumCgpa)) failedRequirements.push(`Minimum CGPA is ${requirements.minimumCgpa}`);
-  if (list(requirements.allowedBranches).length && profile.branch && !list(requirements.allowedBranches).map(normalizeSkill).includes(normalizeSkill(profile.branch))) failedRequirements.push(`This role is limited to ${requirements.allowedBranches.join(", ")}`);
-  if (list(requirements.graduationYears).length && numeric(profile.graduationYear) != null && !list(requirements.graduationYears).map(Number).includes(Number(profile.graduationYear))) failedRequirements.push(`This role is for graduation year ${requirements.graduationYears.join(" or ")}`);
-  return { eligible: !failedRequirements.length, failedRequirements };
+function normalizedProfile(profile) { return profile?.development && profile?.academics ? profile : normalizeStudentProfile(profile || {}); }
+function structuredJob(job) { if (Array.isArray(job?.jdAnalysis?.requirements) && job.jdAnalysis.eligibility) return job.jdAnalysis; return normalizeStructuredAnalysis(job?.jdAnalysis || job?.requirements || {}, { title: job?.title, description: job?.description }, "legacy_saved_job"); }
+function check(field, required, studentValue, status, reason) { return { field, required, studentValue: studentValue ?? null, status, reason }; }
+
+function evaluateEligibility(studentInput, jdInput) {
+  const student = normalizedProfile(studentInput); const jd = jdInput?.eligibility ? jdInput : { eligibility: jdInput || {} }; const rules = jd.eligibility || {}; const checks = [];
+  if (numeric(rules.minimumCgpa) != null) { const value = numeric(student.academics.cgpa); checks.push(value == null ? check("minimumCgpa", Number(rules.minimumCgpa), null, "unknown", "CGPA is not available in the student profile.") : check("minimumCgpa", Number(rules.minimumCgpa), value, value >= Number(rules.minimumCgpa) ? "passed" : "failed", value >= Number(rules.minimumCgpa) ? "Saved CGPA meets the explicit JD minimum." : "Saved CGPA is below the explicit JD minimum.")); }
+  if (list(rules.branches).length) { const value = student.academics.branch; const allowed = list(rules.branches).map(normalizeSkill); checks.push(!value ? check("branch", rules.branches, null, "unknown", "Branch is not available in the student profile.") : check("branch", rules.branches, value, allowed.includes(normalizeSkill(value)) ? "passed" : "failed", allowed.includes(normalizeSkill(value)) ? "Saved branch appears in the explicit JD list." : "Saved branch does not appear in the explicit JD list.")); }
+  if (list(rules.graduationYears).length) { const value = numeric(student.academics.graduationYear); const allowed = list(rules.graduationYears).map(Number); checks.push(value == null ? check("graduationYear", allowed, null, "unknown", "Graduation year is not available in the student profile.") : check("graduationYear", allowed, value, allowed.includes(value) ? "passed" : "failed", allowed.includes(value) ? "Saved graduation year appears in the explicit JD list." : "Saved graduation year does not appear in the explicit JD list.")); }
+  if (list(rules.degrees).length) checks.push(check("degree", rules.degrees, null, "unknown", "Newbert does not currently store a normalized degree field."));
+  if (list(rules.locationRestrictions).length) checks.push(check("locationRestrictions", rules.locationRestrictions, null, "unknown", "Newbert does not currently store work authorization or student location eligibility evidence."));
+  for (const item of list(rules.other)) checks.push(check("other", item, null, "unknown", "This explicit eligibility condition is not machine-verifiable from the current profile."));
+  const failedChecks = checks.filter((item) => item.status === "failed"); const unknownChecks = checks.filter((item) => item.status === "unknown"); const eligible = failedChecks.length ? false : unknownChecks.length ? null : true;
+  return { eligible, checks, unknownChecks, failedChecks };
 }
-function weighted(criteria) { const usable = criteria.filter((item) => item.score != null); return { overallScore: usable.length ? Math.round(usable.reduce((sum, item) => sum + item.score * item.weight, 0) / usable.reduce((sum, item) => sum + item.weight, 0)) : null, breakdown: Object.fromEntries(usable.map((item) => [item.key, item.score])) }; }
-function analyzeJobMatch(profile, job) {
-  const requirements = job.requirements || {}; const mine = studentSkills(profile); const required = normalizeSkillList(requirements.requiredSkills || job.skills); const preferred = normalizeSkillList(requirements.preferredSkills); const fundamentals = normalizeSkillList(requirements.csFundamentals);
-  const result = weighted([
-    { key: "requiredSkills", weight: 40, score: scoreOverlap(mine, required) },
-    { key: "preferredSkills", weight: 15, score: scoreOverlap(mine, preferred) },
-    { key: "projects", weight: 15, score: numeric(profile.projects) != null ? boundedEvidence(profile.projects, requirements.minimumProjects || 2) : null },
-    { key: "dsa", weight: 10, score: /dsa|algorithm|coding|leetcode/i.test(`${job.description} ${(requirements.requiredSkills || []).join(" ")}`) ? boundedEvidence(profile.leetcodeStats?.totalSolved, 150) : null },
-    { key: "csFundamentals", weight: 10, score: scoreOverlap(mine, fundamentals) },
-    { key: "academics", weight: 10, score: numeric(profile.cgpa) != null && numeric(requirements.minimumCgpa) != null ? (profile.cgpa >= requirements.minimumCgpa ? 100 : Math.max(0, Math.round((profile.cgpa / requirements.minimumCgpa) * 100))) : null },
-  ]);
-  const check = eligibility(profile, requirements);
-  const matched = required.filter((skill) => mine.includes(skill)); const missingRequired = required.filter((skill) => !mine.includes(skill)); const missingPreferred = preferred.filter((skill) => !mine.includes(skill)); const missingFundamentals = fundamentals.filter((skill) => !mine.includes(skill));
-  const critical = [...missingRequired, ...check.failedRequirements]; const recommended = missingFundamentals; const optional = missingPreferred;
-  const eligibleScore = check.eligible ? result.overallScore : null;
-  const bucket = !check.eligible ? "not_ready" : eligibleScore >= 80 && !critical.length ? "apply_today" : eligibleScore >= 55 && critical.length <= 2 ? "within_reach" : "not_ready";
-  const daysToReach = bucket === "within_reach" ? (critical.length + recommended.length <= 2 ? 14 : null) : null;
-  const advantages = mine.filter((skill) => ![...required, ...preferred, ...fundamentals].includes(skill)).slice(0, 5);
-  return { overallScore: result.overallScore, eligible: check.eligible, failedRequirements: check.failedRequirements, bucket, withinReachDays: daysToReach, breakdown: result.breakdown, gaps: { critical, recommended, optional }, matchedRequirements: matched, studentAdvantages: advantages, reason: [`Matches your ${profile.targetRole || "career"} target`.trim(), ...matched.slice(0, 3).map((skill) => `${skill} is required for this role`), ...critical.slice(0, 2).map((skill) => `${skill} is currently missing`)] };
+
+function matchRequirement(student, requirement) {
+  const result = { requirementId: requirement.id, skill: requirement.label, canonicalSkill: requirement.canonicalSkill, importance: requirement.importance, jdEvidence: requirement.evidenceText || null, confidence: requirement.confidence, status: "unknown", evidence: [], explanation: "" };
+  if (requirement.scoreEligible === false) return { ...result, explanation: "The extracted requirement does not have sufficiently reliable JD evidence, so it is excluded from scoring." };
+  const skills = student.development.skills || [];
+  if (!skills.length) return { ...result, explanation: "Student skill evidence is unavailable; Newbert does not treat this as missing." };
+  const exact = skills.find((skill) => skill.normalizedName === requirement.canonicalSkill);
+  if (exact) return { ...result, status: "matched", evidence: exact.evidence || [], explanation: `${exact.name} appears in the current student evidence.` };
+  const related = skills.find((skill) => areRelatedSkills(skill.normalizedName, requirement.canonicalSkill));
+  if (related) return { ...result, status: "partial", evidence: related.evidence || [], explanation: `${related.name} is a curated related skill, but it is not an exact ${requirement.label} match.` };
+  if (requirement.canonicalSkill === "dsa" && student.dsa.available) return { ...result, status: "partial", evidence: [{ source: "leetcode", supported: true }], explanation: `LeetCode evidence is available (${student.dsa.totalSolved} total solved), but JD-specific DSA topic coverage cannot be verified.` };
+  return { ...result, status: "missing", explanation: `No matching evidence for ${requirement.label} appears in the current student profile.` };
 }
-module.exports = { analyzeJobMatch, eligibility };
+
+function coverageFor(matches, allowedImportance = null) {
+  const candidates = matches.filter((match) => (!allowedImportance || allowedImportance.includes(match.importance)) && IMPORTANCE_WEIGHTS[match.importance] != null);
+  const scoreEligible = candidates.filter((match) => match.confidence !== "low" && match.jdEvidence); const known = scoreEligible.filter((match) => match.status !== "unknown");
+  const totalWeight = scoreEligible.reduce((sum, match) => sum + IMPORTANCE_WEIGHTS[match.importance], 0); const knownWeight = known.reduce((sum, match) => sum + IMPORTANCE_WEIGHTS[match.importance], 0); const knownRatio = totalWeight ? knownWeight / totalWeight : 0;
+  if (!totalWeight || !knownWeight || knownRatio < COVERAGE_RULES.minimumKnownWeightRatio) return { status: "unavailable", value: null, knownWeightRatio: Math.round(knownRatio * 100), explanation: "Not enough reliable JD and student evidence is available for responsible coverage." };
+  const earned = known.reduce((sum, match) => sum + IMPORTANCE_WEIGHTS[match.importance] * STATUS_CREDIT[match.status], 0);
+  return { status: "available", value: Math.round((earned / knownWeight) * 100), knownWeightRatio: Math.round(knownRatio * 100), explanation: "Unknown requirements are excluded rather than scored as missing." };
+}
+
+function learningDistance(requirementMatches, bucket) { if (bucket !== "within_reach") return null; const gaps = requirementMatches.filter((item) => ["partial", "missing"].includes(item.status) && ["critical", "required"].includes(item.importance)); const label = gaps.length <= 1 ? "small gap" : gaps.length <= 3 ? "moderate gap" : "significant gap"; const actions = gaps.slice(0, 3).map((gap) => gap.status === "partial" ? `Strengthen and document direct ${gap.skill} evidence.` : `Build truthful ${gap.skill} evidence through study or a relevant project.`); return { label, actions }; }
+function bucketFor(eligibility, coverage, matches) { if (eligibility.eligible === false) return "not_eligible"; if (eligibility.eligible == null || coverage.overall.status !== "available" || coverage.required.status !== "available") return "insufficient_data"; const criticalBlocker = matches.some((match) => match.importance === "critical" && match.status !== "matched"); const missingCritical = matches.some((match) => match.importance === "critical" && match.status === "missing"); if (!criticalBlocker && coverage.overall.value >= COVERAGE_RULES.applyNowOverall && coverage.required.value >= COVERAGE_RULES.applyNowRequired) return "apply_now"; if (!missingCritical && coverage.overall.value >= COVERAGE_RULES.withinReachOverall && coverage.required.value >= COVERAGE_RULES.withinReachRequired) return "within_reach"; return "not_ready"; }
+
+function analyzeJobMatch(profileInput, job) {
+  const student = normalizedProfile(profileInput); const jd = structuredJob(job); const eligibility = evaluateEligibility(student, jd); const requirementMatches = list(jd.requirements).map((requirement) => matchRequirement(student, requirement));
+  const overall = coverageFor(requirementMatches); const required = coverageFor(requirementMatches, ["critical", "required"]); const preferred = coverageFor(requirementMatches, ["preferred", "optional"]); const counts = { matched: 0, partial: 0, missing: 0, unknown: 0 }; requirementMatches.forEach((match) => { counts[match.status] += 1; });
+  const coverage = { overall, required, preferred, matchedCount: counts.matched, partialCount: counts.partial, missingCount: counts.missing, unknownCount: counts.unknown }; const bucket = bucketFor(eligibility, coverage, requirementMatches); const failedRequirements = eligibility.failedChecks.map((item) => item.reason); const matchedRequirements = requirementMatches.filter((item) => item.status === "matched").map((item) => item.skill); const critical = requirementMatches.filter((item) => item.status === "missing" && ["critical", "required"].includes(item.importance)).map((item) => item.skill); const recommended = requirementMatches.filter((item) => item.status === "partial").map((item) => item.skill); const optional = requirementMatches.filter((item) => item.status === "missing" && ["preferred", "optional"].includes(item.importance)).map((item) => item.skill); const unknown = requirementMatches.filter((item) => item.status === "unknown").map((item) => item.skill);
+  const bucketReason = { not_eligible: "At least one explicit JD eligibility condition failed.", insufficient_data: "The available JD or student evidence is not sufficient for a responsible recommendation.", not_ready: "Critical or required evidence gaps remain under Newbert's configured thresholds.", within_reach: "No explicit eligibility failure exists, but meaningful core requirement gaps remain.", apply_now: "Available evidence satisfies Newbert's eligibility and core requirement-coverage thresholds. This does not guarantee an interview or offer." }[bucket];
+  return { overallScore: overall.value, coverage, eligible: eligibility.eligible, eligibility, failedRequirements, bucket, legacyBucket: bucket === "apply_now" ? "apply_today" : bucket === "not_eligible" ? "not_ready" : bucket, requirementMatches, matchedRequirements, gaps: { critical, recommended, optional, unknown }, learningDistance: learningDistance(requirementMatches, bucket), reason: [bucketReason, ...matchedRequirements.slice(0, 2).map((skill) => `${skill} has current profile evidence.`)], bucketReason };
+}
+
+function eligibility(profile, requirements = {}) { const jd = normalizeStructuredAnalysis(requirements, { title: "Job", description: "" }, "legacy_saved_job"); const result = evaluateEligibility(profile, jd); return { eligible: result.eligible, failedRequirements: result.failedChecks.map((item) => item.reason), ...result }; }
+module.exports = { analyzeJobMatch, bucketFor, coverageFor, eligibility, evaluateEligibility, matchRequirement, structuredJob };

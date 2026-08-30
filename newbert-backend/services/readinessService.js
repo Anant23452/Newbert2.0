@@ -1,4 +1,4 @@
-const { normalizeSkill } = require("./seniorMatchService");
+const { normalizeSkill } = require("./skillNormalizationService");
 const { getTargetRequirements } = require("./targetRequirementsService");
 const { getRoleBenchmark } = require("../config/readinessBenchmarks");
 

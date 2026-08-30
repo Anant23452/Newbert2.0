@@ -109,7 +109,23 @@ function buildCurrentStageAnalysisPrompt({ profile, target, selfAssessment }) {
 }
 
 function buildJobDescriptionPrompt({ title, company, description }) {
-  return `Extract only explicitly stated job requirements from this job description. Return valid JSON only: {"requiredSkills":[],"preferredSkills":[],"csFundamentals":[],"minimumCgpa":null,"allowedBranches":[],"graduationYears":[],"experienceLevel":"unspecified","responsibilities":[]}. Never infer a skill, CGPA, branch, year, or experience level that is not stated.\n\nTitle: ${title}\nCompany: ${company}\nDescription:\n${description}`;
+  return `You are Newbert JD Extraction AI. Extract only information explicitly present or strongly and directly implied by the supplied job description. If information is unavailable, return null or an empty array. Never fill missing requirements using general knowledge.
+
+Rules:
+- Do not decide whether a student is qualified.
+- Do not calculate a match score, readiness bucket, hiring probability, or placement probability.
+- Do not add technologies merely because they are common for this role.
+- Do not invent a CGPA, degree, branch, graduation year, location restriction, experience, or responsibility.
+- Every requirement must include a short exact supporting excerpt copied from the supplied description in evidenceText.
+- Classify importance only from the JD wording: critical, required, preferred, or optional.
+- Use confidence high only when the wording and importance are explicit; otherwise use medium or low.
+- Return valid JSON only with this shape:
+{"role":null,"eligibility":{"degrees":[],"branches":[],"graduationYears":[],"minimumCgpa":null,"locationRestrictions":[],"other":[]},"requirements":[{"canonicalSkill":"","label":"","category":"technical","importance":"required","evidenceText":"","confidence":"medium"}],"experience":{},"responsibilities":[]}.
+
+Title: ${title}
+Company: ${company}
+Description:
+${description}`;
 }
 
 function buildRawJobPostPrompt(rawText) {
@@ -129,7 +145,22 @@ function buildInterviewPracticePrompt(facts) {
 }
 
 function buildJobMatchExplanationPrompt(facts) {
-  return buildFeaturePrompt("a job-match explanation", facts, "Explain server-provided matching signals without calculating a new score or implying an application outcome.");
+  return `You are Newbert AI explaining an already-completed deterministic job match.
+
+Use only the supplied server facts. You must not:
+- change or calculate the eligibility result, requirement coverage, counts, or readiness bucket;
+- invent a JD requirement, student skill, evidence source, gap, or eligibility condition;
+- predict recruiter behavior, hiring, interview, placement, or offer probability;
+- promise an interview or offer;
+- treat unknown information as missing.
+
+Return valid JSON only with this exact shape:
+{"summary":"","bucketReason":"","strongestMatches":[],"importantGaps":[],"nextStep":""}
+
+Keep the explanation concise. Coverage means coverage of the saved explicit JD requirements, not hiring probability.
+
+Server facts:
+${JSON.stringify(facts || {})}`;
 }
 
 function buildResumeImprovementPrompt(facts) {

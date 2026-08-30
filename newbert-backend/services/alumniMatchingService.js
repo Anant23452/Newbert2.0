@@ -1,15 +1,4 @@
-const SKILL_ALIASES = new Map([
-  ["js", "javascript"], ["javascript", "javascript"], ["react.js", "react"], ["reactjs", "react"], ["node", "nodejs"], ["node.js", "nodejs"], ["nodejs", "nodejs"], ["mongo", "mongodb"], ["mongo db", "mongodb"], ["express.js", "express"], ["expressjs", "express"], ["cpp", "c++"], ["data structures and algorithms", "dsa"], ["algorithms", "dsa"],
-]);
-
-function normalizeSkill(value) {
-  const normalized = String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
-  return SKILL_ALIASES.get(normalized) || normalized.replace(/[ .]/g, "");
-}
-
-function normalizeSkillList(values) {
-  return [...new Set((values || []).map((value) => normalizeSkill(typeof value === "object" ? value.name : value)).filter(Boolean))];
-}
+const { normalizeSkill, normalizeSkillList } = require("./skillNormalizationService");
 
 function activeGoal(profile, plan) {
   const value = String(plan?.target?.type || profile?.targetRole || "software-placement").toLowerCase();
