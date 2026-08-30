@@ -35,7 +35,9 @@ function buildPlanExplanationPrompt({ profile, plan }) {
       customGoal: sourcePlan.target.customGoal || null,
     } : null,
     deterministicReadiness: sourcePlan.readiness || null,
-    deterministicGaps: sourcePlan.gaps || [],
+    dataConfidence: sourcePlan.dataConfidence || null,
+    prioritizedGaps: (sourcePlan.prioritizedGaps || []).map((gap) => ({ id: gap.id, item: gap.item, priorityScore: gap.priorityScore, priority: gap.priority, reasons: gap.reasons })),
+    nextBestAction: sourcePlan.nextBestAction || null,
     deterministicSeniorMatch: match ? {
       score: match.score,
       senior: match.senior ? {
@@ -50,6 +52,7 @@ function buildPlanExplanationPrompt({ profile, plan }) {
       comparison: match.comparison || null,
     } : null,
     phases: (sourcePlan.phases || []).map((phase) => ({
+      id: phase.id,
       title: phase.title,
       startWeek: phase.startWeek,
       endWeek: phase.endWeek,
@@ -58,7 +61,7 @@ function buildPlanExplanationPrompt({ profile, plan }) {
     progress: sourcePlan.progress || null,
   };
 
-  return `You are Newbert AI, a careful career-plan explainer for a student.\n\nThe JSON below contains server-calculated facts. You must explain them; do not calculate, alter, replace, or second-guess any score, percentage, match, ranking, timeline, or gap.\n\nRules:\n- Use only facts present in the JSON. Never invent achievements, senior data, skills, activity, companies, probabilities, or guarantees.\n- Treat missing GitHub, LeetCode, senior-match, CGPA, project, or skill data as unavailable. Do not treat unavailable data as a weakness unless the deterministic gaps explicitly do so.\n- Clearly distinguish factual observations from your suggested next actions.\n- Do not claim that the student will get a job, placement, interview, or offer.\n- Keep the answer concise and professional: a short overview, the three highest-priority actions, and one encouraging closing sentence.\n- Use plain text only. Do not use HTML, tables, or JSON in the answer.\n- Preserve every numeric value exactly as supplied.\n\nServer facts:\n${JSON.stringify(facts)}`;
+  return `You are Newbert AI, a careful explainer of a deterministic student roadmap.\n\nThe server facts are authoritative. You may explain them, but you must not create roadmap content.\n\nRules:\n- Use only facts present in the JSON. Never introduce a skill, tool, task, phase, target-job requirement, achievement, company, score, timeline, probability, or guarantee.\n- Do not reorder tasks or gaps and do not change any priority score.\n- The nextBestAction was selected by the server. Explain why it matters using only its supplied why and evidence fields.\n- Missing data is unknown, not weakness and not zero.\n- Do not claim that the student will get a job, placement, interview, or offer.\n- Return valid JSON only: {"summary":"","nextActionExplanation":"","phaseDescriptions":[{"phaseId":"","description":""}]}.\n- Use only supplied phase IDs. Keep each description concise. Preserve every numeric value exactly.\n\nServer facts:\n${JSON.stringify(facts)}`;
 }
 
 function buildReadinessExplanationPrompt(analysis) {
@@ -117,6 +120,7 @@ function buildStructuredJobExtractionPrompt({ title = null, company = null, rawT
 
 NON-NEGOTIABLE RULES:
 - Extract only facts explicitly present in the supplied text. If a value is absent, return null, "unknown", or [] exactly as the schema requires.
+- Do not infer or guess any missing fact.
 - Never fill missing information using role knowledge, company knowledge, typical salaries, likely locations, or common technology stacks.
 - Never decide job verification, student eligibility, requirement coverage, readiness, hiring probability, interview probability, or placement probability.
 - Ignore tracking IDs, image/SVG URLs, page controls, applicant counts, promoted labels, and unrelated page metadata.
@@ -229,6 +233,7 @@ module.exports = {
   buildCurrentStageAnalysisPrompt,
   buildJobDescriptionPrompt,
   buildRawJobPostPrompt,
+  buildStructuredJobExtractionPrompt,
   buildResumeImprovementPrompt,
   buildSeniorMatchExplanationPrompt,
   buildTestPrompt,

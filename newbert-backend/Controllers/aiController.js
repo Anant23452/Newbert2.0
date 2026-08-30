@@ -1,7 +1,8 @@
 const Plan = require("../Models/Plan");
 const Profile = require("../Models/Profile");
 const { generateAI } = require("../services/ai/aiService");
-const { TEST_MESSAGE, buildPlanExplanationPrompt, buildTestPrompt } = require("../services/ai/prompts");
+const { TEST_MESSAGE, buildTestPrompt } = require("../services/ai/prompts");
+const { explainRoadmap, explanationText } = require("../services/roadmapExplanationService");
 
 function sendAIError(res, error, operation) {
   const code = error?.code || "AI_PROVIDER_ERROR";
@@ -29,12 +30,8 @@ exports.explainPlan = async (req, res) => {
     if (!profile) return res.status(404).json({ success: false, message: "Complete your profile before requesting an AI insight." });
     if (!plan) return res.status(404).json({ success: false, message: "Build your plan first." });
 
-    const explanation = await generateAI({
-      prompt: buildPlanExplanationPrompt({ profile, plan }),
-      task: "plan-explanation",
-    });
-
-    return res.json({ success: true, explanation });
+    const result = await explainRoadmap(plan);
+    return res.json({ success: true, explanation: explanationText(result), explanationData: result, source: result.source });
   } catch (error) {
     return sendAIError(res, error, "plan-explanation");
   }

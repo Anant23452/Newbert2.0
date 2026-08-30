@@ -20,6 +20,16 @@ export async function recalculatePlan() {
   return data.plan;
 }
 
+export async function getRoadmapTargetJobs() {
+  const { data } = await API.get("/plans/target-jobs");
+  return data.jobs || [];
+}
+
+export async function setPlanTaskStatus(taskId, status) {
+  const { data } = await API.patch(`/plans/tasks/${taskId}`, { status });
+  return data.plan;
+}
+
 export async function setPlanTaskCompleted(taskId, completed) {
   const { data } = await API.patch(`/plans/tasks/${taskId}`, { completed });
   return data.plan;

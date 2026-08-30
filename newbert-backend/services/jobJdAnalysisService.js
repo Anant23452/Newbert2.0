@@ -191,7 +191,7 @@ function deterministicJdFallback(input) {
   const degreeMatches = description.match(/\b(B\.?\s?Tech|B\.?E\.?|BCA|MCA|B\.?Sc|M\.?Tech)\b/gi) || [];
   const branchMatches = description.match(/\b(CSE|Computer Science(?: and Engineering)?|Information Technology|IT|ECE|EE|Electrical Engineering|Mechanical Engineering|Civil Engineering)\b/gi) || [];
   const employmentType = /\bapprenticeship\b/i.test(description) ? "apprenticeship" : /\btemporary\b/i.test(description) ? "temporary" : /\bcontract\b/i.test(description) ? "contract" : /\bpart[ -]?time\b/i.test(description) ? "part-time" : /\binternship|intern\b/i.test(description) ? "internship" : /\bfull[ -]?time\b/i.test(description) ? "full-time" : "unknown";
-  const workMode = /\bhybrid\b/i.test(description) ? "hybrid" : /\bremote\b/i.test(description) ? "remote" : /\bon[ -]?site|onsite\b/i.test(description) ? "onsite" : "unknown";
+  const workMode = /\bhybrid\b/i.test(description) ? "hybrid" : /\bremote(?:ly)?\b/i.test(description) ? "remote" : /\bon[ -]?site|onsite\b/i.test(description) ? "onsite" : "unknown";
   const compensationMatch = description.match(/(?:₹|INR\s*)\s*([\d,]+)(?:\s*(?:-|–|to)\s*(?:₹|INR\s*)?([\d,]+))?\s*(?:\/|per\s*)?(month|monthly|year|yearly|annum|hour|hourly)?/i);
   const periodWord = compensationMatch?.[3]?.toLowerCase();
   const compensation = compensationMatch ? { type: /intern|stipend/i.test(description) ? "stipend" : "salary", currency: "INR", minAmount: Number(compensationMatch[1].replaceAll(",", "")), maxAmount: Number((compensationMatch[2] || compensationMatch[1]).replaceAll(",", "")), period: /month/.test(periodWord) ? "monthly" : /year|annum/.test(periodWord) ? "yearly" : /hour/.test(periodWord) ? "hourly" : "unknown", ppoAvailable: /\bno\s+ppo\b/i.test(description) ? false : /\bppo\b/i.test(description) ? true : null } : {};
@@ -199,7 +199,7 @@ function deterministicJdFallback(input) {
   const fieldEvidence = [];
   const addEvidence = (field, evidenceText) => { if (evidenceText) fieldEvidence.push({ field, evidenceText, confidence: "high" }); };
   addEvidence("basic.employmentType", sourceSentences.find((sentence) => employmentType !== "unknown" && new RegExp(employmentType.replace("-", "[ -]?"), "i").test(sentence)));
-  addEvidence("basic.workMode", sourceSentences.find((sentence) => workMode !== "unknown" && new RegExp(workMode === "onsite" ? "on[ -]?site|onsite" : workMode, "i").test(sentence)));
+  addEvidence("basic.workMode", sourceSentences.find((sentence) => workMode !== "unknown" && new RegExp(workMode === "onsite" ? "on[ -]?site|onsite" : workMode === "remote" ? "remote(?:ly)?" : workMode, "i").test(sentence)));
   addEvidence("eligibility.minimumCgpa", cgpaMatch?.[0]);
   if (years.length) addEvidence("eligibility.graduationYears", sourceSentences.find((sentence) => years.some((year) => sentence.includes(String(year)))));
   if (degreeMatches.length) addEvidence("eligibility.degrees", sourceSentences.find((sentence) => degreeMatches.some((degree) => sentence.toLowerCase().includes(degree.toLowerCase()))));
@@ -218,6 +218,7 @@ function mergeAdminRequirements(baseAnalysis, overrides, input) {
   const value = {
     ...baseAnalysis,
     requirements: hasRequirementOverride ? replacements : baseAnalysis.requirements,
+    ...(hasRequirementOverride ? { criticalSkills: textList(overrides.criticalSkills), requiredSkills: textList(overrides.requiredSkills), preferredSkills: textList(overrides.preferredSkills), optionalSkills: textList(overrides.optionalSkills), csFundamentals: textList(overrides.csFundamentals) } : {}),
     eligibility: {
       ...baseAnalysis.eligibility,
       ...(Object.hasOwn(overrides, "degrees") ? { degrees: overrides.degrees } : {}),

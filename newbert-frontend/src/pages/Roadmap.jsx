@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import GoalForm from "../planComponents/GoalForm";
 import PlanDashboard from "../planComponents/PlanDashboard";
 import useAuth from "../hook/useAuth";
-import { generatePlan, getMyPlan, getPlanExplanation, recalculatePlan, setPlanTaskCompleted } from "../Services/planService";
+import { generatePlan, getMyPlan, getPlanExplanation, recalculatePlan, setPlanTaskStatus } from "../Services/planService";
 
 export default function Roadmap() {
   const { profile, loading: authLoading, isAuthenticated } = useAuth();
@@ -47,10 +47,10 @@ export default function Roadmap() {
     finally { setSubmitting(false); }
   };
 
-  const toggleTask = async (task) => {
+  const updateTaskStatus = async (task, status) => {
     setBusyTask(task.id);
     setError("");
-    try { setPlan(await setPlanTaskCompleted(task.id, !task.completed)); setAiExplanation(""); setAiError(""); }
+    try { setPlan(await setPlanTaskStatus(task.id, status)); setAiExplanation(""); setAiError(""); }
     catch (requestError) { setError(requestError.response?.data?.message || "Unable to save task progress."); }
     finally { setBusyTask(""); }
   };
@@ -76,7 +76,7 @@ export default function Roadmap() {
   if (!profile?.onboardingCompleted) return <Message title="Complete your profile first." detail="Only college and branch are required. Build My Plan will reuse the rest of your saved data and will not ask for it again." action="Complete profile" to="/complete-profile"/>;
   if (!plan || changingGoal) return <GoalForm profile={profile} existingPlan={plan} submitting={submitting} error={error} onCancel={plan ? () => { setChangingGoal(false); setError(""); } : null} onSubmit={build}/>;
 
-  return <><PlanDashboard plan={plan} busyTask={busyTask} recalculating={recalculating} aiExplanation={aiExplanation} aiLoading={aiLoading} aiError={aiError} onExplainPlan={explainPlan} onTaskToggle={toggleTask} onChangeGoal={() => setChangingGoal(true)} onRecalculate={recalculate}/>{error && <div className="fixed bottom-5 right-5 z-50 max-w-sm rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 shadow-xl">{error}</div>}</>;
+  return <><PlanDashboard plan={plan} busyTask={busyTask} recalculating={recalculating} aiExplanation={aiExplanation} aiLoading={aiLoading} aiError={aiError} onExplainPlan={explainPlan} onTaskStatus={updateTaskStatus} onChangeGoal={() => setChangingGoal(true)} onRecalculate={recalculate}/>{error && <div className="fixed bottom-5 right-5 z-50 max-w-sm rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800 shadow-xl">{error}</div>}</>;
 }
 
 function PlanLoading() { return <main className="min-h-screen bg-[#0f172a] px-5 py-14 text-white"><div className="mx-auto max-w-6xl animate-pulse"><div className="h-64 rounded-2xl bg-white/10"/><div className="mt-6 grid gap-6 lg:grid-cols-2"><div className="h-72 rounded-2xl bg-white/10"/><div className="h-72 rounded-2xl bg-white/10"/></div><div className="mt-6 h-80 rounded-2xl bg-white/10"/><p className="mt-6 text-sm font-semibold text-slate-400">Loading your profile, senior benchmarks, gaps, and saved progress…</p></div></main>; }

@@ -77,6 +77,28 @@ const ROLE_BENCHMARKS = {
     projects: { targetCount: 3 },
     activity: { targetActiveDays30: 12 },
   },
+  "machine-learning-engineer": {
+    id: "machine-learning-engineer",
+    label: "Machine Learning Engineer",
+    aliases: ["machine learning", "ml engineer", "machine learning developer", "ai engineer"],
+    coreSkills: [
+      { key: "python", label: "Python", skills: ["Python"], priority: "high" },
+      { key: "numpy", label: "NumPy", skills: ["NumPy"], priority: "high" },
+      { key: "pandas", label: "Pandas", skills: ["Pandas"], priority: "high" },
+      { key: "scikit-learn", label: "scikit-learn", skills: ["scikit-learn", "sklearn"], priority: "high" },
+      { key: "statistics", label: "Statistics", skills: ["Statistics", "Probability"], priority: "high" },
+      GIT,
+    ],
+    recommendedSkills: ["Cross-validation", "Model Evaluation", "SQL", "Docker"],
+    fundamentals: [
+      { key: "linear-algebra", label: "Linear Algebra", skills: ["Linear Algebra"], priority: "high" },
+      { key: "probability", label: "Probability", skills: ["Probability", "Statistics"], priority: "high" },
+      { key: "data-structures", label: "Data Structures", skills: ["Data Structures", "DSA"], priority: "medium" },
+    ],
+    dsa: { targetTotalSolved: 150 },
+    projects: { targetCount: 2 },
+    activity: { targetActiveDays30: 12 },
+  },
 };
 
 function normalizeRoleValue(value) {

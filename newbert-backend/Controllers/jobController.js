@@ -190,8 +190,47 @@ exports.createAdminJob = async (req, res, next) => {
   }
 };
 
-exports.refreshAdminJob = async (req, res, next) => { try { const job = await Job.findById(req.params.id); if (!job) return res.status(404).json({ message: "Job not found." }); const extracted = await analyzeJobDescription({ title: job.title, company: job.company, description: job.description }); const preserveManual = job.jdAnalysis?.metadata?.extractionMethod === "admin_override"; job.jdAnalysis = mergeAdminRequirements(extracted.analysis, preserveManual ? job.requirements : null, { title: job.title, company: job.company, description: job.description }); job.requirements = { ...(job.requirements || {}), ...compatibilityFields(job.jdAnalysis) }; job.skills = [...new Set([...(job.requirements.requiredSkills || []), ...(job.requirements.preferredSkills || [])])]; job.verification = verifyJob(job); job.active = job.verification.status !== "expired"; await job.save(); res.json({ job: serializeJob(job) }); } catch (error) { next(error); } };
-exports.analyzeRawAdminJob = async (req, res, next) => { try { const rawText = String(req.body?.rawText || "").trim(); if (rawText.length < 20) return res.status(400).json({ message: "Paste a fuller job post so Newbert can extract useful details." }); if (rawText.length > 20000) return res.status(400).json({ message: "Raw job text is too long. Keep it below 20,000 characters." }); const extracted = await analyzeRawJobPost(rawText); const data = extracted.data; const officialUrl = data.officialApplyUrl || data.source?.sourceUrl || null; const verification = verifyJob({ applyUrl: officialUrl, application: { officialUrl }, source: { type: data.source?.detectedProvider || "unknown", sourceUrl: data.source?.sourceUrl } }); return res.json({ draft: { ...data, rawSourceText: rawText, verificationPreview: verification, extractionSource: extracted.source } }); } catch (error) { next(error); } };
+exports.refreshAdminJob = async (req, res, next) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ message: "Job not found." });
+
+    // Refresh only AI analysis. Admin-reviewed verification is an independent decision.
+    const previousVerification = job.verification?.toObject ? job.verification.toObject() : { ...(job.verification || {}) };
+    const rawText = cleanText(job.source?.rawText, 20000) || job.description;
+    const extracted = await analyzeJobDescription({ title: job.title, company: job.company, description: rawText });
+    const reviewedRequirements = cleanRequirements(job.requirements, extracted.analysis);
+    const refreshed = mergeAdminRequirements(extracted.analysis, reviewedRequirements, { title: job.title, company: job.company, description: rawText });
+    refreshed.adminOverrides = { ...(job.jdAnalysis?.adminOverrides || {}) };
+    refreshed.metadata = {
+      ...refreshed.metadata,
+      extractionMethod: job.jdAnalysis?.metadata?.extractionMethod === "admin_reviewed" ? "admin_reviewed" : refreshed.metadata?.extractionMethod,
+      refreshedAt: new Date().toISOString(),
+      reviewPreserved: true,
+    };
+    job.jdAnalysis = refreshed;
+    job.requirements = { ...reviewedRequirements, ...compatibilityFields(refreshed) };
+    job.skills = [...new Set([...(job.requirements.requiredSkills || []), ...(job.requirements.preferredSkills || [])])];
+    job.verification = previousVerification;
+    await job.save();
+    return res.json({ job: serializeJob(job), message: "AI analysis refreshed. Reviewed fields and verification were preserved." });
+  } catch (error) { return next(error); }
+};
+
+exports.analyzeRawAdminJob = async (req, res, next) => {
+  try {
+    const rawText = String(req.body?.rawText || "").trim();
+    const sourceUrl = cleanText(req.body?.sourceUrl, 2000) || null;
+    if (rawText.length < 20) return res.status(400).json({ message: "Paste a fuller job post so Newbert can extract useful details." });
+    if (rawText.length > 20000) return res.status(400).json({ message: "Raw job text is too long. Keep it below 20,000 characters." });
+    if (sourceUrl && !validHttpUrl(sourceUrl)) return res.status(400).json({ message: "Use a valid http:// or https:// source URL." });
+    const extracted = await analyzeRawJobPost(rawText, { sourceUrl });
+    const data = extracted.data;
+    const officialUrl = data.officialApplyUrl || data.source?.sourceUrl || null;
+    const verificationPreview = verifyJob({ applyUrl: officialUrl, application: { officialUrl }, source: { type: data.source?.detectedProvider || "unknown", sourceUrl: data.source?.sourceUrl } });
+    return res.json({ draft: { ...data, rawSourceText: rawText, verificationPreview, extractionSource: extracted.source } });
+  } catch (error) { return next(error); }
+};
 exports.listAdminJobs = async (req, res, next) => { try { const jobs = await Job.find({}).sort({ createdAt: -1 }).lean(); const counts = { total: jobs.length, verified: 0, sourceConfirmed: 0, pending: 0, expired: 0, rejected: 0 }; jobs.forEach((job) => { const status = job.verification?.status || "pending"; if (status === "source_confirmed") counts.sourceConfirmed += 1; else if (Object.hasOwn(counts, status)) counts[status] += 1; else counts.pending += 1; }); res.json({ jobs: jobs.map(serializeJob), counts }); } catch (error) { next(error); } };
 exports.updateAdminJob = async (req, res, next) => {
   try {
@@ -205,23 +244,43 @@ exports.updateAdminJob = async (req, res, next) => {
     const nextCompany = input.company !== undefined ? cleanText(input.company, 120) : job.company;
     const nextDescription = input.description !== undefined ? cleanText(input.description, 5000) : job.description;
     if (!nextTitle || !nextCompany || !nextDescription) return res.status(400).json({ message: "Title, company, and job description cannot be empty." });
-    const jdChanged = nextTitle !== job.title || nextDescription !== job.description;
+    const jdChanged = nextTitle !== job.title || nextCompany !== job.company || nextDescription !== job.description || input.structuredAnalysis !== undefined;
     job.title = nextTitle; job.company = nextCompany; job.description = nextDescription;
+    if (input.department !== undefined) job.department = cleanText(input.department, 120) || null;
+    if (input.roleCategory !== undefined) job.roleCategory = cleanText(input.roleCategory, 80) || null;
     if (input.location !== undefined) job.location = cleanLocation(input.location);
+    if (input.multipleLocations !== undefined) job.multipleLocations = Array.isArray(input.multipleLocations) ? input.multipleLocations.map(cleanLocation).filter(Boolean).slice(0, 20) : [];
+    if (["onsite", "hybrid", "remote", "unknown"].includes(input.workMode)) job.workMode = input.workMode;
     if (input.salary !== undefined) job.salary = cleanSalary(input.salary);
+    if (input.compensation !== undefined) {
+      job.compensation = cleanCompensation(input.compensation);
+      if (job.compensation && (job.compensation.minAmount != null || job.compensation.maxAmount != null)) job.salary = { min: job.compensation.minAmount, max: job.compensation.maxAmount, currency: job.compensation.currency, period: job.compensation.period };
+    }
+    if (input.experience !== undefined) job.experience = cleanExperience(input.experience);
     if (input.deadline !== undefined) { job.deadline = cleanDate(input.deadline); job.application = { ...(job.application || {}), deadline: job.deadline }; }
-    if (["internship", "full-time", "part-time", "contract"].includes(input.employmentType)) job.employmentType = input.employmentType;
+    if (input.postedDate !== undefined) job.postedAt = cleanDate(input.postedDate);
+    if (input.joiningDate !== undefined) job.joiningDate = cleanDate(input.joiningDate);
+    if (input.internshipDuration !== undefined) job.internshipDuration = cleanDuration(input.internshipDuration);
+    if (["internship", "full-time", "part-time", "contract", "apprenticeship", "temporary", "unknown"].includes(input.employmentType)) job.employmentType = input.employmentType;
     if (["intern", "entry-level", "junior", "mid", "senior", "unspecified"].includes(input.experienceLevel)) job.experienceLevel = input.experienceLevel;
     if (url) { job.applyUrl = url; job.application = { ...(job.application || {}), officialUrl: url }; }
-    if (input.sourceUrl || input.sourceType || input.sourceProvider) job.source = { ...(job.source || {}), ...(input.sourceUrl ? { sourceUrl: input.sourceUrl } : {}), ...(input.sourceType ? { type: input.sourceType } : {}), ...(input.sourceProvider ? { provider: input.sourceProvider } : {}) };
+    if (input.sourceUrl || input.sourceType || input.sourceProvider || input.rawSourceText) job.source = { ...(job.source || {}), ...(input.sourceUrl ? { sourceUrl: input.sourceUrl } : {}), ...(input.sourceType ? { type: input.sourceType } : {}), ...(input.sourceProvider ? { provider: input.sourceProvider } : {}), ...(input.rawSourceText ? { rawText: cleanText(input.rawSourceText, 20000) } : {}) };
     if (jdChanged || input.requirements !== undefined) {
-      const extracted = await analyzeJobDescription({ title: job.title, company: job.company, description: job.description });
-      const supplied = input.requirements !== undefined ? cleanRequirements(input.requirements, {}) : job.jdAnalysis?.metadata?.extractionMethod === "admin_override" ? job.requirements : null;
-      job.jdAnalysis = mergeAdminRequirements(extracted.analysis, supplied, { title: job.title, company: job.company, description: job.description });
-      job.requirements = { ...(job.requirements || {}), ...compatibilityFields(job.jdAnalysis) };
-      job.responsibilities = job.requirements.responsibilities || [];
+      const analysisDescription = cleanText(input.rawSourceText, 20000) || job.source?.rawText || job.description;
+      const reviewedDraft = input.structuredAnalysis && typeof input.structuredAnalysis === "object" && !Array.isArray(input.structuredAnalysis) ? normalizeStructuredAnalysis(input.structuredAnalysis, { title: job.title, company: job.company, description: analysisDescription }, "reviewed_ai_draft") : null;
+      const extracted = reviewedDraft ? { analysis: reviewedDraft } : await analyzeJobDescription({ title: job.title, company: job.company, description: analysisDescription });
+      const requirements = cleanRequirements(input.requirements !== undefined ? input.requirements : job.requirements, extracted.analysis);
+      job.jdAnalysis = reviewedAnalysis(extracted.analysis, input, requirements, { title: job.title, company: job.company, description: analysisDescription });
+      job.requirements = { ...requirements, ...compatibilityFields(job.jdAnalysis) };
+      job.responsibilities = requirements.responsibilities;
+      job.qualifications = requirements.qualifications;
+      job.projectExpectations = requirements.projectExpectations;
+      job.selectionProcess = requirements.selectionProcess;
+      job.benefits = requirements.benefits;
       job.skills = [...new Set([...(job.requirements.requiredSkills || []), ...(job.requirements.preferredSkills || [])])];
     }
+    if (input.companyDescription !== undefined) job.companyDescription = cleanText(input.companyDescription, 3000) || null;
+    if (input.applicationInstructions !== undefined) { job.applicationInstructions = cleanText(input.applicationInstructions, 3000) || null; job.application = { ...(job.application || {}), instructions: job.applicationInstructions }; }
     job.verification = verifyJob(job);
     job.active = !["expired", "rejected"].includes(job.verification.status);
     await job.save();

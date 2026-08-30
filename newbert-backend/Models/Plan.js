@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const targetSchema = new mongoose.Schema({
+  mode: { type: String, enum: ["role", "job"], default: "role" },
   type: { type: String, required: true, trim: true, maxlength: 60 },
   role: { type: String, required: true, trim: true, maxlength: 120 },
   company: { type: String, trim: true, maxlength: 120, default: null },
@@ -8,6 +9,7 @@ const targetSchema = new mongoose.Schema({
   weeklyHours: { type: Number, required: true, min: 2, max: 60, default: 10 },
   planStyle: { type: String, trim: true, maxlength: 40, default: "balanced" },
   customGoal: { type: String, trim: true, maxlength: 240, default: null },
+  jobIds: { type: [mongoose.Schema.Types.ObjectId], default: [] },
 }, { _id: false });
 
 const taskSchema = new mongoose.Schema({
@@ -22,6 +24,16 @@ const taskSchema = new mongoose.Schema({
   completed: { type: Boolean, default: false },
   completedAt: { type: Date, default: null },
   archived: { type: Boolean, default: false },
+  status: { type: String, enum: ["not_started", "in_progress", "completed", "skipped"], default: "not_started" },
+  skippedAt: { type: Date, default: null },
+  category: { type: String, trim: true, default: null },
+  priority: { type: String, enum: ["high", "medium", "low"], default: "medium" },
+  priorityScore: { type: Number, min: 0, default: 0 },
+  reasons: { type: [String], default: [] },
+  reasonCodes: { type: [String], default: [] },
+  evidence: { type: [mongoose.Schema.Types.Mixed], default: [] },
+  gapIds: { type: [String], default: [] },
+  relatedJobs: { type: [String], default: [] },
 }, { _id: false });
 
 const planSchema = new mongoose.Schema({
@@ -38,6 +50,13 @@ const planSchema = new mongoose.Schema({
   selfAssessment: { type: mongoose.Schema.Types.Mixed, default: null },
   understoodCurrentStage: { type: mongoose.Schema.Types.Mixed, default: null },
   aiGuidance: { type: mongoose.Schema.Types.Mixed, default: null },
+  dataConfidence: { type: mongoose.Schema.Types.Mixed, default: null },
+  prioritizedGaps: { type: [mongoose.Schema.Types.Mixed], default: [] },
+  nextBestAction: { type: mongoose.Schema.Types.Mixed, default: null },
+  version: { type: Number, min: 1, default: 1 },
+  analysisVersion: { type: String, default: "AI-03.1" },
+  targetSnapshot: { type: mongoose.Schema.Types.Mixed, default: null },
+  roadmapHistory: { type: [mongoose.Schema.Types.Mixed], default: [] },
   generationVersion: { type: Number, default: 1 },
   lastCalculatedAt: { type: Date, default: Date.now },
 }, { timestamps: true });
