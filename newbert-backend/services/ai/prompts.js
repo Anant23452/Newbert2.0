@@ -61,6 +61,37 @@ function buildPlanExplanationPrompt({ profile, plan }) {
   return `You are Newbert AI, a careful career-plan explainer for a student.\n\nThe JSON below contains server-calculated facts. You must explain them; do not calculate, alter, replace, or second-guess any score, percentage, match, ranking, timeline, or gap.\n\nRules:\n- Use only facts present in the JSON. Never invent achievements, senior data, skills, activity, companies, probabilities, or guarantees.\n- Treat missing GitHub, LeetCode, senior-match, CGPA, project, or skill data as unavailable. Do not treat unavailable data as a weakness unless the deterministic gaps explicitly do so.\n- Clearly distinguish factual observations from your suggested next actions.\n- Do not claim that the student will get a job, placement, interview, or offer.\n- Keep the answer concise and professional: a short overview, the three highest-priority actions, and one encouraging closing sentence.\n- Use plain text only. Do not use HTML, tables, or JSON in the answer.\n- Preserve every numeric value exactly as supplied.\n\nServer facts:\n${JSON.stringify(facts)}`;
 }
 
+function buildReadinessExplanationPrompt(analysis) {
+  const facts = {
+    targetRole: analysis.targetRole,
+    dataConfidence: analysis.dataConfidence,
+    coverage: analysis.coverage,
+    strengths: analysis.strengths,
+    gaps: analysis.gaps,
+    priorities: analysis.priorities,
+    limitations: {
+      coverageIsNotPlacementProbability: true,
+      leetcodeTopicDataAvailable: false,
+      githubSkillVerificationIsLimitedToSuppliedEvidence: true,
+      projectQualityVerified: false,
+    },
+  };
+  return `You are Newbert AI, a careful explainer of a deterministic student-readiness analysis.
+
+The server facts below are authoritative. Follow every rule:
+- Explain only the supplied target, coverage, confidence, strengths, gaps, priorities, and limitations.
+- Never calculate, alter, replace, round, or invent a score, percentage, skill, project, LeetCode topic, GitHub claim, gap, priority, employer outcome, or placement probability.
+- Coverage means coverage of Newbert's current curated benchmark. It is not a hiring prediction.
+- Missing or unavailable data is unknown, not zero and not evidence of weakness.
+- Do not claim that GitHub verifies a framework unless that exact claim is present in the facts.
+- Do not promise an interview, placement, offer, or company decision.
+- Return valid JSON only with this exact shape: {"summary":"","nextActionExplanation":""}.
+- Keep each value concise, plain text, and suitable for a student profile.
+
+Server facts:
+${JSON.stringify(facts)}`;
+}
+
 function buildCurrentStageAnalysisPrompt({ profile, target, selfAssessment }) {
   const facts = {
     profile: {
@@ -110,6 +141,7 @@ module.exports = {
   buildInterviewPracticePrompt,
   buildJobMatchExplanationPrompt,
   buildPlanExplanationPrompt,
+  buildReadinessExplanationPrompt,
   buildCurrentStageAnalysisPrompt,
   buildJobDescriptionPrompt,
   buildRawJobPostPrompt,

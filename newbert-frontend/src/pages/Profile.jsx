@@ -5,6 +5,7 @@ import API from "../Services/api";
 import useAuth from "../hook/useAuth";
 import { BRANCH_OPTIONS, TARGET_ROLE_OPTIONS, getSkillSuggestions, normalizeSkillName } from "../data/profileOptions";
 import CollegeAutocomplete from "../Components/CollegeAutocomplete";
+import ReadinessAnalysis from "../profileComponents/ReadinessAnalysis";
 
 // Build a complete year from authenticated, server-synced activity records.
 function buildYearlyActivity(year, activityCalendar) {
@@ -248,7 +249,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
         <h1 className="mt-3 text-3xl font-extrabold text-slate-950 md:text-4xl">
           Hi, {form.name || "student"}. Let’s make your preparation visible.
         </h1>
-        <p className="mt-3 text-sm text-slate-600">These details power your roadmap, courses, job matches, and placement readiness score.</p>
+        <p className="mt-3 text-sm text-slate-600">These details power your roadmap, courses, job matches, and readiness coverage.</p>
 
         <section className="surface mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="grid gap-5 md:grid-cols-2">
@@ -349,6 +350,8 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
   const [seniorMatch, setSeniorMatch] = useState({ loading: true, match: null, closest: [], benchmark: null, reason: "", error: "" });
   const [privacy, setPrivacy] = useState(profile.privacy || DEFAULT_PROFILE_PRIVACY);
   const [privacyState, setPrivacyState] = useState({ saving: "", status: "" });
+  const [readinessState, setReadinessState] = useState({ loading: true, analysis: null, error: "" });
+  const readinessKey = JSON.stringify({ targetRole: profile.targetRole, projects: profile.projects, cgpa: profile.cgpa, lastSyncedAt: profile.lastSyncedAt, skills: profile.skills });
 
   const updatePrivacy = async (key, value) => {
     const previous = privacy;
@@ -378,6 +381,14 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
     });
     return () => controller.abort();
   }, [profile.college, profile.lastSyncedAt]);
+  useEffect(() => {
+    const controller = new AbortController();
+    setReadinessState({ loading: true, analysis: null, error: "" });
+    API.get("/intelligence/readiness", { signal: controller.signal }).then(({ data }) => setReadinessState({ loading: false, analysis: data, error: "" })).catch((error) => {
+      if (error.code !== "ERR_CANCELED") setReadinessState({ loading: false, analysis: null, error: error.response?.data?.message || "Readiness analysis could not be loaded." });
+    });
+    return () => controller.abort();
+  }, [readinessKey]);
   const initials = profile.name
     .split(" ")
     .map((part) => part[0])
@@ -439,6 +450,8 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
         </section>
 
         <PeerBenchmark benchmark={seniorMatch.benchmark} />
+
+        <ReadinessAnalysis analysis={readinessState.analysis} loading={readinessState.loading} error={readinessState.error} onEdit={onEdit} />
 
         {/* Skill Breakdown & Bookmarked Roles */}
         <section className="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">

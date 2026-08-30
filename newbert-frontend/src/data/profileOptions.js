@@ -11,6 +11,10 @@ export const BRANCH_OPTIONS = [
 ];
 
 export const TARGET_ROLE_OPTIONS = [
+  "Software Engineer",
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
   "Software Development",
   "Data / AI",
   "Core Engineering",

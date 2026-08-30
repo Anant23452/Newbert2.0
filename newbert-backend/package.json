@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
+    "test": "node --test tests/*.test.js",
     "seed:courses": "node scripts/seedCourses.js",
     "seed:colleges": "node scripts/seedColleges.js",
     "migrate:profile-colleges": "node scripts/migrateProfileColleges.js"
