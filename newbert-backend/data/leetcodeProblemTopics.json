@@ -1,0 +1,8 @@
+{
+  "70": ["dynamic_programming"],
+  "200": ["graph", "dfs", "bfs"],
+  "207": ["graph", "topological_sort"],
+  "210": ["graph", "topological_sort"],
+  "215": ["heap", "priority_queue"],
+  "322": ["dynamic_programming"]
+}

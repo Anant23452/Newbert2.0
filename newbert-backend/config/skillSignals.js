@@ -1,0 +1,26 @@
+const SKILL_SIGNALS = Object.freeze({
+  react: { label: "React", dependencies: ["react", "react-dom"], extensions: [".jsx", ".tsx"], patterns: ["useState(", "useEffect(", "createContext(", "react-router"] },
+  javascript: { label: "JavaScript", extensions: [".js", ".jsx", ".mjs"] },
+  typescript: { label: "TypeScript", dependencies: ["typescript"], extensions: [".ts", ".tsx"] },
+  nodejs: { label: "Node.js", dependencies: ["express", "fastify", "koa"], patterns: ["process.env", "require(", "node:"] },
+  express: { label: "Express", dependencies: ["express"], patterns: ["express()", "express.Router("] },
+  mongodb: { label: "MongoDB", dependencies: ["mongodb", "mongoose"], patterns: ["MongoClient", "mongoose.connect"] },
+  mongoose: { label: "Mongoose", dependencies: ["mongoose"], patterns: ["new mongoose.Schema", "mongoose.model("] },
+  restapis: { label: "REST APIs", patterns: ["fetch(", "axios.", ".get(", ".post(", "router.get(", "router.post("] },
+  tailwind: { label: "Tailwind CSS", dependencies: ["tailwindcss"], patterns: ["@tailwind", "className="] },
+  zustand: { label: "Zustand", dependencies: ["zustand"], patterns: ["create((", "createStore("] },
+  redux: { label: "Redux", dependencies: ["redux", "@reduxjs/toolkit"], patterns: ["createSlice(", "configureStore("] },
+  nextjs: { label: "Next.js", dependencies: ["next"], patterns: ["next/navigation", "next/router"] },
+  jwt: { label: "JWT", dependencies: ["jsonwebtoken", "jose"], patterns: ["jwt.sign(", "jwt.verify("] },
+  oauth: { label: "OAuth", dependencies: ["passport", "@react-oauth/google"], patterns: ["OAuth2Client", "passport.authenticate"] },
+  firebase: { label: "Firebase", dependencies: ["firebase", "firebase-admin"], patterns: ["initializeApp("] },
+  sql: { label: "SQL", dependencies: ["pg", "mysql2", "sequelize", "prisma", "@prisma/client"], extensions: [".sql"] },
+  python: { label: "Python", extensions: [".py"] },
+  flask: { label: "Flask", dependencies: ["flask"], patterns: ["Flask(__name__)"] },
+  fastapi: { label: "FastAPI", dependencies: ["fastapi"], patterns: ["FastAPI("] },
+  tensorflow: { label: "TensorFlow", dependencies: ["tensorflow"], patterns: ["import tensorflow"] },
+  pytorch: { label: "PyTorch", dependencies: ["torch"], patterns: ["import torch"] },
+  scikitlearn: { label: "scikit-learn", dependencies: ["scikit-learn", "sklearn"], patterns: ["from sklearn", "import sklearn"] },
+});
+
+module.exports = { SKILL_SIGNALS };
