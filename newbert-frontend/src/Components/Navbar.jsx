@@ -23,7 +23,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
     <header className="site-nav sticky top-0 z-50 border-b border-slate-200 bg-[#f7f8fa]/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-5">
         <Link to="/" className="flex items-center gap-2.5" aria-label="Newbert home">
-          <span className="grid h-8 w-8 place-items-center rounded-md bg-teal-700 font-bold text-white">N</span>
+          <img src="/src/assets/2-removebg-preview(1).png" className="grid h-8 w-8 place-items-center rounded-md bg-teal-700 font-bold text-white"></img>
           <span className="text-lg font-extrabold tracking-tight text-slate-900">Newbert</span>
         </Link>
 
