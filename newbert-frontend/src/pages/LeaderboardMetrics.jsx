@@ -68,14 +68,20 @@ export default function LeaderboardMetrics() {
 function Podium({ users, mineId }) {
   if (!users.length) return null;
   const ordered = users.length === 3 ? [users[1], users[0], users[2]] : users;
-  return <section className="mt-9"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-400">Top Streak Maintainers</p><div className="mt-4 grid items-end gap-3 sm:grid-cols-3">{ordered.map((entry) => <Link key={entry.userId} to={entry.userId === mineId ? "/profile" : `/profile/${entry.userId}`} className={`border bg-[#172033] p-5 ${entry.rank === 1 ? "border-orange-400 sm:pb-9 sm:pt-8" : "border-white/10"}`}><p className="text-2xl font-black text-orange-300">#{entry.rank}</p><p className="mt-3 text-lg font-black">{entry.name}{entry.userId === mineId ? " · You" : ""}</p><p className="mt-1 text-sm text-slate-400">{entry.college.name || "College not listed"}</p><p className="mt-4 font-extrabold">{entry.streak.current} day streak</p></Link>)}</div></section>;
+  return <section className="mt-9"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-400">Top Streak Maintainers</p><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">{ordered.map((entry) => <StreakTile key={entry.userId} entry={entry} mineId={mineId}/>)}</div></section>;
 }
 
 function StreakBoard({ data = {}, mineId, scope }) {
   const mine = data.currentUser;
   const topTen = (data.users || []).slice(0, 10);
   const outsideTopTen = mine && !topTen.some((entry) => entry.userId === mine.userId);
-  return <BoardShell title="Streak Ranking · #4–#10" subtitle="Current streak descending. Ties use recent activity, then user ID."><Rows users={topTen.filter((entry) => entry.rank > 3)} mineId={mineId} scope={scope} value={(entry) => `${entry.streak.current} days`} emptyText={topTen.length <= 3 ? "Fewer than four real users are ranked in this scope." : undefined}/>{outsideTopTen && <OwnRank rank={mine.rank} value={`${mine.streak.current} days`}/>}</BoardShell>;
+  const remaining = topTen.filter((entry) => entry.rank > 3);
+  return <BoardShell title="Streak Ranking · #4–#10" subtitle="Current streak descending. Ties use recent activity, then user ID.">{remaining.length ? <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{remaining.map((entry) => <StreakTile key={entry.userId} entry={entry} mineId={mineId} scope={scope}/>)}</div> : <p className="py-6 text-center text-sm text-slate-400">Fewer than four real users are ranked in this scope.</p>}{outsideTopTen && <OwnRank rank={mine.rank} value={`${mine.streak.current} days`}/>}</BoardShell>;
+}
+
+function StreakTile({ entry, mineId, scope }) {
+  const isMine = entry.userId === mineId;
+  return <Link to={isMine ? "/profile" : `/profile/${entry.userId}`} state={scope ? { fromLeaderboard: scope } : undefined} className={`flex aspect-square min-w-0 flex-col items-center justify-between border bg-[#141c2b] p-3 text-center transition hover:-translate-y-0.5 hover:border-orange-300 sm:p-4 ${isMine || entry.rank === 1 ? "border-orange-400" : "border-white/15"}`}><span className="self-end text-sm font-black text-orange-300">#{entry.rank}</span><div className="grid h-14 w-14 place-items-center overflow-hidden rounded-full border-2 border-orange-400 bg-orange-500 text-lg font-black text-slate-950 sm:h-16 sm:w-16">{entry.avatar ? <img src={entry.avatar} alt="" className="h-full w-full object-cover"/> : entry.name.slice(0, 1)}</div><div className="min-w-0 w-full"><p className="truncate font-extrabold">{isMine ? `${entry.name} · You` : entry.name}</p><p className="mt-1 truncate text-xs text-slate-400">{entry.college.name || "College not listed"}</p></div><p className="text-sm font-black text-orange-200 sm:text-base">{entry.streak.current} day streak</p></Link>;
 }
 
 function MetricBoard({ type, title, data = {}, range, onRangeChange, loading, mineId, scope }) {

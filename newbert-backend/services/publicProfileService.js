@@ -32,6 +32,32 @@ function identity(profile, user) {
   };
 }
 
+function canonicalProfileUrl(platform, username) {
+  const value = String(username || "").trim();
+  if (!value) return "";
+  if (platform === "github") return `https://github.com/${encodeURIComponent(value)}`;
+  return `https://leetcode.com/u/${encodeURIComponent(value)}`;
+}
+
+function safeLinkedinUrl(value) {
+  if (!value) return "";
+  try {
+    const url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+    const host = url.hostname.replace(/^www\./, "").toLowerCase();
+    return host === "linkedin.com" || host.endsWith(".linkedin.com") ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function publicActivityCalendar(profile, visible) {
+  return (profile.activityCalendar || []).map((day) => {
+    const github = visible.github ? Number(day.github) || 0 : 0;
+    const leetcode = visible.leetcode ? Number(day.leetcode) || 0 : 0;
+    return { date: day.date, github, leetcode, total: github + leetcode };
+  }).filter((day) => /^\d{4}-\d{2}-\d{2}$/.test(day.date || "") && day.total > 0);
+}
+
 function serializePublicProfile(profile, user, today) {
   const privacy = normalizePrivacy(profile.privacy);
   const result = { ...identity(profile, user), private: privacy.profileVisibility === "private", visibleSections: [] };
@@ -56,6 +82,7 @@ function serializePublicProfile(profile, user, today) {
     result.github = profile.githubStats ? {
       connected: Boolean(profile.githubUsername),
       username: profile.githubUsername || profile.githubStats.username || "",
+      url: canonicalProfileUrl("github", profile.githubUsername || profile.githubStats.username),
       publicRepos: Number(profile.githubStats.publicRepos) || 0,
       followers: Number(profile.githubStats.followers) || 0,
       languages: profile.githubStats.languages || [],
@@ -68,6 +95,7 @@ function serializePublicProfile(profile, user, today) {
     result.leetcode = profile.leetcodeStats ? {
       connected: Boolean(profile.leetcodeUsername),
       username: profile.leetcodeUsername || profile.leetcodeStats.username || "",
+      url: canonicalProfileUrl("leetcode", profile.leetcodeUsername || profile.leetcodeStats.username),
       totalSolved: Number(profile.leetcodeStats.totalSolved) || 0,
       acceptedToday: Array.isArray(today?.leetcodeAcceptedProblems) ? new Set(today.leetcodeAcceptedProblems).size : 0,
       metricAvailable: Boolean(profile.leetcodeStats.acceptedActivityAvailable),
@@ -81,6 +109,10 @@ function serializePublicProfile(profile, user, today) {
     result.visibleSections.push("careerGoal");
     result.careerGoal = { role: profile.targetRole || "" };
   }
+
+  const linkedinUrl = safeLinkedinUrl(profile.linkedinUrl);
+  if (linkedinUrl) result.linkedin = { url: linkedinUrl };
+  if (visible.github || visible.leetcode) result.activityCalendar = publicActivityCalendar(profile, visible);
 
   // Jobs, applications, plans, senior matches, comparisons, and AI recommendations
   // are intentionally never read or returned by this serializer.
