@@ -8,10 +8,7 @@ const { buildPlan, calculatePlanStreak, calculateProgress, cleanTarget, extractC
 const { analyzeJobMatch } = require("../services/jobMatchingService");
 const { nextBestAction } = require("../services/studentIntelligence/nextBestActionService");
 const { analyzeCurrentStage } = require("../services/ai/currentStageAnalysis");
-
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+const { sameCollegeQuery } = require("../services/collegeService");
 
 async function loadPlanningContext(userId) {
   const profile = await Profile.findOne({ userId }).lean();
@@ -20,7 +17,7 @@ async function loadPlanningContext(userId) {
     error.status = 400;
     throw error;
   }
-  const alumni = await Alumni.find({ college: { $regex: `^${escapeRegex(profile.college)}$`, $options: "i" }, verified: true }).lean();
+  const alumni = await Alumni.find({ ...sameCollegeQuery(profile), verified: true }).lean();
   return { profile, alumni };
 }
 

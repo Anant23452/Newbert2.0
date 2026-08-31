@@ -75,6 +75,16 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
   const syncControllerRef = useRef(null);
   const [syncErrors, setSyncErrors] = useState(profile.syncErrors || {});
   const [saveError, setSaveError] = useState("");
+  const [collegeInvalid, setCollegeInvalid] = useState(false);
+  const [selectedCollege, setSelectedCollege] = useState(() => {
+    if (profile.selectedCollege?._id) return profile.selectedCollege;
+    if (!profile.collegeMongoId) return null;
+    return {
+      _id: profile.collegeMongoId,
+      collegeId: profile.collegeId,
+      name: profile.collegeName || profile.college,
+    };
+  });
   const knownBranch = BRANCH_OPTIONS.slice(0, -1).includes(profile.branch);
   const [branchChoice, setBranchChoice] = useState(knownBranch ? profile.branch : profile.branch ? "Other" : "");
   const [customBranch, setCustomBranch] = useState(knownBranch ? "" : profile.branch || "");
@@ -85,7 +95,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
     name: profile.name || "",
     email: profile.email || "",
     college: profile.college || "",
-    collegeId: profile.collegeId || "",
+    collegeId: profile.collegeMongoId || "",
     collegeName: profile.collegeName || profile.college || "",
     branch: profile.branch || "",
     graduationYear: profile.graduationYear || "",
@@ -107,7 +117,20 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
   const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
   const save = async () => {
     setSaveError("");
-    try { await onSave(form); }
+    if (!selectedCollege?._id) {
+      setCollegeInvalid(true);
+      setSaveError("Please select a college from the suggestions.");
+      return;
+    }
+
+    try {
+      await onSave({
+        ...form,
+        collegeId: selectedCollege._id,
+        college: selectedCollege.name,
+        collegeName: selectedCollege.name,
+      });
+    }
     catch (error) { setSaveError(error.response?.data?.message || "Unable to save your profile. Please try again."); }
   };
   const syncProfiles = async () => {
@@ -141,7 +164,26 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
           <div className="grid gap-5 md:grid-cols-2">
             <Field label="Full name" value={form.name} onChange={(v) => update("name", v)} />
             <Field label="Email" value={form.email} onChange={(v) => update("email", v)} type="email" />
-            <CollegeAutocomplete value={form.college} collegeId={form.collegeId} onChange={(value) => { update("college", value); update("collegeId", ""); update("collegeName", ""); }} onSelect={(college) => { update("college", college.name); update("collegeName", college.name); update("collegeId", college.collegeId); }}/>
+            <CollegeAutocomplete
+              value={form.college}
+              selectedCollege={selectedCollege}
+              invalid={collegeInvalid}
+              onQueryChange={(value) => {
+                update("college", value);
+                update("collegeId", "");
+                update("collegeName", "");
+                setSelectedCollege(null);
+                setCollegeInvalid(false);
+              }}
+              onSelect={(college) => {
+                update("college", college.name);
+                update("collegeName", college.name);
+                update("collegeId", college._id);
+                setSelectedCollege(college);
+                setCollegeInvalid(false);
+                setSaveError("");
+              }}
+            />
             <label className="text-sm font-bold text-slate-800">Branch *
               <select value={branchChoice} onChange={(event) => { const value = event.target.value; setBranchChoice(value); update("branch", value === "Other" ? customBranch : value); }} className="control mt-2 w-full rounded-md border border-slate-300 p-2 text-sm text-slate-900 focus:border-orange-500 focus:outline-none">
                 <option value="">Select your branch</option>

@@ -6,8 +6,7 @@ const { getGithubActivity } = require("../services/githubService");
 const { getLeetcodeStats } = require("../services/leetcodeService");
 const { findBestSeniorMatch } = require("../services/seniorMatchService");
 const { isProfileComplete, profileStrength } = require("../services/profileCompletionService");
-const College = require("../Models/College");
-const { findCollegeByText, resolveProfileCollege } = require("../services/collegeService");
+const { findCollegeByIdentifier, resolveProfileCollege, sameCollegeQuery } = require("../services/collegeService");
 const { DEFAULT_SECTIONS, normalizePrivacy, serializePublicProfile } = require("../services/publicProfileService");
 const { getPublicStreakSnapshot } = require("../services/leaderboardService");
 const { buildSkillEvidence } = require("../services/skillEvidenceService");
@@ -89,7 +88,9 @@ function response(profile, user) {
     email: user.email,
     college: profile.college || "",
     collegeId: profile.collegeId || null,
+    collegeMongoId: profile.collegeRef ? String(profile.collegeRef) : null,
     collegeName: profile.collegeName || profile.college || "",
+    selectedCollege: profile.collegeRef ? { _id: String(profile.collegeRef), collegeId: profile.collegeId || null, name: profile.collegeName || profile.college || "" } : null,
     branch: profile.branch || "",
     graduationYear: profile.graduationYear || "",
     bio: profile.bio || "",
@@ -161,7 +162,7 @@ exports.getMyProfile = async (req, res, next) => {
     if (!user) return res.status(404).json({ message: "User not found." });
     const savedProfile = profile || await Profile.create({ userId: user._id, avatarUrl: user.avatarUrl || "" });
     const resolvedCollege = await resolveProfileCollege(savedProfile.toObject(), { persist: true });
-    if (resolvedCollege) { savedProfile.collegeId = resolvedCollege.collegeId; savedProfile.collegeName = resolvedCollege.name; savedProfile.college = resolvedCollege.name; }
+    if (resolvedCollege) { savedProfile.collegeRef = resolvedCollege._id; savedProfile.collegeId = resolvedCollege.collegeId; savedProfile.collegeName = resolvedCollege.name; savedProfile.college = resolvedCollege.name; }
     const complete = isProfileComplete(savedProfile);
     if (savedProfile.onboardingCompleted !== complete) {
       savedProfile.onboardingCompleted = complete;
@@ -196,10 +197,10 @@ exports.updateMyProfile = async (req, res, next) => {
       return [...unique.values()];
     };
     const requestedCollegeId = optionalText(req.body.collegeId);
-    const canonicalCollege = requestedCollegeId ? await College.findOne({ collegeId: requestedCollegeId.toLowerCase(), active: true }).lean() : await findCollegeByText(req.body.collegeName || req.body.college);
-    if (requestedCollegeId && !canonicalCollege) return res.status(400).json({ message: "Invalid college selection." });
+    const canonicalCollege = await findCollegeByIdentifier(requestedCollegeId);
+    if (!requestedCollegeId || !canonicalCollege) return res.status(400).json({ code: "INVALID_COLLEGE", message: "Please select a college from the suggestions." });
     const set = {
-      college: canonicalCollege?.name || optionalText(req.body.college), collegeId: canonicalCollege?.collegeId || null, collegeName: canonicalCollege?.name || optionalText(req.body.college), branch: optionalText(req.body.branch), graduationYear: req.body.graduationYear === "" || req.body.graduationYear == null ? null : Number(req.body.graduationYear),
+      college: canonicalCollege.name, collegeRef: canonicalCollege._id, collegeId: canonicalCollege.collegeId, collegeName: canonicalCollege.name, branch: optionalText(req.body.branch), graduationYear: req.body.graduationYear === "" || req.body.graduationYear == null ? null : Number(req.body.graduationYear),
       bio: optionalText(req.body.bio), targetRole: optionalText(req.body.targetRole), targetCompany: optionalText(req.body.targetCompany),
       githubUrl: optionalText(req.body.github), githubUsername, leetcodeUrl: optionalText(req.body.leetcode), leetcodeUsername, linkedinUrl: optionalText(req.body.linkedin),
       avatarUrl: optionalText(req.body.avatar), coverUrl: optionalText(req.body.cover), projects: req.body.projects === "" || req.body.projects == null ? null : Number(req.body.projects), cgpa: req.body.cgpa === "" || req.body.cgpa == null ? null : Number(req.body.cgpa),
@@ -327,8 +328,7 @@ exports.getSeniorMatch = async (req, res, next) => {
   try {
     const profile = await Profile.findOne({ userId: req.auth.id }).lean();
     if (!profile?.college) return res.json({ match: null, reason: "Add your college to find verified seniors from your campus." });
-    const escapedCollege = profile.college.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const alumni = await Alumni.find({ college: { $regex: `^${escapedCollege}$`, $options: "i" }, verified: true, outcomeType: "placement" }).lean();
+    const alumni = await Alumni.find({ ...sameCollegeQuery(profile), verified: true, outcomeType: "placement" }).lean();
     if (!alumni.length) return res.json({ match: null, reason: "No verified senior match available yet. We're adding more alumni from your college." });
     const student = { ...profile, leetcodeStats: normalizeLeetcodeStats(profile.leetcodeStats) };
     const match = findBestSeniorMatch(student, alumni);

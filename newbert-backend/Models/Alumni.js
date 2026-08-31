@@ -69,6 +69,9 @@ const alumniSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", unique: true, sparse: true },
   name: { type: String, required: true, trim: true, maxlength: 100 },
   college: { type: String, required: true, trim: true, maxlength: 120 },
+  collegeRef: { type: mongoose.Schema.Types.ObjectId, ref: "College", index: true, default: null },
+  collegeId: { type: String, trim: true, lowercase: true, index: true, default: null },
+  collegeName: { type: String, trim: true, maxlength: 180, default: null },
   batch: { type: Number, required: true, min: 2000, max: 2050 },
   company: { type: String, trim: true, maxlength: 120 },
   role: { type: String, trim: true, maxlength: 120 },
@@ -115,5 +118,6 @@ const alumniSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 alumniSchema.index({ college: 1, verified: 1, createdAt: -1 });
+alumniSchema.index({ collegeRef: 1, verified: 1, createdAt: -1 });
 alumniSchema.index({ careerPaths: 1, verified: 1 });
 module.exports = mongoose.model("Alumni", alumniSchema);
