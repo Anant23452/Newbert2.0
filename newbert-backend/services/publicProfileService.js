@@ -8,6 +8,9 @@ const DEFAULT_SECTIONS = Object.freeze({
   education: true,
   careerGoal: true,
   courses: true,
+  activityHeatmap: true,
+  streakStats: true,
+  leaderboardRank: true,
 });
 
 function normalizePrivacy(privacy) {
@@ -25,8 +28,6 @@ function identity(profile, user) {
     college: { id: profile.collegeId || null, name: profile.collegeName || profile.college || "" },
     branch: profile.branch || "",
     leaderboard: {
-      streakDays: Number(profile.currentStreak) || 0,
-      longestStreak: Number(profile.longestStreak) || 0,
       lastSyncedAt: profile.lastSyncedAt || null,
     },
   };
@@ -58,13 +59,26 @@ function publicActivityCalendar(profile, visible) {
   }).filter((day) => /^\d{4}-\d{2}-\d{2}$/.test(day.date || "") && day.total > 0);
 }
 
-function serializePublicProfile(profile, user, today) {
+function serializePublicProfile(profile, user, today, streakLeaderboard = null) {
   const privacy = normalizePrivacy(profile.privacy);
-  const result = { ...identity(profile, user), private: privacy.profileVisibility === "private", visibleSections: [] };
+  const visible = privacy.sections;
+  const result = {
+    ...identity(profile, user),
+    private: privacy.profileVisibility === "private",
+    visibleSections: [],
+    activityPrivacy: {
+      heatmapVisible: Boolean(visible.activityHeatmap),
+      streakStatsVisible: Boolean(visible.streakStats),
+      leaderboardRankVisible: Boolean(visible.leaderboardRank),
+    },
+  };
   if (result.private) return result;
   result.cover = profile.coverUrl || "";
 
-  const visible = privacy.sections;
+  if (visible.streakStats) {
+    result.leaderboard.streakDays = Number(profile.currentStreak) || 0;
+    result.leaderboard.longestStreak = Number(profile.longestStreak) || 0;
+  }
   if (visible.about) {
     result.visibleSections.push("about");
     result.about = { bio: profile.bio || "" };
@@ -112,7 +126,12 @@ function serializePublicProfile(profile, user, today) {
 
   const linkedinUrl = safeLinkedinUrl(profile.linkedinUrl);
   if (linkedinUrl) result.linkedin = { url: linkedinUrl };
-  if (visible.github || visible.leetcode) result.activityCalendar = publicActivityCalendar(profile, visible);
+  result.activitySources = {
+    github: Boolean(visible.github && (profile.githubUsername || profile.githubStats?.username)),
+    leetcode: Boolean(visible.leetcode && (profile.leetcodeUsername || profile.leetcodeStats?.username)),
+  };
+  if (visible.activityHeatmap && (visible.github || visible.leetcode)) result.activityCalendar = publicActivityCalendar(profile, visible);
+  if (visible.leaderboardRank && visible.streakStats && streakLeaderboard) result.streakLeaderboard = streakLeaderboard;
 
   // Jobs, applications, plans, senior matches, comparisons, and AI recommendations
   // are intentionally never read or returned by this serializer.

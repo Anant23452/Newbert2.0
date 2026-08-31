@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getSavedJobs } from "../utils/jobApplications";
 import API from "../Services/api";
@@ -6,122 +6,8 @@ import useAuth from "../hook/useAuth";
 import { BRANCH_OPTIONS, TARGET_ROLE_OPTIONS, getSkillSuggestions, normalizeSkillName } from "../data/profileOptions";
 import CollegeAutocomplete from "../Components/CollegeAutocomplete";
 import ReadinessAnalysis from "../profileComponents/ReadinessAnalysis";
-
-// Build a complete year from authenticated, server-synced activity records.
-function buildYearlyActivity(year, activityCalendar) {
-  const activityByDate = new Map((activityCalendar || []).map((day) => [day.date, day]));
-  const days = [];
-  const startDate = new Date(year, 0, 1);
-  const endDate = new Date(year, 11, 31);
-  const today = new Date();
-  today.setHours(23, 59, 59, 999);
-  const current = new Date(startDate);
-  while (current <= endDate) {
-    const isFuture = current > today;
-    const dateStr = `${year}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`;
-    const activity = activityByDate.get(dateStr);
-    const github = Number(activity?.github) || 0;
-    const leetcode = Number(activity?.leetcode) || 0;
-    const total = github + leetcode;
-
-    days.push({
-      date: new Date(current),
-      dateStr,
-      dayOfWeek: current.getDay(), // 0 = Sun, 6 = Sat
-      month: current.getMonth(),
-      dayOfMonth: current.getDate(),
-      github,
-      leetcode,
-      total,
-      isFuture,
-    });
-    current.setDate(current.getDate() + 1);
-  }
-  return days;
-}
-
-// --- Compute Streaks & Metrics across Year Data ---
-function computeYearMetrics(days) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  let totalContributions = 0;
-  let activeDays = 0;
-  let longestStreak = 0;
-  let runningStreak = 0;
-
-  days.forEach((d) => {
-    totalContributions += d.total;
-    if (d.total > 0) {
-      activeDays++;
-      runningStreak++;
-      if (runningStreak > longestStreak) longestStreak = runningStreak;
-    } else {
-      runningStreak = 0;
-    }
-  });
-
-  // Compute Current Streak backwards from today
-  let currentStreak = 0;
-  const pastDays = days
-    .filter((d) => d.date <= today)
-    .sort((a, b) => b.date - a.date);
-
-  for (let i = 0; i < pastDays.length; i++) {
-    const d = pastDays[i];
-    if (d.total > 0) {
-      currentStreak++;
-    } else {
-      // Allow today to be incomplete without breaking yesterday's streak
-      if (i === 0 && d.date.getTime() === today.getTime()) {
-        continue;
-      }
-      break;
-    }
-  }
-
-  return { totalContributions, activeDays, currentStreak, longestStreak };
-}
-
-// --- Build 52-Week Matrix (Columns = Weeks, Rows = Days Sun-Sat) ---
-function buildHeatmapWeeks(days) {
-  const weeks = [];
-  let currentWeek = [];
-
-  if (days.length > 0) {
-    const firstDay = days[0].dayOfWeek; // 0 = Sun
-    for (let i = 0; i < firstDay; i++) {
-      currentWeek.push(null); // Empty slot before Jan 1
-    }
-  }
-
-  days.forEach((d) => {
-    currentWeek.push(d);
-    if (currentWeek.length === 7) {
-      weeks.push(currentWeek);
-      currentWeek = [];
-    }
-  });
-
-  if (currentWeek.length > 0) {
-    while (currentWeek.length < 7) {
-      currentWeek.push(null);
-    }
-    weeks.push(currentWeek);
-  }
-
-  return weeks;
-}
-
-const MONTH_SHORT_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-const HEATMAP_LEVELS = {
-  0: "bg-slate-800/15 dark:bg-slate-800/70",
-  1: "bg-emerald-900/45",
-  2: "bg-emerald-700/75",
-  3: "bg-emerald-500",
-  4: "bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,.22)]",
-};
+import MomentumSection from "../profileComponents/MomentumSection";
+import StreakLeaderboardPreview from "../profileComponents/StreakLeaderboardPreview";
 
 export default function Profile() {
   const { profile, loading: profileLoading, error: profileError, saveProfile, logout } = useAuth();
@@ -342,7 +228,7 @@ function SkillInput({ skills, branch, targetRole, onChange }) {
   );
 }
 
-const DEFAULT_PROFILE_PRIVACY = { profileVisibility: "public", sections: { about: true, skills: true, projects: true, github: true, leetcode: true, achievements: true, education: true, careerGoal: true, courses: true } };
+const DEFAULT_PROFILE_PRIVACY = { profileVisibility: "public", sections: { about: true, skills: true, projects: true, github: true, leetcode: true, achievements: true, education: true, careerGoal: true, courses: true, activityHeatmap: true, streakStats: true, leaderboardRank: true } };
 
 function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
   const skills = (profile.skills || []).map((skill) => skill.name || skill);
@@ -351,6 +237,7 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
   const [privacy, setPrivacy] = useState(profile.privacy || DEFAULT_PROFILE_PRIVACY);
   const [privacyState, setPrivacyState] = useState({ saving: "", status: "" });
   const [readinessState, setReadinessState] = useState({ loading: true, analysis: null, error: "" });
+  const [streakSnapshot, setStreakSnapshot] = useState({ loading: true, data: null });
   const readinessKey = JSON.stringify({ targetRole: profile.targetRole, projects: profile.projects, cgpa: profile.cgpa, lastSyncedAt: profile.lastSyncedAt, skills: profile.skills });
 
   const updatePrivacy = async (key, value) => {
@@ -389,6 +276,24 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
     });
     return () => controller.abort();
   }, [readinessKey]);
+  useEffect(() => {
+    const controller = new AbortController();
+    if (privacy.profileVisibility !== "public" || !privacy.sections.leaderboardRank || !privacy.sections.streakStats) {
+      setStreakSnapshot({ loading: false, data: { visible: false } });
+      return () => controller.abort();
+    }
+    setStreakSnapshot({ loading: true, data: null });
+    Promise.all([
+      API.get("/leaderboard", { params: { scope: "college" }, signal: controller.signal }),
+      API.get("/leaderboard", { params: { scope: "global" }, signal: controller.signal }),
+    ]).then(([collegeResponse, globalResponse]) => {
+      const college = collegeResponse.data.streak;
+      const global = globalResponse.data.streak;
+      const preview = college?.users?.length ? college : global;
+      setStreakSnapshot({ loading: false, data: { visible: true, profileOwner: global?.currentUser || college?.currentUser || null, collegeRank: college?.currentUser?.rank || null, globalRank: global?.currentUser?.rank || null, users: (preview?.users || []).slice(0, 6) } });
+    }).catch((error) => { if (error.code !== "ERR_CANCELED") setStreakSnapshot({ loading: false, data: null }); });
+    return () => controller.abort();
+  }, [privacy.profileVisibility, privacy.sections.leaderboardRank, privacy.sections.streakStats, profile.lastSyncedAt]);
   const initials = profile.name
     .split(" ")
     .map((part) => part[0])
@@ -442,12 +347,15 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
           <OwnerDetail title="Career Goal" value={profile.targetRole || "Not added"} visibility={privacy.sections.careerGoal} onChange={(value) => updatePrivacy("careerGoal", value)} disabled={Boolean(privacyState.saving)}/>
         </section>
 
-        {/* Senior match + verified activity */}
+        {/* Senior match + public activity controls */}
         <section className="grid gap-6 lg:grid-cols-[.8fr_1.2fr]">
           <SeniorMatchCard state={seniorMatch} />
-
-          <StreakCalendarHeatmap activityCalendar={profile.activityCalendar || []} lastSyncedAt={profile.lastSyncedAt} syncedCurrentStreak={profile.currentStreak} syncedLongestStreak={profile.longestStreak} />
+          <div className="surface rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Activity privacy</p><h2 className="mt-1 text-xl font-extrabold text-slate-950">Choose what others can see</h2><div className="mt-5 space-y-4"><PrivacyRow label="Contribution heatmap" value={privacy.sections.activityHeatmap} onChange={(value) => updatePrivacy("activityHeatmap", value)} disabled={Boolean(privacyState.saving)}/><PrivacyRow label="Streak statistics" value={privacy.sections.streakStats} onChange={(value) => updatePrivacy("streakStats", value)} disabled={Boolean(privacyState.saving)}/><PrivacyRow label="Leaderboard rank" value={privacy.sections.leaderboardRank} onChange={(value) => updatePrivacy("leaderboardRank", value)} disabled={Boolean(privacyState.saving)}/></div></div>
         </section>
+
+        <MomentumSection activityCalendar={profile.activityCalendar || []} lastSyncedAt={profile.lastSyncedAt} currentStreak={profile.currentStreak} longestStreak={profile.longestStreak} ownerName={profile.name} isOwn />
+
+        <StreakLeaderboardPreview snapshot={streakSnapshot.data} ownerName={profile.name} loading={streakSnapshot.loading}/>
 
         <PeerBenchmark benchmark={seniorMatch.benchmark} />
 
@@ -496,6 +404,7 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
 function PrivacySelect({ label, value, onChange, disabled }) { return <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-500">{label && <span>{label}</span>}<select aria-label={label || "Section visibility"} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-extrabold capitalize text-slate-700 outline-none focus:border-orange-500 disabled:opacity-50"><option value="public">Public</option><option value="private">Private</option></select></label>; }
 function PrivateBadge() { return <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Always Private</span>; }
 function OwnerDetail({ title, value, visibility, onChange, disabled }) { return <div className="border-b border-slate-100 p-5 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0"><div className="flex items-center justify-between gap-3"><h2 className="text-sm font-extrabold text-slate-950">{title}</h2><PrivacySelect value={visibility ? "public" : "private"} onChange={onChange} disabled={disabled}/></div><p className="mt-3 text-sm font-semibold text-slate-600">{value}</p></div>; }
+function PrivacyRow({ label, value, onChange, disabled }) { return <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4 last:border-0 last:pb-0"><p className="text-sm font-extrabold text-slate-800">{label}</p><PrivacySelect value={value ? "public" : "private"} onChange={onChange} disabled={disabled}/></div>; }
 
 function ConnectionCard({ platform, connection, username, stats, onEdit, visibility, onVisibilityChange, disabled, alwaysPrivate }) {
   const control = alwaysPrivate ? <PrivateBadge/> : <PrivacySelect value={visibility ? "public" : "private"} onChange={onVisibilityChange} disabled={disabled}/>;
@@ -517,160 +426,6 @@ function PeerBenchmark({ benchmark }) {
   return <section className="surface rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Peer benchmark</p><PrivateBadge/></div><h2 className="mt-1 text-xl font-extrabold text-slate-950">Your shortest path forward</h2><p className="mt-2 text-sm text-slate-600">Based on {benchmark.cohortSize} closest verified alumni profiles, not every outcome in Newbert.</p><div className="mt-5 grid gap-3 sm:grid-cols-3"><BenchmarkStat label="Average DSA" value={benchmark.averages.dsa ?? "Unavailable"}/><BenchmarkStat label="Average projects" value={benchmark.averages.projects ?? "Unavailable"}/><BenchmarkStat label="Had internship" value={`${benchmark.averages.internshipRate ?? 0}%`}/></div>{benchmark.commonSkills?.length ? <div className="mt-5 flex flex-wrap gap-2">{benchmark.commonSkills.map((item) => <span key={item.skill} className="rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-extrabold text-orange-900">{item.skill} · {item.percent}%</span>)}</div> : null}{benchmark.insights?.length ? <ul className="mt-5 space-y-1 text-sm leading-6 text-slate-700">{benchmark.insights.map((insight) => <li key={insight}>• {insight}</li>)}</ul> : null}</section>;
 }
 function BenchmarkStat({ label, value }) { return <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-bold text-slate-500">{label}</p><p className="mt-1 text-lg font-extrabold text-slate-950">{value}</p></div>; }
-
-// --- GitHub/LeetCode Style Heatmap Calendar & Streak Dashboard ---
-function StreakCalendarHeatmap({ activityCalendar, lastSyncedAt, syncedCurrentStreak, syncedLongestStreak }) {
-  const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [hoveredDay, setHoveredDay] = useState(null);
-
-  const daysData = useMemo(() => buildYearlyActivity(selectedYear, activityCalendar), [selectedYear, activityCalendar]);
-  const metrics = useMemo(() => computeYearMetrics(daysData), [daysData]);
-  const weeks = useMemo(() => buildHeatmapWeeks(daysData), [daysData]);
-
-  const yearOptions = [currentYear, currentYear - 1, currentYear - 2];
-
-  // Map month label positions to week column indices
-  const monthLabels = useMemo(() => {
-    const labels = [];
-    let lastMonth = -1;
-    weeks.forEach((week, weekIdx) => {
-      const validDay = week.find((d) => d !== null);
-      if (validDay && validDay.month !== lastMonth) {
-        labels.push({ monthName: MONTH_SHORT_NAMES[validDay.month], weekIdx });
-        lastMonth = validDay.month;
-      }
-    });
-    return labels;
-  }, [weeks]);
-
-  return (
-    <div className="surface rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      {/* Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Momentum</p>
-          <h2 className="mt-0.5 text-xl font-extrabold text-slate-950 flex items-center gap-2">
-            <span>{metrics.totalContributions.toLocaleString()} verified activities</span>
-            <span className="text-xs font-bold text-slate-500">in {selectedYear}</span>
-          </h2>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="control rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-extrabold text-slate-900 focus:border-orange-500 focus:outline-none">
-            {yearOptions.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Streak Metric Cards — High Contrast Fix */}
-      <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <StreakMetricCard label={selectedYear === currentYear ? "Current Streak" : "Year-end Streak"} value={`${selectedYear === currentYear ? (syncedCurrentStreak || 0) : metrics.currentStreak} ${(selectedYear === currentYear ? (syncedCurrentStreak || 0) : metrics.currentStreak) === 1 ? "day" : "days"}`} icon="⚡" subtitle={selectedYear === currentYear ? "Across both platforms" : `End of ${selectedYear}`} />
-        <StreakMetricCard label="Longest Streak" value={`${syncedLongestStreak || 0} ${(syncedLongestStreak || 0) === 1 ? "day" : "days"}`} icon="🏆" subtitle="Best run in synced history" />
-        <StreakMetricCard label="Active Days" value={`${metrics.activeDays} days`} icon="📅" subtitle={`${Math.round((metrics.activeDays / daysData.length) * 100)}% of year`} />
-      </div>
-
-      <p className={`mt-4 rounded-lg border px-3 py-2 text-xs font-semibold ${activityCalendar.length ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
-        {activityCalendar.length ? `Verified from synced GitHub and LeetCode activity${lastSyncedAt ? ` · updated ${new Date(lastSyncedAt).toLocaleString()}` : ""}. A green day means at least one platform recorded activity.` : "No verified activity yet. Edit your profile, add GitHub or LeetCode, and sync your public profiles."}
-      </p>
-
-      {/* GitHub / LeetCode Heatmap Grid Container */}
-      <div className="mt-6 overflow-x-auto pb-2">
-        <div className="min-w-[830px]">
-          {/* Month Headers */}
-          <div className="relative mb-2 h-4 text-[11px] font-extrabold text-slate-500">
-            {monthLabels.map((m, idx) => (
-              <span key={`${m.monthName}-${idx}`} className="absolute" style={{ left: `${m.weekIdx * 15 + 34}px` }}>
-                {m.monthName}
-              </span>
-            ))}
-          </div>
-
-          {/* Heatmap Grid Body */}
-          <div className="flex gap-2">
-            {/* Weekday Row Labels (Sun - Sat) */}
-            <div className="grid w-7 shrink-0 grid-rows-7 gap-[3px] text-[9px] font-bold leading-3 text-slate-400 select-none">
-              <span>Sun</span>
-              <span>Mon</span>
-              <span>Tue</span>
-              <span>Wed</span>
-              <span>Thu</span>
-              <span>Fri</span>
-              <span>Sat</span>
-            </div>
-
-            {/* 52 Week Columns */}
-            <div className="flex gap-[3px]">
-              {weeks.map((week, weekIdx) => (
-                <div key={`week-${weekIdx}`} className="flex flex-col gap-[3px]">
-                  {week.map((day, dayIdx) => {
-                    if (!day) {
-                      return <div key={`empty-${weekIdx}-${dayIdx}`} className="h-3 w-3 rounded-[3px] bg-transparent" />;
-                    }
-
-                    // Intensity score (0..4)
-                    let level = 0;
-                    if (day.total >= 10) level = 4;
-                    else if (day.total >= 6) level = 3;
-                    else if (day.total >= 3) level = 2;
-                    else if (day.total >= 1) level = 1;
-
-                    return (
-                      <div
-                        key={day.dateStr}
-                        onMouseEnter={(event) => setHoveredDay({ day, x: Math.min(event.clientX + 14, window.innerWidth - 230), y: Math.max(12, event.clientY - 150) })}
-                        onMouseMove={(event) => setHoveredDay((current) => current ? { ...current, x: Math.min(event.clientX + 14, window.innerWidth - 230), y: Math.max(12, event.clientY - 150) } : current)}
-                        onMouseLeave={() => setHoveredDay(null)}
-                        className={`h-3 w-3 rounded-[3px] transition duration-150 ${day.isFuture ? "cursor-default bg-slate-800/5 opacity-40" : `cursor-pointer hover:ring-2 hover:ring-emerald-300/40 hover:ring-offset-1 ${HEATMAP_LEVELS[level]}`}`}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {hoveredDay && <ActivityTooltip {...hoveredDay} />}
-
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 text-xs">
-        <span className="text-slate-400">Hover over a day to view its verified activity</span>
-
-        {/* Intensity Legend */}
-        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
-          <span>Less</span>
-          {[0, 1, 2, 3, 4].map((lvl) => (
-            <span key={lvl} className={`h-3 w-3 rounded-[3px] ${HEATMAP_LEVELS[lvl]}`} />
-          ))}
-          <span>More</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ActivityTooltip({ day, x, y }) {
-  return <div className="pointer-events-none fixed z-[100] w-52 rounded-lg border border-slate-700 bg-[#101827] p-3 text-left shadow-2xl" style={{ left: x, top: y }}><p className="text-xs font-extrabold text-white">{day.date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}</p>{day.total > 0 ? <div className="mt-3 space-y-2">{day.github > 0 && <div><p className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">GitHub</p><p className="text-xs font-semibold text-slate-200">{day.github} {day.github === 1 ? "contribution" : "contributions"}</p></div>}{day.leetcode > 0 && <div><p className="text-[10px] font-bold uppercase tracking-wider text-orange-300">LeetCode</p><p className="text-xs font-semibold text-slate-200">{day.leetcode} {day.leetcode === 1 ? "submission" : "submissions"}</p></div>}<div className="border-t border-slate-700 pt-2"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total activity</p><p className="text-sm font-extrabold text-white">{day.total}</p></div></div> : <p className="mt-2 text-xs font-semibold text-slate-400">No activity</p>}</div>;
-}
-
-// --- High-Contrast Metric Card Component ---
-function StreakMetricCard({ label, value, icon, subtitle }) {
-  return (
-    <div className="rounded-xl border border-orange-200/80 bg-orange-50/70 p-3.5 shadow-2xs">
-      <div className="flex items-center justify-between">
-        <p className="text-[11px] font-extrabold uppercase tracking-wider text-orange-950">{label}</p>
-        <span className="text-sm">{icon}</span>
-      </div>
-      <p className="mt-1.5 text-xl font-black text-slate-950 leading-tight">{value}</p>
-      {subtitle && <p className="mt-0.5 text-[11px] font-semibold text-slate-600">{subtitle}</p>}
-    </div>
-  );
-}
 
 function BookmarkedJobs({ jobs }) {
   return (

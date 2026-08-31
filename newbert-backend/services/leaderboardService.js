@@ -1,6 +1,7 @@
 const Profile = require("../Models/Profile");
 const User = require("../Models/User");
 const { resolveProfileCollege } = require("./collegeService");
+const { normalizePrivacy } = require("./publicProfileService");
 
 const VALID_RANGES = new Set(["today", "7d", "30d", "overall"]);
 
@@ -37,16 +38,34 @@ function activityMetrics(profile) {
 
 function buildLeaderboardEntry(profile, user) {
   const activity = activityMetrics(profile);
-  const leetcodeConnected = Boolean(profile.leetcodeUsername || profile.leetcodeStats?.username);
-  const githubConnected = Boolean(profile.githubUsername || profile.githubStats?.username);
+  const privacy = normalizePrivacy(profile.privacy);
+  const leetcodeConnected = Boolean(privacy.sections.leetcode && (profile.leetcodeUsername || profile.leetcodeStats?.username));
+  const githubConnected = Boolean(privacy.sections.github && (profile.githubUsername || profile.githubStats?.username));
+  const streakVisible = Boolean(privacy.sections.leaderboardRank && privacy.sections.streakStats);
   return {
     userId: String(profile.userId), name: user.name, avatar: profile.avatarUrl || user.avatarUrl || "",
     college: { id: profile.collegeId || null, name: profile.collegeName || profile.college || "" }, branch: profile.branch || "", lastActivityDate: activity.lastActivityDate,
-    streak: { current: Number(profile.currentStreak) || 0, longest: Number(profile.longestStreak) || 0 },
+    streak: streakVisible ? { current: Number(profile.currentStreak) || 0, longest: Number(profile.longestStreak) || 0 } : { current: 0, longest: 0, private: true },
     leetcode: leetcodeConnected ? { connected: true, activityAvailable: Boolean(profile.leetcodeStats?.acceptedActivityAvailable), totalSolved: Number(profile.leetcodeStats?.totalSolved) || 0, today: activity.today.leetcode, "7d": activity["7d"].leetcode, "30d": activity["30d"].leetcode } : { connected: false, activityAvailable: false },
     github: githubConnected ? { connected: true, commitActivityAvailable: Boolean(profile.githubStats?.commitActivityAvailable), contributionActivityAvailable: Boolean(profile.githubStats?.contributionActivityAvailable || (profile.githubStats?.lastSyncedAt && !profile.githubStats?.activityError)), totalContributions: activity.githubContributions, today: activity.today.github, "7d": activity["7d"].github, "30d": activity["30d"].github } : { connected: false, commitActivityAvailable: false, contributionActivityAvailable: false },
     lastSyncedAt: profile.lastSyncedAt || null,
   };
+}
+
+function canJoinPublicLeaderboard(profile) {
+  const privacy = normalizePrivacy(profile.privacy);
+  return privacy.profileVisibility === "public" && privacy.sections.leaderboardRank;
+}
+
+function hasVerifiedStreakActivity(entry) {
+  return !entry.streak.private && Boolean(entry.lastActivityDate || entry.streak.current > 0 || entry.streak.longest > 0);
+}
+
+async function loadPublicEntries(query = {}) {
+  const profiles = (await Profile.find(query).lean()).filter(canJoinPublicLeaderboard);
+  const users = await User.find({ _id: { $in: profiles.map((profile) => profile.userId) } }).select("name avatarUrl").lean();
+  const byId = new Map(users.map((user) => [String(user._id), user]));
+  return profiles.map((profile) => byId.has(String(profile.userId)) ? buildLeaderboardEntry(profile, byId.get(String(profile.userId))) : null).filter(Boolean).filter((entry) => entry.college.name || entry.leetcode.connected || entry.github.connected);
 }
 
 // Ties use most recent verified activity, then stable userId ascending.
@@ -73,12 +92,9 @@ async function getLeaderboard({ userId, scope, search, leetcodeRange, githubRang
   const emptySection = { currentUser: null, users: [] };
   if (scope === "college" && !resolvedCollege) return { scope, needsCollege: true, resolvedCollege: null, college: null, streak: { ...emptySection, top: [] }, leetcode: { ...emptySection, range: lcRange, status: "not_available" }, github: { ...emptySection, range: ghRange, status: "not_available" } };
   const query = { ...(scope === "college" ? { collegeId: resolvedCollege.id } : {}) };
-  const profiles = await Profile.find(query).lean();
-  const users = await User.find({ _id: { $in: profiles.map((profile) => profile.userId) } }).select("name avatarUrl").lean();
-  const byId = new Map(users.map((user) => [String(user._id), user]));
-  const entries = profiles.map((profile) => byId.has(String(profile.userId)) ? buildLeaderboardEntry(profile, byId.get(String(profile.userId))) : null).filter(Boolean).filter((entry) => entry.college.name || entry.leetcode.connected || entry.github.connected);
+  const entries = await loadPublicEntries(query);
   const mineEntry = entries.find((entry) => entry.userId === String(userId)) || null;
-  const streak = rankEntries(entries, (entry) => entry.streak.current, userId, search); streak.top = streak.users.slice(0, 3);
+  const streak = rankEntries(entries.filter(hasVerifiedStreakActivity), (entry) => entry.streak.current, userId, search); streak.top = streak.users.slice(0, 3);
   const lcAvailable = (entry) => lcRange === "overall" ? entry.leetcode.connected : entry.leetcode.activityAvailable;
   const lcMetric = (entry) => lcRange === "overall" ? entry.leetcode.totalSolved : entry.leetcode[lcRange];
   const leetcode = rankEntries(entries.filter((entry) => lcAvailable(entry) && lcMetric(entry) > 0), lcMetric, userId, search);
@@ -89,4 +105,22 @@ async function getLeaderboard({ userId, scope, search, leetcodeRange, githubRang
   Object.assign(github, { range: ghRange, label: rangeLabel(ghRange), metric: ghRange === "overall" ? "contributions" : "commits", status: sectionStatus(mineEntry, "github", ghAvailable, ghMetric) });
   return { scope, needsCollege: false, resolvedCollege, college: scope === "college" ? resolvedCollege : null, streak, leetcode, github };
 }
-module.exports = { VALID_RANGES, activityMetrics, buildLeaderboardEntry, rankEntries, getLeaderboard };
+
+function publicStreakEntry(entry) {
+  if (!entry) return null;
+  return { userId: entry.userId, name: entry.name, avatar: entry.avatar, college: entry.college, branch: entry.branch, streak: entry.streak, lastActivityDate: entry.lastActivityDate, rank: entry.rank };
+}
+
+async function getPublicStreakSnapshot(userId) {
+  const owner = await Profile.findOne({ userId }).lean();
+  const ownerPrivacy = owner ? normalizePrivacy(owner.privacy) : null;
+  if (!owner || !canJoinPublicLeaderboard(owner) || !ownerPrivacy.sections.streakStats) return { visible: false };
+  const globalEntries = (await loadPublicEntries()).filter(hasVerifiedStreakActivity);
+  const global = rankEntries(globalEntries, (entry) => entry.streak.current, userId);
+  const collegeEntries = owner.collegeId ? globalEntries.filter((entry) => entry.college.id === owner.collegeId) : [];
+  const college = rankEntries(collegeEntries, (entry) => entry.streak.current, userId);
+  const preview = collegeEntries.length ? college : global;
+  return { visible: true, profileOwner: publicStreakEntry(global.currentUser), collegeRank: college.currentUser?.rank || null, globalRank: global.currentUser?.rank || null, scope: collegeEntries.length ? "college" : "global", users: preview.users.slice(0, 6).map(publicStreakEntry) };
+}
+
+module.exports = { VALID_RANGES, activityMetrics, buildLeaderboardEntry, rankEntries, getLeaderboard, getPublicStreakSnapshot, canJoinPublicLeaderboard };

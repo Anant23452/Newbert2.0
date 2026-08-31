@@ -16,6 +16,9 @@ const privacySectionsSchema = new mongoose.Schema({
   education: { type: Boolean, default: true },
   careerGoal: { type: Boolean, default: true },
   courses: { type: Boolean, default: true },
+  activityHeatmap: { type: Boolean, default: true },
+  streakStats: { type: Boolean, default: true },
+  leaderboardRank: { type: Boolean, default: true },
 }, { _id: false });
 
 const privacySchema = new mongoose.Schema({

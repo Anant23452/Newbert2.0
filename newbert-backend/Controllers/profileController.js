@@ -9,6 +9,7 @@ const { isProfileComplete, profileStrength } = require("../services/profileCompl
 const College = require("../Models/College");
 const { findCollegeByText, resolveProfileCollege } = require("../services/collegeService");
 const { DEFAULT_SECTIONS, normalizePrivacy, serializePublicProfile } = require("../services/publicProfileService");
+const { getPublicStreakSnapshot } = require("../services/leaderboardService");
 
 const INVALID_LEETCODE_USERNAMES = new Set(["u", "profile"]);
 const kolkataDay = () => { const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date()); const value = Object.fromEntries(parts.map((part) => [part.type, part.value])); return `${value.year}-${value.month}-${value.day}`; };
@@ -29,7 +30,8 @@ exports.getPublicProfile = async (req, res, next) => {
     const [profile, user] = await Promise.all([Profile.findOne({ userId: req.params.userId }).lean(), User.findById(req.params.userId).select("name avatarUrl").lean()]);
     if (!profile || !user) return res.status(404).json({ message: "Profile not found." });
     const today = (profile.activityCalendar || []).find((day) => day.date === kolkataDay());
-    res.json(serializePublicProfile(profile, user, today));
+    const streakLeaderboard = await getPublicStreakSnapshot(req.params.userId);
+    res.json(serializePublicProfile(profile, user, today, streakLeaderboard));
   } catch (error) { next(error); }
 };
 
