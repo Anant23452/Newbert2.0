@@ -1,3 +1,28 @@
+const { analyzeRepositorySnapshot } = require("./skillEvidenceService");
+
+const SCAN_LIMITS = Object.freeze({ repositories: 5, filesPerRepository: 20, maxFileBytes: 100000 });
+const IGNORE_PATH = /(^|\/)(node_modules|dist|build|vendor|coverage|\.next|generated)(\/|$)|(?:package-lock|yarn\.lock|pnpm-lock)/i;
+const SOURCE_FILE = /(?:README(?:\.[a-z0-9]+)?|package\.json|requirements\.txt|pyproject\.toml|\.(?:js|jsx|ts|tsx|py|sql))$/i;
+
+async function githubJson(url, headers) {
+  const response = await fetch(url, { headers });
+  if (!response.ok) throw new Error(`GitHub evidence request failed (${response.status}).`);
+  return response.json();
+}
+
+async function scanRepository(repo, headers) {
+  const tree = await githubJson(`https://api.github.com/repos/${repo.full_name}/git/trees/${encodeURIComponent(repo.default_branch)}?recursive=1`, headers);
+  const candidates = (tree.tree || []).filter((item) => item.type === "blob" && item.size <= SCAN_LIMITS.maxFileBytes && SOURCE_FILE.test(item.path) && !IGNORE_PATH.test(item.path)).slice(0, SCAN_LIMITS.filesPerRepository);
+  const results = await Promise.allSettled(candidates.map((item) => githubJson(`https://api.github.com/repos/${repo.full_name}/contents/${encodeURIComponent(item.path)}`, headers)));
+  const files = candidates.map((item) => item.path); let content = ""; let dependencies = {}; let devDependencies = {};
+  results.forEach((result, index) => {
+    if (result.status !== "fulfilled" || result.value.encoding !== "base64") return;
+    const decoded = Buffer.from(result.value.content, "base64").toString("utf8"); content += `\n${decoded.slice(0, SCAN_LIMITS.maxFileBytes)}`;
+    if (/package\.json$/i.test(candidates[index].path)) { try { const manifest = JSON.parse(decoded); dependencies = { ...dependencies, ...(manifest.dependencies || {}) }; devDependencies = { ...devDependencies, ...(manifest.devDependencies || {}) }; } catch {} }
+  });
+  return { name: repo.name, url: repo.html_url, liveUrl: repo.homepage || null, description: repo.description || null, language: repo.language || null, hasReadme: files.some((file) => /(^|\/)readme/i.test(file)), filesInspected: files.length, ...analyzeRepositorySnapshot({ dependencies, devDependencies, files, content }) };
+}
+
 async function getGithubActivity(username, years) {
   const headers = { Accept: "application/vnd.github+json", "User-Agent": "Newbert", ...(process.env.GITHUB_TOKEN && { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }) };
   const userResponse = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, { headers });
@@ -13,6 +38,8 @@ async function getGithubActivity(username, years) {
     return counts;
   }, {});
   const languages = Object.keys(languageCounts).sort((a, b) => languageCounts[b] - languageCounts[a]).slice(0, 12);
+  const scans = await Promise.allSettled(repos.filter((repo) => !repo.fork && !repo.archived).slice(0, SCAN_LIMITS.repositories).map((repo) => scanRepository(repo, headers)));
+  const repositories = scans.filter((result) => result.status === "fulfilled").map((result) => result.value);
 
   let activity = [];
   let activityError = null;
@@ -35,6 +62,9 @@ async function getGithubActivity(username, years) {
     following: user.following,
     languages,
     languageCounts,
+    repositories,
+    repositoryEvidenceError: scans.some((result) => result.status === "rejected") ? "Some repositories could not be inspected; available evidence was retained." : null,
+    scanLimits: SCAN_LIMITS,
     activity,
     activityError,
     commitActivityAvailable,
@@ -74,4 +104,4 @@ function kolkataDate(value) {
   return `${date.year}-${date.month}-${date.day}`;
 }
 
-module.exports = { getGithubActivity };
+module.exports = { getGithubActivity, scanRepository, SCAN_LIMITS };

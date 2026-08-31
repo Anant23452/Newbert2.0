@@ -15,10 +15,10 @@ function buildLeetcodeTopicEvidence(stats = {}) {
   const trackedTotals = {};
   for (const topics of Object.values(trackedTopics)) for (const topic of topics) { const key = normalizeTopic(topic); trackedTotals[key] = (trackedTotals[key] || 0) + 1; }
   const topics = Object.fromEntries([...topicProblems.entries()].map(([topic, problems]) => {
-    const denominator = tagged.length ? problems.size : Math.max(problems.size, trackedTotals[topic] || problems.size);
-    return [topic, { solved: problems.size, trackedProblems: denominator, score: Math.round((problems.size / denominator) * 100), confidence: tagged.length ? 0.9 : 0.65, dataset: tagged.length ? "leetcode_tags" : "tracked_topic_dataset" }];
+    const denominator = tagged.length ? tagged.length : Math.max(problems.size, trackedTotals[topic] || problems.size);
+    return [topic, { solved: problems.size, trackedProblems: denominator, score: Math.round((problems.size / denominator) * 100), confidence: tagged.length ? 0.7 : 0.65, dataset: tagged.length ? "limited_recent_accepted_feed" : "tracked_topic_dataset" }];
   }));
-  return { totalSolved: Number(stats.totalSolved) || 0, topicEvidenceAvailable: true, topics, note: tagged.length ? null : "Topic coverage is based only on Newbert's maintained tracked-problem dataset." };
+  return { totalSolved: Number(stats.totalSolved) || 0, topicEvidenceAvailable: true, topics, note: tagged.length ? "Topic evidence covers only the limited recent accepted-submission feed, not the complete solve history." : "Topic coverage is based only on Newbert's maintained tracked-problem dataset." };
 }
 
 module.exports = { buildLeetcodeTopicEvidence, normalizeTopic };

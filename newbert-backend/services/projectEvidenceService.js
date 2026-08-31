@@ -34,7 +34,13 @@ function scoreProject(input = {}) {
 }
 
 function normalizeProjectEvidence(profile = {}) {
-  const projects = (profile.projectDetails || profile.projectsDetail || []).map(scoreProject);
+  const explicit = profile.projectDetails || profile.projectsDetail || [];
+  const knownRepos = new Set(explicit.map((project) => project.repoUrl || project.repositoryUrl).filter(Boolean));
+  const derived = (profile.githubStats?.repositories || []).filter((repo) => !knownRepos.has(repo.url)).map((repo) => {
+    const skills = [...new Set(repo.usedSkills || [])]; const normalized = new Set(skills.map(normalizeSkill));
+    return { name: repo.name, description: repo.description, repoUrl: repo.url, liveUrl: repo.liveUrl, technologies: skills, features: [], evidence: { hasRepository: true, hasDeployment: Boolean(repo.liveUrl), hasReadme: Boolean(repo.hasReadme), hasFrontend: normalized.has("react") || normalized.has("nextjs"), hasBackend: normalized.has("nodejs") || normalized.has("express") || normalized.has("flask") || normalized.has("fastapi"), hasDatabase: normalized.has("mongodb") || normalized.has("mongoose") || normalized.has("sql"), hasAuthentication: normalized.has("jwt") || normalized.has("oauth") || normalized.has("firebase"), hasApiIntegration: normalized.has("restapis") }, complexity: repo.usedSkills?.length >= 4 ? "advanced" : repo.usedSkills?.length >= 2 ? "intermediate" : "basic" };
+  });
+  const projects = [...explicit, ...derived].map(scoreProject);
   const legacyCount = Number.isFinite(Number(profile.projects)) ? Number(profile.projects) : null;
   const scores = projects.map((item) => item.projectScore);
   const score = scores.length ? Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length) : null;

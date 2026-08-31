@@ -2,11 +2,13 @@ const { COVERAGE_RULES, IMPORTANCE_WEIGHTS, STATUS_CREDIT } = require("../config
 const { normalizeStructuredAnalysis } = require("./jobJdAnalysisService");
 const { areRelatedSkills, normalizeSkill } = require("./skillNormalizationService");
 const { normalizeStudentProfile } = require("./studentProfileNormalizationService");
+const { normalizeJobRequirements } = require("./jobRequirementEvidenceService");
+const { compareEvidence, generateEvidenceTasks } = require("./evidenceGapService");
 
 function numeric(value) { const number = value == null || value === "" ? null : Number(value); return Number.isFinite(number) ? number : null; }
 function list(value) { return Array.isArray(value) ? value : []; }
 function normalizedProfile(profile) { return profile?.development && profile?.academics ? profile : normalizeStudentProfile(profile || {}); }
-function structuredJob(job) { if (Array.isArray(job?.jdAnalysis?.requirements) && job.jdAnalysis.eligibility) return job.jdAnalysis; return normalizeStructuredAnalysis(job?.jdAnalysis || job?.requirements || {}, { title: job?.title, description: job?.description }, "legacy_saved_job"); }
+function structuredJob(job) { const analysis = Array.isArray(job?.jdAnalysis?.requirements) && job.jdAnalysis.eligibility ? job.jdAnalysis : normalizeStructuredAnalysis(job?.jdAnalysis || job?.requirements || {}, { title: job?.title, description: job?.description }, "legacy_saved_job"); return { ...analysis, requirements: normalizeJobRequirements(job) }; }
 function check(field, required, studentValue, status, reason) { return { field, required, studentValue: studentValue ?? null, status, reason }; }
 
 function evaluateEligibility(studentInput, jdInput) {
@@ -22,12 +24,12 @@ function evaluateEligibility(studentInput, jdInput) {
 }
 
 function matchRequirement(student, requirement) {
-  const result = { requirementId: requirement.id, skill: requirement.label, canonicalSkill: requirement.canonicalSkill, importance: requirement.importance, jdEvidence: requirement.evidenceText || null, confidence: requirement.confidence, status: "unknown", evidence: [], explanation: "" };
+  const result = { requirementId: requirement.id, skill: requirement.label, canonicalSkill: requirement.canonicalSkill, importance: requirement.importance, requirementSource: requirement.source, requirementSourceLabel: requirement.sourceLabel, jdEvidence: requirement.evidenceText || null, confidence: requirement.confidence, status: "unknown", evidence: [], explanation: "" };
   if (requirement.scoreEligible === false) return { ...result, explanation: "The extracted requirement does not have sufficiently reliable JD evidence, so it is excluded from scoring." };
-  const skills = student.development.skills || [];
+  const skills = student.development.skillEvidence?.length ? student.development.skillEvidence.map((skill) => ({ name: skill.skill, normalizedName: skill.normalizedSkill, score: skill.score, evidence: skill.sources, level: skill.level })) : student.development.skills || [];
   if (!skills.length) return { ...result, explanation: "Student skill evidence is unavailable; Newbert does not treat this as missing." };
   const exact = skills.find((skill) => skill.normalizedName === requirement.canonicalSkill);
-  if (exact) return { ...result, status: "matched", evidence: exact.evidence || [], explanation: `${exact.name} appears in the current student evidence.` };
+  if (exact) { const onlyClaimed = exact.level === "claimed" || (exact.evidence || []).every((item) => item.source === "self_reported" || item.type === "claimed"); return { ...result, status: onlyClaimed ? "matched" : exact.score >= 65 ? "matched" : "partial", evidenceScore: exact.score ?? null, evidenceLevel: exact.level || null, evidence: exact.evidence || [], explanation: onlyClaimed ? `${exact.name} is self-reported and retained as a legacy profile match; the evidence-gap score remains conservative.` : `${exact.name} has ${exact.level || "available"} evidence (${exact.score ?? "unscored"}).` }; }
   const related = skills.find((skill) => areRelatedSkills(skill.normalizedName, requirement.canonicalSkill));
   if (related) return { ...result, status: "partial", evidence: related.evidence || [], explanation: `${related.name} is a curated related skill, but it is not an exact ${requirement.label} match.` };
   if (requirement.canonicalSkill === "dsa" && student.dsa.available) return { ...result, status: "partial", evidence: [{ source: "leetcode", supported: true }], explanation: `LeetCode evidence is available (${student.dsa.totalSolved} total solved), but JD-specific DSA topic coverage cannot be verified.` };
@@ -35,7 +37,7 @@ function matchRequirement(student, requirement) {
 }
 
 function coverageFor(matches, allowedImportance = null) {
-  const candidates = matches.filter((match) => (!allowedImportance || allowedImportance.includes(match.importance)) && IMPORTANCE_WEIGHTS[match.importance] != null);
+  const candidates = matches.filter((match) => match.requirementSource !== "role_baseline" && (!allowedImportance || allowedImportance.includes(match.importance)) && IMPORTANCE_WEIGHTS[match.importance] != null);
   const scoreEligible = candidates.filter((match) => match.confidence !== "low" && match.jdEvidence); const known = scoreEligible.filter((match) => match.status !== "unknown");
   const totalWeight = scoreEligible.reduce((sum, match) => sum + IMPORTANCE_WEIGHTS[match.importance], 0); const knownWeight = known.reduce((sum, match) => sum + IMPORTANCE_WEIGHTS[match.importance], 0); const knownRatio = totalWeight ? knownWeight / totalWeight : 0;
   if (!totalWeight || !knownWeight || knownRatio < COVERAGE_RULES.minimumKnownWeightRatio) return { status: "unavailable", value: null, knownWeightRatio: Math.round(knownRatio * 100), explanation: "Not enough reliable JD and student evidence is available for responsible coverage." };
@@ -48,10 +50,12 @@ function bucketFor(eligibility, coverage, matches) { if (eligibility.eligible ==
 
 function analyzeJobMatch(profileInput, job) {
   const student = normalizedProfile(profileInput); const jd = structuredJob(job); const eligibility = evaluateEligibility(student, jd); const requirementMatches = list(jd.requirements).map((requirement) => matchRequirement(student, requirement));
-  const overall = coverageFor(requirementMatches); const required = coverageFor(requirementMatches, ["critical", "required"]); const preferred = coverageFor(requirementMatches, ["preferred", "optional"]); const counts = { matched: 0, partial: 0, missing: 0, unknown: 0 }; requirementMatches.forEach((match) => { counts[match.status] += 1; });
+  const overall = coverageFor(requirementMatches); const required = coverageFor(requirementMatches, ["critical", "required"]); const preferred = coverageFor(requirementMatches, ["preferred", "optional"]); const counts = { matched: 0, partial: 0, missing: 0, unknown: 0 }; requirementMatches.filter((match) => match.requirementSource !== "role_baseline").forEach((match) => { counts[match.status] += 1; });
   const coverage = { overall, required, preferred, matchedCount: counts.matched, partialCount: counts.partial, missingCount: counts.missing, unknownCount: counts.unknown }; const bucket = bucketFor(eligibility, coverage, requirementMatches); const failedRequirements = eligibility.failedChecks.map((item) => item.reason); const matchedRequirements = requirementMatches.filter((item) => item.status === "matched").map((item) => item.skill); const critical = requirementMatches.filter((item) => item.status === "missing" && ["critical", "required"].includes(item.importance)).map((item) => item.skill); const recommended = requirementMatches.filter((item) => item.status === "partial").map((item) => item.skill); const optional = requirementMatches.filter((item) => item.status === "missing" && ["preferred", "optional"].includes(item.importance)).map((item) => item.skill); const unknown = requirementMatches.filter((item) => item.status === "unknown").map((item) => item.skill);
   const bucketReason = { not_eligible: "At least one explicit JD eligibility condition failed.", insufficient_data: "The available JD or student evidence is not sufficient for a responsible recommendation.", not_ready: "Critical or required evidence gaps remain under Newbert's configured thresholds.", within_reach: "No explicit eligibility failure exists, but meaningful core requirement gaps remain.", apply_now: "Available evidence satisfies Newbert's eligibility and core requirement-coverage thresholds. This does not guarantee an interview or offer." }[bucket];
-  return { overallScore: overall.value, coverage, eligible: eligibility.eligible, eligibility, failedRequirements, bucket, legacyBucket: bucket === "apply_now" ? "apply_today" : bucket === "not_eligible" ? "not_ready" : bucket, requirementMatches, matchedRequirements, gaps: { critical, recommended, optional, unknown }, learningDistance: learningDistance(requirementMatches, bucket), reason: [bucketReason, ...matchedRequirements.slice(0, 2).map((skill) => `${skill} has current profile evidence.`)], bucketReason };
+  const evidenceGaps = compareEvidence(jd.requirements, student.evidence || { skills: student.development.skillEvidence || [] });
+  const tasks = generateEvidenceTasks(evidenceGaps);
+  return { overallScore: overall.value, coverage, eligible: eligibility.eligible, eligibility, failedRequirements, bucket, legacyBucket: bucket === "apply_now" ? "apply_today" : bucket === "not_eligible" ? "not_ready" : bucket, requirementMatches, matchedRequirements, gaps: { critical, recommended, optional, unknown }, evidenceGaps, tasks, roleBaselineAdded: jd.requirements.some((item) => item.source === "role_baseline"), learningDistance: learningDistance(requirementMatches, bucket), reason: [bucketReason, ...matchedRequirements.slice(0, 2).map((skill) => `${skill} has current profile evidence.`)], bucketReason };
 }
 
 function eligibility(profile, requirements = {}) { const jd = normalizeStructuredAnalysis(requirements, { title: "Job", description: "" }, "legacy_saved_job"); const result = evaluateEligibility(profile, jd); return { eligible: result.eligible, failedRequirements: result.failedChecks.map((item) => item.reason), ...result }; }

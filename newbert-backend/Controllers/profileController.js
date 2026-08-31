@@ -10,6 +10,7 @@ const College = require("../Models/College");
 const { findCollegeByText, resolveProfileCollege } = require("../services/collegeService");
 const { DEFAULT_SECTIONS, normalizePrivacy, serializePublicProfile } = require("../services/publicProfileService");
 const { getPublicStreakSnapshot } = require("../services/leaderboardService");
+const { buildSkillEvidence } = require("../services/skillEvidenceService");
 
 const INVALID_LEETCODE_USERNAMES = new Set(["u", "profile"]);
 const kolkataDay = () => { const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date()); const value = Object.fromEntries(parts.map((part) => [part.type, part.value])); return `${value.year}-${value.month}-${value.day}`; };
@@ -102,6 +103,7 @@ function response(profile, user) {
     avatar: profile.avatarUrl || user.avatarUrl || "",
     cover: profile.coverUrl || "",
     projects: profile.projects ?? null,
+    projectDetails: profile.projectDetails || [],
     cgpa: profile.cgpa ?? null,
     skills: profile.skills,
     githubStats: profile.githubStats || null,
@@ -283,7 +285,8 @@ exports.syncPublicProfiles = async (req, res, next) => {
       leetcode: leetcodeResult.status === "rejected" ? leetcodeResult.reason.message : leetcodeFresh?.activityError || null,
     };
 
-    if (!githubFresh && !leetcodeFresh) return res.status(502).json({ message: [syncErrors.github, syncErrors.leetcode].filter(Boolean).join(" ") || "Neither profile could be synchronized.", syncErrors });
+    const hasMatchingCache = Boolean((existing.githubStats && existing.githubStats.username?.toLowerCase() === githubUsername.toLowerCase()) || (existing.leetcodeStats && normalizeLeetcodeStats(existing.leetcodeStats)?.username?.toLowerCase() === leetcodeUsername.toLowerCase()));
+    if (!githubFresh && !leetcodeFresh && !hasMatchingCache) return res.status(502).json({ message: [syncErrors.github, syncErrors.leetcode].filter(Boolean).join(" ") || "Neither profile could be synchronized.", syncErrors });
 
     const sameGithub = existing.githubStats?.username?.toLowerCase() === githubUsername.toLowerCase();
     const existingLeetcode = normalizeLeetcodeStats(existing.leetcodeStats);
@@ -298,6 +301,8 @@ exports.syncPublicProfiles = async (req, res, next) => {
     const githubForStorage = githubStats ? { ...githubStats, activity: undefined } : null;
     const leetcodeForStorage = leetcodeStats ? { ...leetcodeStats, activity: undefined } : null;
 
+    const evidenceInput = { ...existing.toObject(), githubStats: githubForStorage, leetcodeStats: leetcodeForStorage, activityCalendar };
+    const normalizedEvidence = buildSkillEvidence(evidenceInput);
     const set = {
       ...(githubFresh && { githubUsername: githubFresh.username, githubUrl: `https://github.com/${githubFresh.username}`, githubStats: githubForStorage, ...(githubFresh.avatar && { avatarUrl: githubFresh.avatar }) }),
       ...(leetcodeFresh && { leetcodeUsername: leetcodeFresh.username, leetcodeUrl: `https://leetcode.com/u/${leetcodeFresh.username}`, leetcodeStats: leetcodeForStorage }),
@@ -305,6 +310,11 @@ exports.syncPublicProfiles = async (req, res, next) => {
       ...streaks,
       ...(skills.length && { skills }),
       syncErrors,
+      evidenceCache: {
+        github: githubForStorage ? { updatedAt: githubFresh ? new Date() : existing.evidenceCache?.github?.updatedAt || existing.lastSyncedAt, stale: !githubFresh, data: { repositories: githubForStorage.repositories || [], repositoryEvidenceError: githubForStorage.repositoryEvidenceError || syncErrors.github || null } } : null,
+        leetcode: leetcodeForStorage ? { updatedAt: leetcodeFresh ? new Date() : existing.evidenceCache?.leetcode?.updatedAt || existing.lastSyncedAt, stale: !leetcodeFresh, data: normalizedEvidence.leetcode } : null,
+        readiness: { updatedAt: new Date(), data: normalizedEvidence },
+      },
       lastSyncedAt: new Date(),
     };
     const profile = await Profile.findOneAndUpdate({ userId: req.auth.id }, { $set: set }, { new: true, upsert: true, setDefaultsOnInsert: true });

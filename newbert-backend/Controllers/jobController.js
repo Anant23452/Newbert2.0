@@ -9,6 +9,7 @@ const { explainJobMatch } = require("../services/jobMatchExplanationService");
 const { verifyJob } = require("../services/jobVerificationService");
 const { analyzeJobDescription, analyzeRawJobPost, compatibilityFields, mergeAdminRequirements, normalizeStructuredAnalysis } = require("../services/jobJdAnalysisService");
 const { normalizeStudentProfile } = require("../services/studentProfileNormalizationService");
+const { normalizeJobRequirements } = require("../services/jobRequirementEvidenceService");
 
 async function studentContext(userId) {
   const [profile, plan] = await Promise.all([Profile.findOne({ userId }).lean(), Plan.findOne({ userId }).lean()]);
@@ -23,7 +24,7 @@ function activeQuery(query = {}) {
   if (query.role) filters.roleCategory = { $regex: query.role, $options: "i" };
   return filters;
 }
-function serializeJob(job) { const value = job.toObject ? job.toObject() : job; return { ...value, application: value.application || { officialUrl: value.applyUrl, deadline: value.deadline || null }, verification: value.verification || { status: "pending", sourceType: "unknown", lastCheckedAt: null } }; }
+function serializeJob(job) { const value = job.toObject ? job.toObject() : job; return { ...value, requirementEvidence: normalizeJobRequirements(value), application: value.application || { officialUrl: value.applyUrl, deadline: value.deadline || null }, verification: value.verification || { status: "pending", sourceType: "unknown", lastCheckedAt: null } }; }
 function validHttpUrl(value) { try { return ["http:", "https:"].includes(new URL(value).protocol); } catch { return false; } }
 function cleanText(value, maxLength = 5000) { return typeof value === "string" ? value.trim().slice(0, maxLength) : ""; }
 function cleanList(value, maxLength = 40) { return Array.isArray(value) ? [...new Set(value.map((item) => cleanText(String(item), 100)).filter(Boolean))].slice(0, maxLength) : []; }

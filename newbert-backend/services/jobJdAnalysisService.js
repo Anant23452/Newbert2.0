@@ -63,7 +63,7 @@ function normalizeRequirement(value, description) {
     evidenceText: validEvidence,
     confidence,
     scoreEligible: Boolean(validEvidence && confidence !== "low"),
-    source: value?.source === "manual_override" ? "manual_override" : "ai_extracted",
+    source: value?.source === "manual_override" || value?.source === "manual" ? "manual" : value?.source === "inferred" ? "inferred" : "explicit",
   };
 }
 
@@ -212,7 +212,7 @@ function mergeAdminRequirements(baseAnalysis, overrides, input) {
   if (!overrides || typeof overrides !== "object" || Array.isArray(overrides)) return baseAnalysis;
   const replacements = [];
   const baseBySkill = new Map((baseAnalysis.requirements || []).map((item) => [item.canonicalSkill, item]));
-  const add = (values, importance, category = "technical") => textList(values).forEach((label) => { const prior = baseBySkill.get(normalizeSkill(label)); const foundEvidence = prior?.evidenceText || evidenceFor(input.description, label); replacements.push({ ...prior, label, canonicalSkill: normalizeSkill(label), importance, category: prior?.category || category, evidenceText: foundEvidence, confidence: prior?.confidence || (foundEvidence ? "high" : "low"), source: "manual_override" }); });
+  const add = (values, importance, category = "technical") => textList(values).forEach((label) => { const prior = baseBySkill.get(normalizeSkill(label)); const foundEvidence = prior?.evidenceText || evidenceFor(input.description, label); replacements.push({ ...prior, label, canonicalSkill: normalizeSkill(label), importance, category: prior?.category || category, evidenceText: foundEvidence, confidence: prior?.confidence || (foundEvidence ? "high" : "medium"), scoreEligible: true, source: "manual" }); });
   add(overrides.criticalSkills, "critical"); add(overrides.requiredSkills, "required"); add(overrides.preferredSkills, "preferred"); add(overrides.optionalSkills, "optional"); add(overrides.csFundamentals, "required", "cs-fundamental");
   const hasRequirementOverride = ["criticalSkills", "requiredSkills", "preferredSkills", "optionalSkills", "csFundamentals"].some((key) => Array.isArray(overrides[key]));
   const value = {

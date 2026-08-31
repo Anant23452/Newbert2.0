@@ -14,7 +14,7 @@ function buildSkillEvidence(profile = {}) {
   const repositories = profile.githubStats?.repositories || [];
   for (const repo of repositories) {
     const detected = new Set(repo.detectedSkills || []); const used = new Set(repo.usedSkills || []);
-    for (const skill of detected) add(map, skill, 20, { source: "github", type: "dependency", repository: repo.name, evidence: `${skill} detected in repository manifest or files`, weight: 0.2 });
+    for (const skill of detected) add(map, skill, 30, { source: "github", type: "dependency", repository: repo.name, evidence: `${skill} detected in repository manifest or files`, weight: 0.2 });
     for (const skill of used) add(map, skill, 25, { source: "github", type: "usage", repository: repo.name, evidence: `${skill} implementation signals detected`, weight: 0.25 });
   }
   const projectEvidence = normalizeProjectEvidence(profile);

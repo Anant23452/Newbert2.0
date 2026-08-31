@@ -1,4 +1,5 @@
 const { normalizeSkill } = require("./skillNormalizationService");
+const { buildSkillEvidence } = require("./skillEvidenceService");
 
 function kolkataDate(value = new Date()) {
   const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(value));
@@ -30,6 +31,7 @@ function normalizeSkills(skills = []) {
 }
 
 function normalizeStudentProfile(profile = {}) {
+  const skillEvidence = buildSkillEvidence(profile);
   const skills = normalizeSkills(profile.skills);
   const leetcode = profile.leetcodeStats && Number.isFinite(Number(profile.leetcodeStats.totalSolved)) ? profile.leetcodeStats : null;
   const github = profile.githubStats || null;
@@ -62,11 +64,13 @@ function normalizeStudentProfile(profile = {}) {
         limitation: "LeetCode exposes a limited recent accepted-submission feed; this is not treated as complete topic or newly-solved history.",
       },
     },
-    development: { skills },
+    development: { skills, skillEvidence: skillEvidence.skills },
     projects: {
       available: Number.isFinite(profile.projects),
       count: Number.isFinite(profile.projects) ? profile.projects : null,
-      evidenceLevel: Number.isFinite(profile.projects) ? "count_only" : "unavailable",
+      evidenceLevel: skillEvidence.projects.level,
+      score: skillEvidence.projects.score,
+      structured: skillEvidence.projects.structured,
     },
     github: {
       available: Boolean(github),
@@ -91,6 +95,7 @@ function normalizeStudentProfile(profile = {}) {
       github: Boolean(github),
       projects: Number.isFinite(profile.projects),
     },
+    evidence: skillEvidence,
     lastSyncedAt: profile.lastSyncedAt || null,
   };
 }

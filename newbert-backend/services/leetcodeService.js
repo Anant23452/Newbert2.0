@@ -38,6 +38,10 @@ async function getLeetcodeStats(username, years) {
   }
   const activity = [...activityByDate.values()];
   const calendarFailure = calendarResults.find((result) => result.status === "rejected");
+  const recentSlugs = [...new Set((data.recentAcSubmissionList || []).map((item) => item.titleSlug).filter(Boolean))].slice(0, 30);
+  let solvedProblems = []; let topicEvidenceError = null;
+  try { solvedProblems = recentSlugs.length ? await fetchProblemTopics(recentSlugs) : []; }
+  catch (error) { topicEvidenceError = error.message; }
 
   return {
     username: user.username,
@@ -50,11 +54,20 @@ async function getLeetcodeStats(username, years) {
     attendedContests: data.userContestRanking?.attendedContestsCount ?? null,
     languageCounts,
     activity,
+    solvedProblems,
+    topicEvidenceScope: solvedProblems.length ? "limited_recent_accepted_feed" : "unavailable",
+    topicEvidenceError,
     acceptedActivityAvailable: true,
     acceptedActivityLimit: 100,
     activityError: calendarFailure?.reason?.message || null,
     lastSyncedAt: new Date().toISOString(),
   };
+}
+
+async function fetchProblemTopics(slugs) {
+  const fields = slugs.map((slug, index) => `q${index}: question(titleSlug:${JSON.stringify(slug)}){questionId frontendQuestionId title titleSlug topicTags{name slug}}`).join(" ");
+  const data = await requestLeetcode(`query topics{${fields}}`, {});
+  return Object.values(data || {}).filter(Boolean).map((item) => ({ id: item.frontendQuestionId || item.questionId, questionId: item.questionId, title: item.title, titleSlug: item.titleSlug, topics: (item.topicTags || []).flatMap((topic) => [topic.slug, topic.name]).filter(Boolean) }));
 }
 
 function kolkataDate(timestamp) {
@@ -77,4 +90,4 @@ async function fetchSubmissionYear(username, year) {
   return Object.entries(calendar).map(([timestamp, count]) => ({ date: new Date(Number(timestamp) * 1000).toISOString().slice(0, 10), count: Number(count) || 0 }));
 }
 
-module.exports = { LEETCODE_GRAPHQL_URL, getLeetcodeStats };
+module.exports = { LEETCODE_GRAPHQL_URL, fetchProblemTopics, getLeetcodeStats };

@@ -3,6 +3,14 @@ const Profile = require("../Models/Profile");
 const Plan = require("../Models/Plan");
 const { activeGoal, buildBenchmark, buildComparison, findClosestSeniors, findRelevantAlumni, pathsForGoal } = require("../services/alumniMatchingService");
 const { publicAlumniQuery, serializePublicAlumni } = require("../services/alumniPublicService");
+const { buildSkillEvidence } = require("../services/skillEvidenceService");
+
+function skillEvidenceComparison(student, alumni) {
+  const mine = buildSkillEvidence(student); const senior = buildSkillEvidence({ skills: alumni.skills || [], projectDetails: alumni.projectsDetail || [], githubStats: alumni.github || null, leetcodeStats: alumni.leetcode || null });
+  const mineBySkill = new Map(mine.skills.map((item) => [item.normalizedSkill, item])); const seniorBySkill = new Map(senior.skills.map((item) => [item.normalizedSkill, item]));
+  const skills = [...new Set([...mineBySkill.keys(), ...seniorBySkill.keys()])].map((key) => { const studentSkill = mineBySkill.get(key); const seniorSkill = seniorBySkill.get(key); return { skill: studentSkill?.skill || seniorSkill?.skill || key, student: studentSkill ? { score: studentSkill.score, level: studentSkill.level, confidence: studentSkill.confidence } : { score: null, level: "unavailable", confidence: 0 }, senior: seniorSkill ? { score: seniorSkill.score, level: seniorSkill.level, confidence: seniorSkill.confidence } : { score: null, level: "unavailable", confidence: 0 }, gap: studentSkill && seniorSkill ? Math.max(0, seniorSkill.score - studentSkill.score) : null }; }).sort((a, b) => (b.gap ?? -1) - (a.gap ?? -1));
+  return { skills, studentLeetcodeTopics: mine.leetcode, seniorLeetcodeTopics: senior.leetcode, limitations: [...mine.limitations, ...senior.limitations] };
+}
 
 async function loadStudentContext(userId) {
   const [profile, plan] = await Promise.all([Profile.findOne({ userId }).lean(), Plan.findOne({ userId }).lean()]);
@@ -69,7 +77,7 @@ exports.compareAlumni = async (req, res, next) => {
     const [context, alumniRecord] = await Promise.all([loadStudentContext(req.auth.id), Alumni.findOne(publicAlumniQuery({ _id: req.params.id })).lean()]);
     const alumni = alumniRecord ? serializePublicAlumni(alumniRecord) : null;
     if (!alumni) return res.status(404).json({ message: "Alumni profile not found." });
-    return res.json({ comparison: buildComparison(context.profile, alumni, { ...context, requestedPath: ["placement", "gate"].includes(req.query.path) ? req.query.path : null }) });
+    return res.json({ comparison: buildComparison(context.profile, alumni, { ...context, requestedPath: ["placement", "gate"].includes(req.query.path) ? req.query.path : null }), evidenceComparison: skillEvidenceComparison(context.profile, alumni) });
   } catch (error) { return next(error); }
 };
 
