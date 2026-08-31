@@ -2,6 +2,7 @@ const Alumni = require("../Models/Alumni");
 const Profile = require("../Models/Profile");
 const Plan = require("../Models/Plan");
 const { activeGoal, buildBenchmark, buildComparison, findClosestSeniors, findRelevantAlumni, pathsForGoal } = require("../services/alumniMatchingService");
+const { publicAlumniQuery, serializePublicAlumni } = require("../services/alumniPublicService");
 
 async function loadStudentContext(userId) {
   const [profile, plan] = await Promise.all([Profile.findOne({ userId }).lean(), Plan.findOne({ userId }).lean()]);
@@ -16,24 +17,24 @@ async function loadStudentContext(userId) {
 
 async function relevantRanking(userId) {
   const context = await loadStudentContext(userId);
-  const alumni = await Alumni.find({ verified: true, $or: [{ path: { $in: pathsForGoal(context.goal) } }, { outcomeType: { $in: pathsForGoal(context.goal) } }] }).lean();
+  const alumni = (await Alumni.find(publicAlumniQuery({ $or: [{ careerPaths: { $in: pathsForGoal(context.goal).map((path) => path === "psu" ? "gate" : path) } }, { path: { $in: pathsForGoal(context.goal) } }, { outcomeType: { $in: pathsForGoal(context.goal) } }] })).lean()).map(serializePublicAlumni);
   const ranked = findRelevantAlumni(context.profile, alumni, context);
   return { ...context, ranked };
 }
 
 exports.listAlumni = async (req, res, next) => {
   try {
-    const query = { verified: true };
+    const query = publicAlumniQuery();
     if (req.query.college?.trim()) query.college = { $regex: `^${req.query.college.trim()}$`, $options: "i" };
-    res.json({ alumni: await Alumni.find(query).sort({ createdAt: -1 }).lean() });
+    res.json({ alumni: (await Alumni.find(query).sort({ createdAt: -1 }).lean()).map(serializePublicAlumni) });
   } catch (error) { next(error); }
 };
 
 exports.getAlumni = async (req, res, next) => {
   try {
-    const alumni = await Alumni.findOne({ _id: req.params.id, verified: true }).lean();
+    const alumni = await Alumni.findOne(publicAlumniQuery({ _id: req.params.id })).lean();
     if (!alumni) return res.status(404).json({ message: "Alumni profile not found." });
-    res.json({ alumni });
+    res.json({ alumni: serializePublicAlumni(alumni) });
   } catch (error) { next(error); }
 };
 
@@ -65,8 +66,24 @@ exports.getAlumniBenchmark = async (req, res, next) => {
 
 exports.compareAlumni = async (req, res, next) => {
   try {
-    const [context, alumni] = await Promise.all([loadStudentContext(req.auth.id), Alumni.findOne({ _id: req.params.id, verified: true }).lean()]);
+    const [context, alumniRecord] = await Promise.all([loadStudentContext(req.auth.id), Alumni.findOne(publicAlumniQuery({ _id: req.params.id })).lean()]);
+    const alumni = alumniRecord ? serializePublicAlumni(alumniRecord) : null;
     if (!alumni) return res.status(404).json({ message: "Alumni profile not found." });
-    return res.json({ comparison: buildComparison(context.profile, alumni, context) });
+    return res.json({ comparison: buildComparison(context.profile, alumni, { ...context, requestedPath: ["placement", "gate"].includes(req.query.path) ? req.query.path : null }) });
+  } catch (error) { return next(error); }
+};
+
+exports.useAlumniPathInRoadmap = async (req, res, next) => {
+  try {
+    const [context, alumniRecord] = await Promise.all([loadStudentContext(req.auth.id), Alumni.findOne(publicAlumniQuery({ _id: req.params.id })).lean()]);
+    const alumni = alumniRecord ? serializePublicAlumni(alumniRecord) : null;
+    if (!alumni) return res.status(404).json({ message: "Alumni profile not found." });
+    if (!context.plan) return res.status(400).json({ message: "Build your roadmap before adding alumni evidence." });
+    const comparison = buildComparison(context.profile, alumni, { ...context, requestedPath: ["placement", "gate"].includes(req.body.path) ? req.body.path : null });
+    const supportedDimensions = comparison.dimensions.filter((item) => item.student.value != null && item.alumni.value != null && (typeof item.student.value !== "number" || item.alumni.value > item.student.value)).map((item) => ({ key: item.key, label: item.label, studentValue: item.student.value, alumniValue: item.alumni.value }));
+    const signal = { alumniId: alumni._id, alumniName: alumni.name, path: comparison.path, confidence: comparison.confidence, similarityBand: comparison.similarity.band, supportedDimensions, differences: comparison.differences.slice(0, 5), createdAt: new Date() };
+    const alumniSignals = [...(context.plan.alumniSignals || []).filter((item) => String(item.alumniId) !== String(alumni._id) || item.path !== comparison.path), signal].slice(-10);
+    await Plan.findOneAndUpdate({ userId: req.auth.id }, { $set: { alumniSignals } }, { runValidators: true });
+    return res.json({ message: "Supported alumni evidence added to your roadmap context.", signal });
   } catch (error) { return next(error); }
 };

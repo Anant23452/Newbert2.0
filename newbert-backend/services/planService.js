@@ -211,7 +211,13 @@ function buildPlan(profile, alumni, targetInput, existingPlan = null, jobContext
   const ai01 = calculateProfileReadiness(normalizedProfile);
   const prioritizedGaps = buildPrioritizedGaps({ ai01, jobContexts }).filter((gap) => !topicMatches(gap.item, understoodCurrentStage.completed));
   const roadmap = buildRoadmapStructure({ prioritizedGaps, normalizedProfile, existingTasks: existingPlan?.tasks || [] });
-  const tasks = roadmap.tasks; const phases = roadmap.phases;
+  const alumniSignals = existingPlan?.alumniSignals || [];
+  const taskCategories = { dsa: ["dsa-interview"], projects: ["project-evidence"], development: ["core-skills", "project-evidence"], fundamentals: ["foundations"], subjects: ["foundations"], tests: ["dsa-interview", "application-readiness"], pyq: ["foundations", "dsa-interview"], revision: ["foundations"], duration: ["application-readiness"] };
+  const tasks = roadmap.tasks.map((task) => {
+    const evidence = alumniSignals.flatMap((signal) => (signal.supportedDimensions || []).filter((dimension) => (taskCategories[dimension.key] || []).includes(task.category)).map((dimension) => ({ source: "alumni_path", supported: true, alumniId: signal.alumniId, alumni: signal.alumniName, path: signal.path, detail: `${dimension.label}: your recorded value ${dimension.studentValue}; alumni recorded value ${dimension.alumniValue}.` })));
+    return evidence.length ? { ...task, evidence: [...(task.evidence || []), ...evidence] } : task;
+  });
+  const phases = roadmap.phases;
   const compatibilityGaps = prioritizedGaps.map((gap) => ({ ...gap, key: gap.id, label: gap.item, detail: gap.reasons.join(" "), currentScore: 0, status: gap.priority === "high" ? "Needs Improvement" : "Developing", type: gap.category }));
   const timelineEstimate = estimateTimeline(compatibilityGaps, target.weeklyHours, target.deadline);
   const timeline = { ...timelineEstimate, estimatedWeeks: Math.max(timelineEstimate.estimatedWeeks, ...tasks.filter((task) => !task.archived).map((task) => task.scheduledWeek), 1) };
@@ -227,6 +233,7 @@ function buildPlan(profile, alumni, targetInput, existingPlan = null, jobContext
     userId: profile.userId,
     target,
     seniorMatch,
+    alumniSignals,
     readiness: { total: ai01.coverage?.overall?.value ?? null, categories: coverageCategories },
     dataConfidence: ai01.dataConfidence,
     gaps: compatibilityGaps,

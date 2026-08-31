@@ -40,6 +40,7 @@ const planSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true },
   target: { type: targetSchema, required: true },
   seniorMatch: { type: mongoose.Schema.Types.Mixed, default: null },
+  alumniSignals: { type: [mongoose.Schema.Types.Mixed], default: [] },
   readiness: { type: mongoose.Schema.Types.Mixed, required: true },
   gaps: { type: [mongoose.Schema.Types.Mixed], default: [] },
   phases: { type: [mongoose.Schema.Types.Mixed], default: [] },

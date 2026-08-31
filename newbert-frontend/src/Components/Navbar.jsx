@@ -10,6 +10,7 @@ const links = [
   { to: "/courses", label: "Courses" },
   { to: "/notes", label: "Study notes" },
   { to: "/leaderboard", label: "Leaderboard" },
+  { to: "/mentorship", label: "Mentorship" },
 ];
 
 export default function Navbar({ theme, onThemeToggle, onSignIn }) {

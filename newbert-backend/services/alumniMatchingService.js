@@ -15,7 +15,7 @@ function pathsForGoal(goal) {
 }
 
 function alumniPath(alumni) { return alumni.path || alumni.outcomeType || "placement"; }
-function numeric(value) { const number = Number(value); return Number.isFinite(number) ? number : null; }
+function numeric(value) { if (value == null || value === "") return null; const number = Number(value); return Number.isFinite(number) ? number : null; }
 function boundedSimilarity(student, senior) {
   const left = numeric(student); const right = numeric(senior);
   if (left == null || right == null || right <= 0) return null;
@@ -49,18 +49,22 @@ function calculatePlacementSimilarity(student, alumni, target = {}) {
 }
 
 function calculateGateSimilarity(student, alumni, target = {}, stage = {}) {
+  const gatePreparation = alumni.gatePreparation || {};
+  const gateOutcome = alumni.gateOutcome || alumni.gate || {};
   const completed = normalizeSkillList([...(stage.completed || []), ...(stage.inProgress || [])]);
-  const seniorSubjects = normalizeSkillList(alumni.gate?.completedSubjects || alumni.skills);
+  const seniorSubjects = normalizeSkillList(gatePreparation.subjects?.filter((item) => item.completed !== false).map((item) => item.subject) || alumni.gate?.completedSubjects || alumni.skills);
   const subjectScore = completed.length && seniorSubjects.length ? Math.round((seniorSubjects.filter((item) => completed.includes(item)).length / seniorSubjects.length) * 100) : null;
-  const targetScore = String(stage.target || []).join(" ").match(/\d+(?:\.\d+)?/)?.[0];
+  const targetText = Array.isArray(stage.target) ? stage.target.join(" ") : String(stage.target || "");
+  const targetScore = targetText.match(/\d+(?:\.\d+)?/)?.[0];
+  const gateTestCount = gatePreparation.mockTests?.totalAttempted ?? (gatePreparation.testSeries?.length ? gatePreparation.testSeries.reduce((sum, item) => sum + (Number(item.testCountAttempted) || 0), 0) : alumni.gate?.mockAverage);
   const criteria = [
     { key: "branch", weight: 20, score: exactSimilarity(student.branch, alumni.branch) },
     { key: "subjects", weight: 20, score: subjectScore },
     { key: "stage", weight: 20, score: completed.length && seniorSubjects.length ? subjectScore : null },
-    { key: "target", weight: 15, score: boundedSimilarity(targetScore, alumni.gate?.score) },
-    { key: "mocks", weight: 10, score: boundedSimilarity(stage.mockAverage, alumni.gate?.mockAverage) },
-    { key: "duration", weight: 10, score: boundedSimilarity(stage.preparationMonths, alumni.preparationMonths ?? alumni.prepMonths) },
-    { key: "destination", weight: 5, score: target.type === "government-psu" ? (alumni.gate?.targetType === "PSU" ? 100 : null) : null },
+    { key: "target", weight: 15, score: boundedSimilarity(targetScore, gateOutcome.score) },
+    { key: "mocks", weight: 10, score: boundedSimilarity(stage.mockAverage ?? stage.testCount, gateTestCount) },
+    { key: "duration", weight: 10, score: boundedSimilarity(stage.preparationMonths, gatePreparation.preparationMonths ?? alumni.preparationMonths ?? alumni.prepMonths) },
+    { key: "destination", weight: 5, score: target.type === "government-psu" ? (gateOutcome.outcomeType === "psu" || alumni.gate?.targetType === "PSU" ? 100 : null) : null },
   ];
   return { ...weighted(criteria), label: "Journey Match" };
 }
@@ -106,9 +110,91 @@ function findRelevantAlumni(student, alumniList, context = {}) {
 }
 function findClosestSeniors(student, alumniList, limit = 3, context = {}) { return findRelevantAlumni(student, alumniList, context).slice(0, limit); }
 function numericGap(studentValue, seniorValue) { const left = numeric(studentValue); const right = numeric(seniorValue); return left == null || right == null ? null : Math.max(0, right - left); }
+
+function overlap(left, right) {
+  const mine = normalizeSkillList(left || []); const senior = normalizeSkillList(right || []);
+  if (!mine.length || !senior.length) return null;
+  const shared = senior.filter((item) => mine.includes(item));
+  return { score: Math.round((shared.length / senior.length) * 100), shared, missing: senior.filter((item) => !mine.includes(item)) };
+}
+function comparisonBand(score, count) { if (count < 3 || score == null) return "limited_comparison"; if (score >= 80) return "very_similar"; if (score >= 60) return "similar"; if (score >= 35) return "somewhat_similar"; return "limited_comparison"; }
+function comparisonConfidence(dimensions) { const comparable = dimensions.filter((item) => item.student.value != null && item.alumni.value != null).length; return { level: comparable >= 5 ? "high" : comparable >= 3 ? "medium" : "low", comparableFields: comparable, totalFields: dimensions.length }; }
+function dimension(key, label, studentValue, alumniValue, unit = "", score = null) { return { key, label, student: { value: studentValue, display: studentValue == null ? "Unavailable" : `${studentValue}${unit}` }, alumni: { value: alumniValue, display: alumniValue == null ? "Unavailable" : `${alumniValue}${unit}` }, score }; }
+function weightedBand(factors) { const available = factors.filter((item) => item.score != null); if (!available.length) return { score: null, band: "limited_comparison", factors: {} }; const score = Math.round(available.reduce((sum, item) => sum + item.score * item.weight, 0) / available.reduce((sum, item) => sum + item.weight, 0)); return { score, band: comparisonBand(score, available.length), factors: Object.fromEntries(available.map((item) => [item.key, item.score])) }; }
+
+function placementComparison(student, alumni, context) {
+  const prep = alumni.placementPreparation || {};
+  const outcome = alumni.placementOutcome || alumni.placement || {};
+  const seniorDsa = numeric(prep.dsa?.totalSolved ?? prep.dsa?.solved ?? alumniDsa(alumni));
+  const seniorProjects = numeric(prep.development?.projects?.length ?? alumni.projects);
+  const skills = overlap(studentSkills(student), prep.development?.skills || alumni.skills);
+  const fundamentals = overlap(studentSkills(student), prep.csFundamentals?.subjects || alumni.csFundamentals);
+  const dimensions = [
+    dimension("dsa", "DSA solved", studentDsa(student), seniorDsa),
+    dimension("projects", "Completed projects", numeric(student.projects), seniorProjects),
+    dimension("development", "Development skill coverage", skills?.score ?? null, 100, "%", skills?.score ?? null),
+    dimension("fundamentals", "CS fundamentals coverage", fundamentals?.score ?? null, 100, "%", fundamentals?.score ?? null),
+  ];
+  const similarity = weightedBand([
+    { key: "sameCollege", weight: 15, score: exactSimilarity(student.collegeName || student.college, alumni.college) },
+    { key: "sameBranch", weight: 15, score: exactSimilarity(student.branch, alumni.branch) },
+    { key: "sameTargetRole", weight: 15, score: exactSimilarity(context.target?.role || student.targetRole, outcome.role || alumni.role) },
+    { key: "skillOverlap", weight: 25, score: skills?.score ?? null },
+    { key: "dsaSimilarity", weight: 15, score: boundedSimilarity(studentDsa(student), seniorDsa) },
+    { key: "projectSimilarity", weight: 15, score: boundedSimilarity(student.projects, seniorProjects) },
+  ]);
+  const differences = [];
+  if (studentDsa(student) != null && seniorDsa != null && seniorDsa > studentDsa(student)) differences.push(`The alumni recorded ${seniorDsa} solved DSA problems compared with your ${studentDsa(student)}.`);
+  if (student.projects != null && seniorProjects != null && seniorProjects > student.projects) differences.push(`The alumni recorded ${seniorProjects} projects compared with your ${student.projects}.`);
+  if (skills?.missing.length) differences.push(`The alumni preparation includes ${skills.missing.slice(0, 3).join(", ")}, which is not present in your current skill evidence.`);
+  if (fundamentals?.missing.length) differences.push(`Their CS fundamentals include ${fundamentals.missing.slice(0, 3).join(", ")}, which is not present in your current profile evidence.`);
+  return { path: "placement", similarity, dimensions, confidence: comparisonConfidence(dimensions), commonStrengths: [...new Set([...(skills?.shared || []), ...(fundamentals?.shared || [])])], differences, learnableInsights: differences.slice(0, 3) };
+}
+
+function gateComparison(student, alumni, context) {
+  const prep = alumni.gatePreparation || {};
+  const outcome = alumni.gateOutcome || alumni.gate || {};
+  const stage = context.stage || {};
+  const studentSubjects = normalizeSkillList([...(stage.completed || []), ...(stage.inProgress || []), ...(stage.strongSubjects || [])]);
+  const seniorSubjects = (prep.subjects || []).filter((item) => item.completed !== false).map((item) => item.subject);
+  const subjects = overlap(studentSubjects, seniorSubjects);
+  const studentTests = numeric(stage.mockTests?.totalAttempted ?? stage.testCount ?? stage.testsAttempted);
+  const testSeriesTotal = prep.testSeries?.length ? prep.testSeries.reduce((sum, item) => sum + (Number(item.testCountAttempted) || 0), 0) : null;
+  const seniorTests = numeric(prep.mockTests?.totalAttempted ?? testSeriesTotal);
+  const studentPyq = numeric(stage.previousYearQuestions?.yearsCovered ?? stage.pyqYears);
+  const seniorPyq = numeric(prep.previousYearQuestions?.yearsCovered);
+  const studentRevision = numeric(stage.revisionStrategy?.cycles ?? stage.revisionCycles);
+  const seniorRevision = numeric(prep.revisionStrategy?.cycles);
+  const dimensions = [
+    dimension("subjects", "Core subject coverage", subjects?.score ?? null, 100, "%", subjects?.score ?? null),
+    dimension("tests", "Mock and test practice", studentTests, seniorTests),
+    dimension("pyq", "PYQ years covered", studentPyq, seniorPyq),
+    dimension("revision", "Revision cycles", studentRevision, seniorRevision),
+    dimension("duration", "Preparation duration", numeric(stage.preparationMonths), numeric(prep.preparationMonths ?? alumni.preparationMonths), " months"),
+  ];
+  const similarity = weightedBand([
+    { key: "sameCollege", weight: 15, score: exactSimilarity(student.collegeName || student.college, alumni.college) },
+    { key: "sameBranch", weight: 15, score: exactSimilarity(student.branch, alumni.branch) },
+    { key: "sameGatePaper", weight: 15, score: exactSimilarity(stage.gatePaper || context.target?.paper, outcome.paper) },
+    { key: "subjectOverlap", weight: 25, score: subjects?.score ?? null },
+    { key: "preparationStage", weight: 10, score: boundedSimilarity(stage.preparationMonths, prep.preparationMonths) },
+    { key: "testPracticeSimilarity", weight: 20, score: boundedSimilarity(studentTests, seniorTests) },
+  ]);
+  const differences = [];
+  if (subjects?.missing.length) differences.push(`The alumni completed ${subjects.missing.slice(0, 4).join(", ")}; these subjects are not recorded as completed in your current plan evidence.`);
+  if (studentTests != null && seniorTests != null && seniorTests > studentTests) differences.push(`The alumni attempted ${seniorTests} tests compared with your recorded ${studentTests}.`);
+  if (studentPyq != null && seniorPyq != null && seniorPyq > studentPyq) differences.push(`The alumni covered ${seniorPyq} PYQ years compared with your recorded ${studentPyq}.`);
+  if (studentRevision != null && seniorRevision != null && seniorRevision > studentRevision) differences.push(`The alumni completed ${seniorRevision} revision cycles compared with your recorded ${studentRevision}.`);
+  return { path: "gate", similarity, dimensions, confidence: comparisonConfidence(dimensions), commonStrengths: subjects?.shared || [], differences, learnableInsights: differences.slice(0, 3) };
+}
+
 function buildComparison(student, alumni, context = {}) {
   const enriched = enrich(student, alumni, context);
-  return { student: { skills: student.skills || [], dsaSolved: studentDsa(student), projects: numeric(student.projects), cgpa: numeric(student.cgpa), githubRepos: numeric(student.githubStats?.publicRepos), internships: internshipCount(student.internships) }, alumni, match: enriched.match, matchedSkills: enriched.matchedSkills, missingSkills: enriched.missingSkills, studentAdvantages: enriched.studentAdvantages, numericGaps: { dsa: numericGap(studentDsa(student), alumniDsa(alumni)), projects: numericGap(student.projects, alumni.projects), internships: numericGap(internshipCount(student.internships), internshipCount(alumni.internships)), githubRepos: numericGap(student.githubStats?.publicRepos, alumni.github?.repositories ?? alumni.githubPublicRepos), cgpa: numericGap(student.cgpa, alumni.cgpa) } };
+  const requestedPath = context.requestedPath;
+  const careerPaths = alumni.careerPaths?.length ? alumni.careerPaths : [alumniPath(alumni) === "psu" ? "gate" : alumniPath(alumni)];
+  const comparisonPath = requestedPath && careerPaths.includes(requestedPath) ? requestedPath : (context.goal === "gate" || context.goal === "psu") && careerPaths.includes("gate") ? "gate" : careerPaths.includes("placement") ? "placement" : "gate";
+  const detailed = comparisonPath === "gate" ? gateComparison(student, alumni, context) : placementComparison(student, alumni, context);
+  return { student: { skills: student.skills || [], dsaSolved: studentDsa(student), projects: numeric(student.projects), cgpa: numeric(student.cgpa), githubRepos: numeric(student.githubStats?.publicRepos), internships: internshipCount(student.internships) }, alumni, match: enriched.match, matchedSkills: enriched.matchedSkills, missingSkills: enriched.missingSkills, studentAdvantages: enriched.studentAdvantages, numericGaps: { dsa: numericGap(studentDsa(student), alumniDsa(alumni)), projects: numericGap(student.projects, alumni.projects), internships: numericGap(internshipCount(student.internships), internshipCount(alumni.internships)), githubRepos: numericGap(student.githubStats?.publicRepos, alumni.github?.repositories ?? alumni.githubPublicRepos), cgpa: numericGap(student.cgpa, alumni.cgpa) }, ...detailed };
 }
 function buildBenchmark(student, ranked) {
   const cohort = ranked.slice(0, 5).map((item) => item.alumni); if (!cohort.length) return null;
@@ -120,4 +206,4 @@ function buildBenchmark(student, ranked) {
   return { cohortSize: cohort.length, averages: { dsa, projects, internshipRate }, student: { dsa: studentDsa(student), projects: numeric(student.projects), internships: internshipCount(student.internships) }, commonSkills, insights };
 }
 
-module.exports = { activeGoal, alumniPath, buildBenchmark, buildComparison, calculateCoreSimilarity, calculateGateSimilarity, calculatePlacementSimilarity, calculateSimilarity, calculateSkillGap, findClosestSeniors, findRelevantAlumni, normalizeSkill, normalizeSkillList, pathsForGoal };
+module.exports = { activeGoal, alumniPath, buildBenchmark, buildComparison, calculateCoreSimilarity, calculateGateSimilarity, calculatePlacementSimilarity, calculateSimilarity, calculateSkillGap, comparisonBand, findClosestSeniors, findRelevantAlumni, normalizeSkill, normalizeSkillList, pathsForGoal };

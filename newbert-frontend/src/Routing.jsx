@@ -9,11 +9,12 @@ import ResumeAi from './pages/ResumeAi';
 import Home from './pages/Home';
 import Courses from './pages/Courses';
 import Notes, { BranchNotes } from './pages/Notes';
-import AlumniProfile from './pages/AlumniProfile';
+import AlumniProfile from './pages/AlumniIntelligenceProfile';
 import AdminJobs from './pages/AdminJobs';
 import PublicProfile from './pages/PublicProfile';
 import CourseDetail from './pages/CourseDetail';
 import AdminCourses from './pages/AdminCourses';
+import Mentorship from './pages/Mentorship';
 
 
 function Routing() {
@@ -30,6 +31,7 @@ function Routing() {
         <Route path="/admin/jobs" element={<AdminJobs/> }/>
         <Route path="/admin/courses" element={<AdminCourses/>}/>
         < Route path="/leaderboard" element={<LeaderBoard/> }/>
+        <Route path="/mentorship" element={<Mentorship/>}/>
         < Route path="/resume-ai" element={<ResumeAi/> }/>
         < Route path="/courses" element={<Courses/> }/>
         <Route path="/courses/:courseId" element={<CourseDetail/>}/>

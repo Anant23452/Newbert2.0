@@ -12,7 +12,9 @@
     "test": "node --test tests/*.test.js",
     "seed:courses": "node scripts/seedCourses.js",
     "seed:colleges": "node scripts/seedColleges.js",
-    "migrate:profile-colleges": "node scripts/migrateProfileColleges.js"
+    "migrate:profile-colleges": "node scripts/migrateProfileColleges.js",
+    "seed:dummy-alumni": "node scripts/seedDummyAlumni.js",
+    "clear:dummy-alumni": "node scripts/clearDummyAlumni.js"
   },
   "dependencies": {
     "@google/genai": "^2.18.0",

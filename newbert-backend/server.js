@@ -37,6 +37,7 @@ app.use("/api/jobs", require("./routes/jobRoutes"));
 app.use("/api/courses", require("./routes/courseRoutes"));
 app.use("/api/admin", require("./routes/adminJobRoutes"));
 app.use("/api/alumni", require("./routes/alumniRoutes"));
+app.use("/api/mentorship", require("./routes/mentorshipRoutes"));
 app.use("/api/plans", require("./routes/planRoutes"));
 app.use("/api/leaderboard", require("./routes/leaderboardRoutes"));
 app.use("/api/intelligence", require("./routes/intelligenceRoutes"));
