@@ -24,7 +24,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-5">
         <Link to="/" className="flex items-center gap-2.5" aria-label="Newbert home">
           <span className="grid h-8 w-8 place-items-center rounded-md bg-teal-700 font-bold text-white">
-            <img className="cover h-full w-full" src="https://i.pinimg.com/1200x/41/4a/3c/414a3c7f720792044aad320292d6ccd5.jpg" alt="" />
+            <img className="object-cover" src="https://i.pinimg.com/1200x/41/4a/3c/414a3c7f720792044aad320292d6ccd5.jpg" alt="" />
           </span>
           <span className="text-lg font-extrabold tracking-tight text-slate-900">Newbert</span>
         </Link>
