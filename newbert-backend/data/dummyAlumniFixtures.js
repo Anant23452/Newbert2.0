@@ -1,23 +1,305 @@
-const placementPhases = [
-  { order: 1, title: "Foundations", duration: "8 weeks", focus: ["DSA basics", "Programming language"], description: "Recorded foundation work before moving to interview-level practice." },
-  { order: 2, title: "Project evidence", duration: "10 weeks", focus: ["Projects", "GitHub"], description: "Built and documented projects with reviewable engineering evidence." },
-  { order: 3, title: "Interview preparation", duration: "6 weeks", focus: ["CS fundamentals", "Mock interviews"], description: "Revised supported subjects and practiced interview rounds." },
-];
-const gatePhases = [
-  { order: 1, title: "Core subjects", duration: "16 weeks", focus: ["DBMS", "OS", "CN"], description: "Completed recorded core-subject coverage." },
-  { order: 2, title: "PYQs", duration: "8 weeks", focus: ["Previous year questions"], description: "Practiced PYQs and recorded weak subjects." },
-  { order: 3, title: "Tests and revision", duration: "8 weeks", focus: ["Full tests", "Revision"], description: "Used test review and structured revision cycles." },
-];
-function common(name, key, branch = "Computer Science and Engineering") { return { dummyKey: key, isDummyData: true, verified: true, name, college: "North Valley Institute of Technology", batch: 2025, graduationYear: 2025, branch, bio: "Fictional development fixture for testing Newbert alumni intelligence.", skills: ["DSA", "DBMS", "OS"], projects: 3, cgpa: 8.1, achievements: [{ title: "Department project showcase" }], adviceDetails: { biggestMistake: "Tracking activity without reviewing weak areas.", whatWorked: "Weekly review backed by completed work.", wouldDoDifferently: "Start mock practice earlier.", adviceForJuniors: "Use this path as evidence, not as a guaranteed formula." }, mentorshipEnabled: true, availableTopics: ["placement-strategy", "dsa", "projects", "gate-strategy", "test-series", "pyq-strategy", "revision", "other"], privacy: { profile: true, academics: true, preparation: true, courses: true, advice: true, mentorship: true } }; }
-function placement(name, key, role, company, skills) { return { ...common(name, key), careerPaths: ["placement"], path: "placement", outcomeType: "placement", company, role, placementOutcome: { company, role, packageLpa: 9.5, offerType: "full-time", placementYear: 2025, location: "Noida" }, placementPreparation: { preparationMonths: 8, averageHoursPerDay: 3, dsa: { totalSolved: 320, easy: 130, medium: 155, hard: 35, strongTopics: ["Arrays", "Graphs"], weakTopics: ["Dynamic Programming"], contestCount: 18, strategy: "Reviewed incorrect approaches after each practice block." }, development: { skills, projects: [{ title: `${role} portfolio system` }], engineeringSignals: ["Tests", "API documentation"] }, csFundamentals: { subjects: ["DBMS", "OS", "CN"], strongSubjects: ["DBMS"], revisionStrategy: "Weekly topic recall and short notes." }, interviewPreparation: { mockInterviews: 7, interviewRounds: 4, importantTopics: ["Projects", "DBMS", "Problem solving"], strategy: "Practiced concise project explanations." }, preparationPhases: placementPhases }, courses: [{ courseName: "Structured DSA Practice", provider: "Open Learning Lab", category: "DSA", path: "placement", subjectOrSkill: "DSA", completed: true, rating: 4, review: "Helped organize topic order and revision.", usefulness: "high", wouldRecommend: true, helpedWith: ["DSA", "Interview Preparation"] }] }; }
-function gate(name, key, outcomeType, destination) { return { ...common(name, key), careerPaths: ["gate"], path: "gate", outcomeType: outcomeType === "psu" ? "psu" : "gate", company: undefined, role: undefined, gateOutcome: { examYear: 2025, paper: "CS", score: 742, marks: 71.4, air: outcomeType === "psu" ? 184 : 312, qualified: true, percentile: 99.1, outcomeType, ...(outcomeType === "psu" ? { psu: destination, psuRole: "Graduate Engineer Trainee" } : { institute: destination, program: "M.Tech Computer Science" }) }, gatePreparation: { preparationMonths: 12, averageHoursPerDay: 5, subjects: [{ subject: "DBMS", strength: "strong", completed: true, revisionCount: 3, notesSource: "Self-made notes", questionPracticeCount: 420 }, { subject: "Operating Systems", strength: "strong", completed: true, revisionCount: 3, notesSource: "Standard textbook", questionPracticeCount: 360 }, { subject: "Computer Networks", strength: "medium", completed: true, revisionCount: 2, notesSource: "Self-made notes", questionPracticeCount: 280 }], strongSubjects: ["DBMS", "OS"], weakSubjects: ["Compiler Design"], testSeries: [{ provider: "Exam Practice Lab", testCountAttempted: 18, averageScore: 61, bestScore: 74, review: "Useful for identifying weak subjects and time-management errors." }], mockTests: { totalAttempted: 18, averageScore: 61, finalPhaseFrequency: "Three per week" }, previousYearQuestions: { yearsCovered: 12, strategy: "Solved once by topic and again as timed papers." }, revisionStrategy: { cycles: 3, shortNotesUsed: true, formulaRevision: "Daily in the final month", lastMonthStrategy: "Full tests, error log, and short notes." }, preparationPhases: gatePhases }, courses: [{ courseName: "GATE CS Test Practice", provider: "Exam Practice Lab", category: "Test Series", path: "gate", subjectOrSkill: "Full syllabus", completed: true, rating: 4, review: "Useful for identifying weak subjects and improving time management.", usefulness: "high", wouldRecommend: true, helpedWith: ["DBMS", "OS", "CN", "Revision"] }] }; }
-const dummyAlumniFixtures = [
-  placement("Aarav Mehta", "placement-full-stack", "Full Stack Developer", "Cedar Stack Labs", ["React", "Node.js", "MongoDB"]),
-  placement("Meera Joshi", "placement-backend", "Backend Engineer", "Northstar Systems", ["Java", "Spring Boot", "PostgreSQL"]),
-  placement("Kabir Anand", "placement-ml", "Machine Learning Engineer", "Pixel Ridge Analytics", ["Python", "Machine Learning", "FastAPI"]),
-  gate("Naina Verma", "gate-iit", "iit", "IIT Northfield"),
-  gate("Rohan Iyer", "gate-psu", "psu", "National Energy Works"),
-  { ...placement("Ishita Rao", "combined-placement-gate", "Software Engineer", "Blue Oak Software", ["Java", "React", "SQL"]), careerPaths: ["placement", "gate"], gateOutcome: gate("Ishita Rao", "unused", "iit", "IIT Lakeside").gateOutcome, gatePreparation: gate("Ishita Rao", "unused", "iit", "IIT Lakeside").gatePreparation, courses: [...placement("Ishita Rao", "unused", "Software Engineer", "Blue Oak Software", ["Java"]).courses, ...gate("Ishita Rao", "unused", "iit", "IIT Lakeside").courses] },
-];
-module.exports = { dummyAlumniFixtures };
+/**
+ * Demo alumni fixtures — Rajkiya Engineering College, Ambedkar Nagar.
+ * FICTIONAL profiles for development/testing ONLY. NOT real people.
+ * isDummyData:true + dummyKey ensure idempotent seed and safe removal.
+ */
+const REC = "Rajkiya Engineering College, Ambedkar Nagar";
+const P = { profile: true, academics: true, preparation: true, courses: true, advice: true, mentorship: true };
 
+const dummyAlumniFixtures = [
+  // ── 1. Rahul Verma — TCS, Placement, MERN, 340 DSA, 5 projects ──
+  {
+    dummyKey: "rahul-verma-rec-2025", isDummyData: true, verified: true,
+    name: "Rahul Verma", college: REC, branch: "Information Technology",
+    batch: 2025, graduationYear: 2025, cgpa: 7.6,
+    bio: "Demo profile — fictional TCS Digital alumni for testing Newbert comparison and matching logic.",
+    careerPaths: ["placement"], path: "placement", outcomeType: "placement",
+    company: "TCS", role: "System Engineer - Digital", package: 7,
+    dsaSolved: 340, projects: 5, githubPublicRepos: 12, preparationMonths: 8,
+    skills: ["JavaScript","React","Node.js","Express.js","MongoDB","REST APIs","Git","DSA","DBMS","OOP","Computer Networks"],
+    csFundamentals: ["DBMS","OOP","Computer Networks"],
+    advice: "Do not chase 1000 DSA questions. Solve enough to recognize patterns and spend serious time explaining your projects.",
+    adviceDetails: {
+      biggestMistake: "Started with too many resources at once.",
+      whatWorked: "Solving by topic and immediately building something with each concept.",
+      wouldDoDifferently: "Start project-building 2 months earlier.",
+      adviceForJuniors: "Solve enough DSA to recognize patterns. Spend equal time explaining your projects well.",
+    },
+    journey: "First 2 months: Arrays, Strings, Hashing. Next 2 months: Trees, Graphs, DP. Built 2 major full-stack projects. Revised DBMS, OOP, and CN. Practiced TCS-specific questions. Mock interviews in the last month.",
+    placementOutcome: { company: "TCS", role: "System Engineer - Digital", packageLpa: 7, offerType: "full-time", placementYear: 2025, location: "Noida" },
+    placementPreparation: {
+      preparationMonths: 8, averageHoursPerDay: 4,
+      dsa: { totalSolved: 340, easy: 130, medium: 175, hard: 35, strongTopics: ["Arrays","Strings","Trees","Graphs"], weakTopics: ["OS","System Design"], contestCount: 12, strategy: "Topic-wise structured sheet. Sunday revision. Mock interviews in final month." },
+      development: { skills: ["React","Node.js","Express.js","MongoDB","Socket.io"], projects: [{ title: "Campus Placement Portal", tech: "React, Node.js, Express, MongoDB" }, { title: "Expense Tracker", tech: "React, TypeScript" }, { title: "GitHub Profile Explorer", tech: "React, GitHub API" }, { title: "Authentication API", tech: "Node.js, JWT, MongoDB" }, { title: "Realtime Chat App", tech: "React, Socket.io, Node.js" }], engineeringSignals: ["REST API design","Authentication","Realtime communication"] },
+      csFundamentals: { subjects: ["DBMS","OOP","Computer Networks"], strongSubjects: ["DBMS","OOP"], revisionStrategy: "Short notes + previous TCS questions per subject." },
+      interviewPreparation: { mockInterviews: 5, interviewRounds: 3, importantTopics: ["Reverse linked list","SQL joins","Normalization","Event loop","React hooks","Full-stack project"], strategy: "Practiced explaining one full-stack project within 3 minutes." },
+      preparationPhases: [
+        { order: 1, title: "Foundation", duration: "8 weeks", focus: ["Arrays","Strings","Hashing"], description: "Built the base with structured topic-wise practice." },
+        { order: 2, title: "Intermediate DSA", duration: "8 weeks", focus: ["Trees","Graphs","Dynamic Programming"], description: "Topic-wise with 2 contests per week." },
+        { order: 3, title: "Projects and CS Fundamentals", duration: "8 weeks", focus: ["Full-stack projects","DBMS","OOP","CN"], description: "Built 2 major projects. Revised theory with short notes." },
+        { order: 4, title: "Interview Preparation", duration: "8 weeks", focus: ["TCS-specific questions","Mock interviews"], description: "Company-specific coding and 5 mock interviews." },
+      ],
+    },
+    courses: [
+      { courseName: "Striver A2Z DSA", provider: "take U forward", category: "DSA", path: "placement", subjectOrSkill: "DSA", completed: true, rating: 4.6, review: "Very useful for structured DSA. Revision matters more than simply completing the sheet.", usefulness: "high", wouldRecommend: true, helpedWith: ["Arrays","Trees","Graphs","DP","Interview Preparation"] },
+      { courseName: "Namaste React", provider: "Akshay Saini", category: "Development", path: "placement", subjectOrSkill: "React", completed: true, rating: 4.4, review: "Helped me understand React deeply instead of only building UI.", usefulness: "high", wouldRecommend: true, helpedWith: ["React","JavaScript","Projects"] },
+    ],
+    interviewExperience: [
+      { round: 1, type: "Aptitude + Coding", description: "Standard aptitude and 2 coding questions on arrays." },
+      { round: 2, type: "Technical", description: "DSA problem + full project discussion.", questions: ["Reverse linked list","Event loop in Node.js","React hooks lifecycle"] },
+      { round: 3, type: "DBMS + OOP + HR", description: "SQL joins, normalization, OOP pillars, then HR.", questions: ["SQL joins","BCNF normalization","Polymorphism"] },
+    ],
+    mentorshipEnabled: true, availableTopics: ["dsa-preparation","tcs-preparation","react-projects","resume-review","mock-interview"], privacy: P,
+  },
+  // ── 2. Sneha Singh — Accenture, Java/SQL, 225 DSA, 4 projects ──
+  {
+    dummyKey: "sneha-singh-rec-2025", isDummyData: true, verified: true,
+    name: "Sneha Singh", college: REC, branch: "Computer Science and Engineering",
+    batch: 2025, graduationYear: 2025, cgpa: 8.1,
+    bio: "Demo profile — fictional Accenture alumni for testing Java/SQL path comparison.",
+    careerPaths: ["placement"], path: "placement", outcomeType: "placement",
+    company: "Accenture", role: "Associate Software Engineer", package: 6.5,
+    dsaSolved: 225, projects: 4, githubPublicRepos: 7, preparationMonths: 6,
+    skills: ["Java","Spring Boot","SQL","MySQL","OOP","DBMS","DSA","REST APIs","Git"],
+    csFundamentals: ["OOP","DBMS","SQL"],
+    advice: "Strong fundamentals and communication helped me more than solving hundreds of advanced questions.",
+    adviceDetails: {
+      biggestMistake: "Underestimated how much communication matters in HR and manager rounds.",
+      whatWorked: "Daily SQL practice and a well-structured Spring Boot project.",
+      wouldDoDifferently: "Start aptitude practice 2 months earlier.",
+      adviceForJuniors: "Strong fundamentals and communication matter more than advanced questions.",
+    },
+    journey: "Focused heavily on Java and OOP. Solved 225 curated DSA problems. Practiced SQL daily. Built a Spring Boot backend project. Practiced aptitude and communication in the last month.",
+    placementOutcome: { company: "Accenture", role: "Associate Software Engineer", packageLpa: 6.5, offerType: "full-time", placementYear: 2025, location: "Hyderabad" },
+    placementPreparation: {
+      preparationMonths: 6, averageHoursPerDay: 3,
+      dsa: { totalSolved: 225, easy: 110, medium: 100, hard: 15, strongTopics: ["Arrays","Strings","OOP patterns"], weakTopics: ["Advanced Graph","DP"], contestCount: 5, strategy: "Curated company-specific problem set. Quality over quantity." },
+      development: { skills: ["Java","Spring Boot","MySQL","REST APIs"], projects: [{ title: "Student Management System", tech: "Java, Spring Boot, MySQL" }, { title: "Library Management API", tech: "Spring Boot, REST, SQL" }, { title: "Job Application Tracker", tech: "JavaScript, HTML, CSS" }, { title: "SQL Analytics Project", tech: "MySQL" }], engineeringSignals: ["REST API design","Database normalization"] },
+      csFundamentals: { subjects: ["OOP","DBMS","SQL"], strongSubjects: ["Java","DBMS","SQL"], revisionStrategy: "Flashcard-style revision for OOP pillars and SQL syntax." },
+      interviewPreparation: { mockInterviews: 4, interviewRounds: 3, importantTopics: ["OOP pillars","Interfaces vs abstract classes","SQL joins","Basic arrays","REST API concepts"], strategy: "Practiced explaining project architecture clearly without jargon." },
+      preparationPhases: [
+        { order: 1, title: "Java and OOP", duration: "6 weeks", focus: ["Java fundamentals","OOP concepts"], description: "Deep-dived into Java and all four OOP pillars." },
+        { order: 2, title: "DSA and SQL", duration: "8 weeks", focus: ["Curated DSA","Daily SQL"], description: "225 curated problems and daily SQL query practice." },
+        { order: 3, title: "Project and Company Preparation", duration: "10 weeks", focus: ["Spring Boot project","Aptitude","Communication"], description: "Built a complete REST API project and practiced aptitude every day." },
+      ],
+    },
+    courses: [
+      { courseName: "Java Backend Development", provider: "Telusko", category: "Development", path: "placement", subjectOrSkill: "Java, Spring Boot", completed: true, rating: 4.2, review: "Solid foundation for Spring Boot REST API development.", usefulness: "high", wouldRecommend: true, helpedWith: ["Java","Spring Boot","REST APIs"] },
+      { courseName: "SQL and DBMS Mastery", provider: "CodeWithHarry", category: "DBMS", path: "placement", subjectOrSkill: "SQL", completed: true, rating: 4.0, review: "Good structured approach to SQL queries and database design.", usefulness: "high", wouldRecommend: true, helpedWith: ["SQL","Database Design","DBMS"] },
+    ],
+    interviewExperience: [
+      { round: 1, type: "Online Assessment", description: "Aptitude, verbal, and 2 coding questions.", questions: ["Basic array problem","String manipulation"] },
+      { round: 2, type: "Technical Interview", description: "OOP concepts, SQL queries, project architecture discussion.", questions: ["Explain polymorphism","INNER JOIN vs LEFT JOIN","Walk through your REST API project"] },
+      { round: 3, type: "HR Interview", description: "Behavioral and situational questions." },
+    ],
+    mentorshipEnabled: true, availableTopics: ["java","sql","accenture-preparation","communication","resume"], privacy: P,
+  },
+  // ── 3. Arjun Mishra — Infosys SP, Backend-heavy, 510 DSA, 6 projects ──
+  {
+    dummyKey: "arjun-mishra-rec-2024", isDummyData: true, verified: true,
+    name: "Arjun Mishra", college: REC, branch: "Information Technology",
+    batch: 2024, graduationYear: 2024, cgpa: 7.4,
+    bio: "Demo profile — fictional Infosys SP alumni for advanced backend and DSA path comparison.",
+    careerPaths: ["placement"], path: "placement", outcomeType: "placement",
+    company: "Infosys", role: "Specialist Programmer", package: 9.5,
+    dsaSolved: 510, projects: 6, githubPublicRepos: 22, preparationMonths: 11,
+    skills: ["JavaScript","TypeScript","React","Node.js","Express","PostgreSQL","Redis","Docker","Git","DSA","DBMS","Operating Systems","Computer Networks"],
+    csFundamentals: ["DBMS","Operating Systems","Computer Networks"],
+    advice: "After around 250 good DSA problems, start contests and revision. Do not endlessly collect new questions.",
+    adviceDetails: {
+      biggestMistake: "Spending too much time on new questions instead of revising patterns.",
+      whatWorked: "Weekly revision notes and backend-heavy projects with real engineering decisions.",
+      wouldDoDifferently: "Start system design basics 3 months earlier.",
+      adviceForJuniors: "After 250 solid DSA problems, shift to contests and CS fundamentals. Quality beats quantity.",
+    },
+    journey: "Completed DSA topic-wise. Switched to contest mode after 250 questions. Built backend-heavy projects. Studied DBMS, OS, CN thoroughly. Maintained weekly revision notes throughout.",
+    placementOutcome: { company: "Infosys", role: "Specialist Programmer", packageLpa: 9.5, offerType: "full-time", placementYear: 2024, location: "Bangalore" },
+    placementPreparation: {
+      preparationMonths: 11, averageHoursPerDay: 5,
+      dsa: { totalSolved: 510, easy: 180, medium: 280, hard: 50, strongTopics: ["Graphs","DP","Trees","Segment Trees"], weakTopics: [], contestCount: 45, strategy: "Topic-wise then contest mode. Error log for every wrong submission." },
+      development: { skills: ["Node.js","Express","PostgreSQL","Redis","Docker","TypeScript"], projects: [{ title: "Developer Networking Platform", tech: "React, Node.js, MongoDB" }, { title: "Realtime Collaboration Tool", tech: "Socket.io, React, Node" }, { title: "URL Shortener", tech: "Node.js, Redis, PostgreSQL" }, { title: "E-commerce Backend", tech: "Express, PostgreSQL" }, { title: "Dockerized REST API", tech: "Docker, Node" }, { title: "Algorithm Visualizer", tech: "React" }], engineeringSignals: ["Caching","Containerization","API architecture"] },
+      csFundamentals: { subjects: ["DBMS","Operating Systems","Computer Networks"], strongSubjects: ["DBMS","OS","CN"], revisionStrategy: "1 week per subject every month. Short self-made notes." },
+      interviewPreparation: { mockInterviews: 10, interviewRounds: 4, importantTopics: ["LRU Cache","Tree traversal","DB indexes","Processes vs threads","Node event loop","System design"], strategy: "Practiced system design whiteboard and project deep-dives." },
+      preparationPhases: [
+        { order: 1, title: "DSA Foundation", duration: "12 weeks", focus: ["Arrays","LinkedList","Trees","Graphs"], description: "250 solid problems with full understanding before moving on." },
+        { order: 2, title: "Contest Mode", duration: "8 weeks", focus: ["Competitive programming","Error log review"], description: "Weekly contest + revision of all wrong approaches." },
+        { order: 3, title: "Backend Projects and CS Fundamentals", duration: "12 weeks", focus: ["Backend engineering","DBMS","OS","CN"], description: "Built production-quality backend projects. Revised CS subjects with notes." },
+        { order: 4, title: "System Design and Mock Interviews", duration: "12 weeks", focus: ["System design basics","Mock interviews"], description: "10 mock interviews. Practiced communicating technical decisions." },
+      ],
+    },
+    courses: [
+      { courseName: "Striver A2Z DSA", provider: "take U forward", category: "DSA", path: "placement", subjectOrSkill: "DSA", completed: true, rating: 4.7, review: "The most structured approach to DSA I found. Revision after each topic is crucial.", usefulness: "high", wouldRecommend: true, helpedWith: ["DSA","Contest preparation","Interview preparation"] },
+      { courseName: "Node.js and Backend Development", provider: "Traversy Media", category: "Development", path: "placement", subjectOrSkill: "Node.js, Express", completed: true, rating: 4.3, review: "Good foundation. Build real projects alongside the course.", usefulness: "high", wouldRecommend: true, helpedWith: ["Node.js","Express","REST APIs"] },
+    ],
+    interviewExperience: [
+      { round: 1, type: "Online Test", description: "DSA coding round: 3 problems in 90 minutes.", questions: ["LRU Cache implementation","Tree path sum","Minimum spanning tree"] },
+      { round: 2, type: "Technical Round 1", description: "CS fundamentals and project deep-dive.", questions: ["Processes vs threads","DB indexes explained","Node event loop"] },
+      { round: 3, type: "Technical Round 2", description: "System design and REST architecture.", questions: ["Design URL shortener","How would you scale this?"] },
+      { round: 4, type: "HR", description: "Behavioral round and career goals." },
+    ],
+    mentorshipEnabled: true, availableTopics: ["advanced-dsa","backend","infosys-sp-preparation","cs-fundamentals","projects"], privacy: P,
+  },
+  // ── 4. Priya Gupta — Wipro, Electronics branch, 145 DSA, mentorshipEnabled: false ──
+  {
+    dummyKey: "priya-gupta-rec-2025", isDummyData: true, verified: true,
+    name: "Priya Gupta", college: REC, branch: "Electronics Engineering",
+    batch: 2025, graduationYear: 2025, cgpa: 8.4,
+    bio: "Demo profile — fictional Wipro alumni. mentorshipEnabled=false tests the unavailable mentorship UI state.",
+    careerPaths: ["placement"], path: "placement", outcomeType: "placement",
+    company: "Wipro", role: "Project Engineer", package: 5.5,
+    dsaSolved: 145, projects: 3, githubPublicRepos: 4, preparationMonths: 5,
+    skills: ["Python","SQL","HTML","CSS","JavaScript","DBMS","OOP","Basic DSA"],
+    csFundamentals: ["DBMS","OOP"],
+    advice: "You do not need the same preparation strategy for every company. Understand the company pattern first.",
+    adviceDetails: {
+      biggestMistake: "Preparing without researching the specific company test pattern.",
+      whatWorked: "Daily aptitude practice and company-specific coding sets.",
+      wouldDoDifferently: "Start aptitude practice from second year.",
+      adviceForJuniors: "Research the company pattern before writing your study plan. Every company is different.",
+    },
+    journey: "Focused on company-specific Wipro preparation. Practiced aptitude every day. Completed basic coding patterns. Revised DBMS and OOP fundamentals. Prepared all 3 projects deeply for discussion.",
+    placementOutcome: { company: "Wipro", role: "Project Engineer", packageLpa: 5.5, offerType: "full-time", placementYear: 2025, location: "Chennai" },
+    placementPreparation: {
+      preparationMonths: 5, averageHoursPerDay: 3,
+      dsa: { totalSolved: 145, easy: 100, medium: 40, hard: 5, strongTopics: ["Arrays","Strings","Basic sorting"], weakTopics: ["Trees","DP"], contestCount: 2, strategy: "Company-specific problem sets only." },
+      development: { skills: ["Python","JavaScript","HTML","CSS"], projects: [{ title: "Weather Application", tech: "JavaScript, Weather API" }, { title: "Student Result Analyzer", tech: "Python" }, { title: "Portfolio Website", tech: "HTML, CSS, JavaScript" }], engineeringSignals: ["API integration","Data analysis"] },
+      csFundamentals: { subjects: ["DBMS","OOP"], strongSubjects: ["SQL","Aptitude","Communication"], revisionStrategy: "Covered DBMS and OOP basics from standard notes." },
+      interviewPreparation: { mockInterviews: 2, interviewRounds: 2, importantTopics: ["Aptitude","Communication","Basic coding","Project explanation"], strategy: "Focused on clear communication and project presentation." },
+      preparationPhases: [
+        { order: 1, title: "Aptitude and Reasoning", duration: "6 weeks", focus: ["Quantitative aptitude","Logical reasoning","Verbal"], description: "Daily aptitude practice using IndiaBix and company previous papers." },
+        { order: 2, title: "Basic Coding and CS Fundamentals", duration: "8 weeks", focus: ["Basic DSA patterns","DBMS","OOP"], description: "Completed coding patterns required for Wipro-level rounds." },
+        { order: 3, title: "Projects and Communication", duration: "6 weeks", focus: ["3 projects","Communication","Mock interviews"], description: "Prepared each project explanation thoroughly." },
+      ],
+    },
+    courses: [
+      { courseName: "Python for Beginners", provider: "freeCodeCamp", category: "Development", path: "placement", subjectOrSkill: "Python", completed: true, rating: 4.0, review: "Clear and practical. Good starting point for Python.", usefulness: "medium", wouldRecommend: true, helpedWith: ["Python","Basic scripting"] },
+    ],
+    interviewExperience: [
+      { round: 1, type: "Online Aptitude and Coding", description: "Aptitude, verbal, and 2 easy coding questions.", questions: ["Reverse a string","Find duplicate in array"] },
+      { round: 2, type: "HR and Technical", description: "Project discussion and behavioral questions.", questions: ["Tell me about your project","What is OOP?","Why Wipro?"] },
+    ],
+    mentorshipEnabled: false, availableTopics: [], privacy: P,
+  },
+  // ── 5. Aditya Tiwari — GATE CS, Score 682, AIR 742 ──
+  {
+    dummyKey: "aditya-tiwari-rec-2025", isDummyData: true, verified: true,
+    name: "Aditya Tiwari", college: REC, branch: "Information Technology",
+    batch: 2025, graduationYear: 2025, cgpa: 8.0,
+    bio: "Demo profile — fictional GATE CS qualified alumni for testing GATE path comparison and matching.",
+    careerPaths: ["gate"], path: "gate", outcomeType: "gate",
+    company: null, role: null, gateAIR: 742,
+    dsaSolved: 90, projects: 2, githubPublicRepos: 3, preparationMonths: 10,
+    skills: ["DBMS","Operating Systems","Computer Networks","Digital Logic","Engineering Mathematics","Algorithms","Theory of Computation"],
+    csFundamentals: ["DBMS","Operating Systems","Computer Networks","Digital Logic","Discrete Mathematics"],
+    advice: "PYQs and revision gave me more improvement than continuously watching new lectures.",
+    adviceDetails: {
+      biggestMistake: "Spending too much time on new lectures without solving PYQs alongside.",
+      whatWorked: "Subject-wise completion followed immediately by PYQs for that subject.",
+      wouldDoDifferently: "Start Engineering Mathematics 2 months earlier.",
+      adviceForJuniors: "After finishing a subject, immediately solve all its PYQs. Do not wait until the end.",
+    },
+    journey: "Completed one subject at a time. Solved PYQs after every chapter. Weekly revision cycles. Full mock tests in the final 2 months with detailed error analysis.",
+    gateOutcome: { examYear: 2025, paper: "CS", score: 682, marks: 65.0, air: 742, qualified: true, percentile: 98.6, outcomeType: "qualified" },
+    gatePreparation: {
+      preparationMonths: 10, averageHoursPerDay: 6,
+      subjects: [
+        { subject: "DBMS", strength: "strong", completed: true, revisionCount: 4, notesSource: "Self-made notes + GO Classes", questionPracticeCount: 520 },
+        { subject: "Operating Systems", strength: "strong", completed: true, revisionCount: 4, notesSource: "Standard textbook + GO Classes", questionPracticeCount: 480 },
+        { subject: "Computer Networks", strength: "strong", completed: true, revisionCount: 3, notesSource: "Self-made notes", questionPracticeCount: 380 },
+        { subject: "Digital Logic", strength: "strong", completed: true, revisionCount: 3, notesSource: "Self-made notes", questionPracticeCount: 310 },
+        { subject: "Engineering Mathematics", strength: "medium", completed: true, revisionCount: 3, notesSource: "Arihant + Self notes", questionPracticeCount: 420 },
+        { subject: "Algorithms", strength: "medium", completed: true, revisionCount: 2, notesSource: "CLRS + GO Classes", questionPracticeCount: 350 },
+        { subject: "Theory of Computation", strength: "medium", completed: true, revisionCount: 2, notesSource: "GO Classes", questionPracticeCount: 280 },
+      ],
+      strongSubjects: ["DBMS","Operating Systems","Computer Networks","Digital Logic"],
+      weakSubjects: ["Engineering Mathematics"],
+      testSeries: [
+        { provider: "GO Classes", testCountAttempted: 20, averageScore: 58, bestScore: 71, review: "Very high quality questions. Best for GATE-level practice." },
+        { provider: "Made Easy", testCountAttempted: 15, averageScore: 54, bestScore: 68, review: "Good for final 2-month full-length practice." },
+      ],
+      mockTests: { totalAttempted: 35, averageScore: 57, finalPhaseFrequency: "3 full tests per week in the last 2 months" },
+      previousYearQuestions: { yearsCovered: 15, strategy: "Solved after each subject chapter, then again as full-year timed papers." },
+      revisionStrategy: { cycles: 3, shortNotesUsed: true, formulaRevision: "Daily formula sheet in the final month", lastMonthStrategy: "Full tests 3x/week + error log + short notes revision every evening." },
+      preparationPhases: [
+        { order: 1, title: "Core Subjects", duration: "20 weeks", focus: ["DBMS","OS","CN","Digital Logic"], description: "One subject at a time with immediate PYQ practice." },
+        { order: 2, title: "Remaining Subjects", duration: "12 weeks", focus: ["Engg Math","Algorithms","TOC"], description: "Completed remaining subjects." },
+        { order: 3, title: "Revision and Mock Tests", duration: "8 weeks", focus: ["Full-length tests","Error analysis"], description: "3 full tests/week with error log review." },
+      ],
+    },
+    courses: [
+      { courseName: "GO Classes GATE CS", provider: "GO Classes", category: "GATE Preparation", path: "gate", subjectOrSkill: "Full GATE CS Syllabus", completed: true, rating: 4.6, review: "Best quality GATE content. Deep conceptual explanations and high-quality PYQ analysis.", usefulness: "high", wouldRecommend: true, helpedWith: ["DBMS","OS","Algorithms","TOC"] },
+      { courseName: "Made Easy Test Series", provider: "Made Easy", category: "GATE Test Series", path: "gate", subjectOrSkill: "Full syllabus testing", completed: true, rating: 4.3, review: "Good volume of mock tests. Useful for final phase practice.", usefulness: "high", wouldRecommend: true, helpedWith: ["Time management","Full syllabus revision"] },
+      { courseName: "Previous Year Questions — GATE CS", provider: "Self-study", category: "PYQs", path: "gate", subjectOrSkill: "All subjects", completed: true, rating: 5, review: "The single most useful resource. Solving PYQs repeatedly is irreplaceable.", usefulness: "high", wouldRecommend: true, helpedWith: ["All GATE subjects","Pattern recognition","Score improvement"] },
+    ],
+    mentorshipEnabled: true, availableTopics: ["gate-strategy","dbms","operating-systems","computer-networks","test-series-strategy"], privacy: P,
+  },
+  // ── 6. Neha Sharma — Cognizant + GATE combined, 280 DSA, AIR 1850 ──
+  {
+    dummyKey: "neha-sharma-rec-2024", isDummyData: true, verified: true,
+    name: "Neha Sharma", college: REC, branch: "Computer Science and Engineering",
+    batch: 2024, graduationYear: 2024, cgpa: 7.8,
+    bio: "Demo profile — fictional combined Placement + GATE alumni for testing dual-path comparison.",
+    careerPaths: ["placement","gate"], path: "placement", outcomeType: "placement",
+    company: "Cognizant", role: "Programmer Analyst", package: 6.8, gateAIR: 1850,
+    dsaSolved: 280, projects: 4, githubPublicRepos: 10, preparationMonths: 9,
+    skills: ["Java","Python","SQL","React","DBMS","Operating Systems","Computer Networks","DSA"],
+    csFundamentals: ["DBMS","Operating Systems","Computer Networks"],
+    advice: "If you are unsure between GATE and placement, keep core CS strong. It benefits both paths.",
+    adviceDetails: {
+      biggestMistake: "Trying to prepare both paths at full intensity simultaneously.",
+      whatWorked: "Structured weekly split: weekdays for placement, weekends for GATE core subjects.",
+      wouldDoDifferently: "Pick one primary path by November instead of keeping both fully active.",
+      adviceForJuniors: "Keep core CS strong from year 2. DBMS, OS, and CN benefit both paths.",
+    },
+    journey: "Prepared for placement and GATE simultaneously. Monday to Friday: DSA and placement prep. Weekends: GATE core subjects and PYQs. Core CS knowledge benefited both paths.",
+    placementOutcome: { company: "Cognizant", role: "Programmer Analyst", packageLpa: 6.8, offerType: "full-time", placementYear: 2024, location: "Pune" },
+    placementPreparation: {
+      preparationMonths: 9, averageHoursPerDay: 4,
+      dsa: { totalSolved: 280, easy: 120, medium: 140, hard: 20, strongTopics: ["Arrays","DP","Trees"], weakTopics: ["Advanced Graph"], contestCount: 18, strategy: "Weekday DSA practice with weekend revision. Topic-wise then company-specific." },
+      development: { skills: ["Java","Python","React","SQL"], projects: [{ title: "Interview Preparation Portal", tech: "React, Node.js" }, { title: "Quiz Application", tech: "React, Firebase" }, { title: "Resume Analyzer", tech: "Python, NLP" }, { title: "Student Dashboard", tech: "React, REST API" }], engineeringSignals: ["Full-stack","NLP integration"] },
+      csFundamentals: { subjects: ["DBMS","Operating Systems","Computer Networks"], strongSubjects: ["DBMS","OS","Java"], revisionStrategy: "Shared GATE notes served as placement CS revision too." },
+      interviewPreparation: { mockInterviews: 6, interviewRounds: 3, importantTopics: ["DBMS","OOP","Java","Project explanation"], strategy: "Used GATE theory to answer CS fundamentals in placement rounds." },
+      preparationPhases: [
+        { order: 1, title: "Foundation — Both Paths", duration: "12 weeks", focus: ["DBMS","OS","CN","Java basics","DSA basics"], description: "Built core CS foundation serving both paths simultaneously." },
+        { order: 2, title: "DSA and GATE Core", duration: "16 weeks", focus: ["DSA intermediate","GATE subject-wise practice"], description: "Weekdays: DSA. Weekends: GATE subjects with PYQs." },
+        { order: 3, title: "Mock Tests and Company Preparation", duration: "8 weeks", focus: ["Placement mocks","GATE full tests","Cognizant prep"], description: "Balanced mock schedule for both paths." },
+      ],
+    },
+    gateOutcome: { examYear: 2024, paper: "CS", score: 590, marks: 56.0, air: 1850, qualified: true, percentile: 96.2, outcomeType: "qualified" },
+    gatePreparation: {
+      preparationMonths: 9, averageHoursPerDay: 2,
+      subjects: [
+        { subject: "DBMS", strength: "strong", completed: true, revisionCount: 3, notesSource: "Self-made notes", questionPracticeCount: 380 },
+        { subject: "Operating Systems", strength: "strong", completed: true, revisionCount: 3, notesSource: "Standard textbook", questionPracticeCount: 340 },
+        { subject: "Computer Networks", strength: "medium", completed: true, revisionCount: 2, notesSource: "Self-made notes", questionPracticeCount: 250 },
+        { subject: "Algorithms", strength: "medium", completed: true, revisionCount: 2, notesSource: "CLRS", questionPracticeCount: 200 },
+        { subject: "Engineering Mathematics", strength: "medium", completed: true, revisionCount: 2, notesSource: "Arihant", questionPracticeCount: 180 },
+      ],
+      strongSubjects: ["DBMS","Operating Systems","Java"],
+      weakSubjects: [],
+      testSeries: [
+        { provider: "GATE Academy", testCountAttempted: 10, averageScore: 49, bestScore: 60, review: "Good for building exam stamina." },
+      ],
+      mockTests: { totalAttempted: 10, averageScore: 49, finalPhaseFrequency: "Weekly during last 2 months" },
+      previousYearQuestions: { yearsCovered: 10, strategy: "Solved on weekends after each subject. Full papers in December." },
+      revisionStrategy: { cycles: 2, shortNotesUsed: true, formulaRevision: "Combined placement and GATE notes reviewed together", lastMonthStrategy: "Weekly full GATE mock + error review + shared notes." },
+      preparationPhases: [
+        { order: 1, title: "Core Subjects", duration: "20 weeks", focus: ["DBMS","OS","CN"], description: "Weekend-only GATE preparation alongside weekday placement prep." },
+        { order: 2, title: "Remaining Subjects and PYQs", duration: "12 weeks", focus: ["Algorithms","Engg Math","TOC"], description: "Completed remaining subjects. PYQ-focused weekends." },
+        { order: 3, title: "Full Tests", duration: "4 weeks", focus: ["Full-length mock tests"], description: "Weekly full tests with error analysis." },
+      ],
+    },
+    courses: [
+      { courseName: "Java Full Course", provider: "Apna College", category: "Development", path: "placement", subjectOrSkill: "Java", completed: true, rating: 4.3, review: "Solid Java fundamentals and DSA in Java.", usefulness: "high", wouldRecommend: true, helpedWith: ["Java","DSA","OOP"] },
+      { courseName: "GATE CS Preparation", provider: "GO Classes", category: "GATE Preparation", path: "gate", subjectOrSkill: "DBMS, OS, CN", completed: true, rating: 4.5, review: "Excellent explanations for DBMS and OS.", usefulness: "high", wouldRecommend: true, helpedWith: ["DBMS","Operating Systems","Computer Networks"] },
+    ],
+    interviewExperience: [
+      { round: 1, type: "Online Assessment", description: "Aptitude, coding, and communication test.", questions: ["Array rotation problem","Basic string parsing"] },
+      { round: 2, type: "Technical Interview", description: "Java, DBMS, project discussion.", questions: ["Java inheritance vs composition","SQL transactions","Walk through your Resume Analyzer project"] },
+      { round: 3, type: "HR Interview", description: "Career goals and placement vs GATE decision." },
+    ],
+    mentorshipEnabled: true, availableTopics: ["gate-vs-placement-decision","dbms","operating-systems","java","cognizant-preparation"], privacy: P,
+  },
+];
+
+module.exports = { dummyAlumniFixtures };
