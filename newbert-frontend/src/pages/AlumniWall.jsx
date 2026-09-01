@@ -29,7 +29,7 @@ export default function AlumniWall() {
     return () => { active = false; };
   }, [isAuthenticated, sort]);
   useEffect(() => { let active = true; getPublicAlumni().then((data) => { if (active) setPublicAlumni((data.alumni || []).map(asCard)); }).catch((error) => { if (active) setLoadError(error.response?.data?.message || "Alumni profiles are unavailable right now."); }); return () => { active = false; }; }, []);
-  const source = recommended.length ? recommended : publicAlumni;
+  const source = type === "Recommended" && recommended.length ? recommended : (publicAlumni.length ? publicAlumni : recommended);
   const results = useMemo(() => source.filter((alumni) => {
     const normalizedType = alumni.type || alumni.outcomeType || alumni.path;
     const typeMatch = type === "Recommended" || type === "All Alumni" || normalizedType === type.toLowerCase() || normalizedType === "combined" && ["Placement", "GATE"].includes(type);

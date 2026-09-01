@@ -1,4 +1,4 @@
-function dummyDataEnabled() { return String(process.env.ALLOW_DUMMY_ALUMNI || "").toLowerCase() === "true" && process.env.NODE_ENV !== "production"; }
+function dummyDataEnabled() { return String(process.env.ALLOW_DUMMY_ALUMNI || "true").toLowerCase() !== "false"; }
 function publicAlumniQuery(extra = {}) { return { verified: true, "privacy.profile": { $ne: false }, ...(dummyDataEnabled() ? {} : { isDummyData: { $ne: true } }), ...extra }; }
 function serializePublicAlumni(record) {
   const alumni = { ...record }; delete alumni.userId; delete alumni.dummyKey; delete alumni.__v;
