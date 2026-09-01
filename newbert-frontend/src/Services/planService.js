@@ -30,6 +30,11 @@ export async function setPlanTaskStatus(taskId, status) {
   return data.plan;
 }
 
+export async function setMilestoneStatus(milestoneId, status) {
+  const { data } = await API.patch(`/plans/milestones/${milestoneId}`, { status });
+  return data.plan;
+}
+
 export async function setPlanTaskCompleted(taskId, completed) {
   const { data } = await API.patch(`/plans/tasks/${taskId}`, { completed });
   return data.plan;

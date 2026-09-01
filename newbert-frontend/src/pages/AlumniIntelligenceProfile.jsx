@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import API from "../Services/api";
 import useAuth from "../hook/useAuth";
@@ -120,7 +120,7 @@ function BookingDialog({ alumni, path, onClose }) {
   const initials = alumni.name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
 
   return (
-    <motion.div
+    <Motion.div
       className="fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto p-4 sm:items-center"
       role="dialog"
       aria-modal="true"
@@ -131,7 +131,7 @@ function BookingDialog({ alumni, path, onClose }) {
       transition={{ duration: 0.18 }}
     >
       {/* Backdrop */}
-      <motion.div
+      <Motion.div
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-[2px]"
         onClick={() => !st.saving && onClose()}
         aria-hidden="true"
@@ -141,7 +141,7 @@ function BookingDialog({ alumni, path, onClose }) {
       />
 
       {/* Modal panel */}
-      <motion.section
+      <Motion.section
         className="relative z-10 w-full max-w-[540px] rounded-2xl bg-white shadow-2xl"
         initial={{ opacity: 0, scale: 0.96, y: 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -268,8 +268,8 @@ function BookingDialog({ alumni, path, onClose }) {
             <p className="text-center text-xs text-slate-500">No session is automatically confirmed. {alumni.name.split(" ")[0]} will accept or decline your request.</p>
           </div>
         )}
-      </motion.section>
-    </motion.div>
+      </Motion.section>
+    </Motion.div>
   );
 }
 

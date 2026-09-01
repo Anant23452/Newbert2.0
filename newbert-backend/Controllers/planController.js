@@ -9,6 +9,7 @@ const { analyzeJobMatch } = require("../services/jobMatchingService");
 const { nextBestAction } = require("../services/studentIntelligence/nextBestActionService");
 const { analyzeCurrentStage } = require("../services/ai/currentStageAnalysis");
 const { sameCollegeQuery } = require("../services/collegeService");
+const { resolveTargetBenchmark } = require("../services/targetBenchmarkService");
 
 async function loadPlanningContext(userId) {
   const profile = await Profile.findOne({ userId }).lean();
@@ -17,7 +18,10 @@ async function loadPlanningContext(userId) {
     error.status = 400;
     throw error;
   }
-  const alumni = await Alumni.find({ ...sameCollegeQuery(profile), verified: true }).lean();
+  const alumni = await Alumni.find({
+    verified: true, isDummyData: { $ne: true }, "privacy.profile": { $ne: false },
+    $or: [sameCollegeQuery(profile), { company: { $ne: null } }, { "placement.company": { $ne: null } }],
+  }).sort({ createdAt: -1 }).limit(250).lean();
   return { profile, alumni };
 }
 
@@ -37,7 +41,7 @@ async function loadTargetJobContexts(userId, profile, target, strict = true) {
 function sameGoal(left, right) {
   const date = (value) => value ? new Date(value).toISOString().slice(0, 10) : "";
   const ids = (target) => (target.jobIds || []).map(String).sort().join(",");
-  return (left.mode || "role") === (right.mode || "role") && left.type === right.type && left.role === right.role && (left.company || "") === (right.company || "") && ids(left) === ids(right) && date(left.deadline) === date(right.deadline) && Number(left.weeklyHours) === Number(right.weeklyHours);
+  return (left.mode || "role") === (right.mode || "role") && (left.targetType || (left.company ? "specific_company" : "role_only")) === right.targetType && left.type === right.type && left.role === right.role && (left.company || "") === (right.company || "") && (left.companyCategory || "") === (right.companyCategory || "") && (left.region || "") === (right.region || "") && ids(left) === ids(right) && date(left.deadline) === date(right.deadline) && (left.weeklyHours ?? null) === (right.weeklyHours ?? null);
 }
 
 function normalizePlanDocument(value) {
@@ -92,14 +96,22 @@ function normalizePlanDocument(value) {
     deadlineConstrained: rawTimeline.deadlineConstrained ?? false,
   };
 
-  return { ...value, tasks, phases, gaps, readiness, profileSnapshot, progress, timeline };
+  return {
+    ...value, tasks, phases, gaps, readiness, profileSnapshot, progress, timeline,
+    preparationGaps: Array.isArray(value.preparationGaps) ? value.preparationGaps : [],
+    biggestBlockers: Array.isArray(value.biggestBlockers) ? value.biggestBlockers : [],
+    milestones: Array.isArray(value.milestones) ? value.milestones : [],
+    strategyPhases: Array.isArray(value.strategyPhases) ? value.strategyPhases : [],
+    currentPosition: value.currentPosition && typeof value.currentPosition === "object" ? value.currentPosition : { categories: [] },
+  };
 }
 
 function serialize(plan, options = {}) {
   const raw = plan.toObject ? plan.toObject() : plan;
   const value = normalizePlanDocument(raw);
   const start = new Date(value.timeline.startDate || value.createdAt || Date.now());
-  const currentWeek = Math.max(1, Math.min(value.timeline.estimatedWeeks, Math.floor((Date.now() - start.getTime()) / 604800000) + 1));
+  const estimatedWeeks = Number.isFinite(Number(value.timeline.estimatedWeeks)) && Number(value.timeline.estimatedWeeks) > 0 ? Number(value.timeline.estimatedWeeks) : 1;
+  const currentWeek = Math.max(1, Math.min(estimatedWeeks, Math.floor((Date.now() - start.getTime()) / 604800000) + 1));
   let currentPhase = value.phases.find((phase) => currentWeek >= phase.startWeek && currentWeek <= phase.endWeek) || value.phases.at(-1) || null;
   let phaseIndex = value.phases.findIndex((phase) => phase.id === currentPhase?.id);
   while (phaseIndex >= 0 && phaseIndex < value.phases.length - 1) {
@@ -111,8 +123,9 @@ function serialize(plan, options = {}) {
   return { ...value, currentWeek, currentPhase, needsRecalculation: Boolean(options.needsRecalculation), recalculated: Boolean(options.recalculated) };
 }
 
-async function saveGenerated(userId, profile, alumni, target, existing, jobContexts = []) {
-  const generated = buildPlan({ ...profile, userId }, alumni, target, existing, jobContexts);
+async function saveGenerated(userId, profile, alumni, target, existing, jobContexts = [], forceBenchmark = false) {
+  const benchmark = await resolveTargetBenchmark({ target, selectedJobs: jobContexts.map((context) => context.job), alumni, force: forceBenchmark });
+  const generated = buildPlan({ ...profile, userId }, alumni, target, existing, jobContexts, benchmark);
   return Plan.findOneAndUpdate({ userId }, { $set: generated }, { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true });
 }
 
@@ -152,7 +165,7 @@ exports.getMyPlan = async (req, res, next) => {
     if (!plan) return res.json({ plan: null });
     const { profile } = await loadPlanningContext(req.auth.id);
     const jobContexts = await loadTargetJobContexts(req.auth.id, profile, plan.target, false);
-    return res.json({ plan: serialize(plan, { needsRecalculation: needsRecalculation(plan, profile, jobContexts) }) });
+    return res.json({ plan: serialize(plan, { needsRecalculation: Number(plan.generationVersion || 0) < 4 || needsRecalculation(plan, profile, jobContexts) }) });
   } catch (error) { return next(error); }
 };
 
@@ -179,7 +192,7 @@ exports.recalculateMyPlan = async (req, res, next) => {
     const { profile, alumni } = await loadPlanningContext(req.auth.id);
     const target = existing.target.toObject ? existing.target.toObject() : existing.target;
     const jobContexts = await loadTargetJobContexts(req.auth.id, profile, target);
-    const plan = await saveGenerated(req.auth.id, profile, alumni, target, existing, jobContexts);
+    const plan = await saveGenerated(req.auth.id, profile, alumni, target, existing, jobContexts, true);
     return res.json({ plan: serialize(plan, { recalculated: true }) });
   } catch (error) { return next(error); }
 };
@@ -200,6 +213,23 @@ exports.updateTask = async (req, res, next) => {
     plan.nextBestAction = nextBestAction(plan.tasks);
     plan.markModified("tasks");
     plan.markModified("progress");
+    await plan.save();
+    return res.json({ plan: serialize(plan) });
+  } catch (error) { return next(error); }
+};
+
+exports.updateMilestone = async (req, res, next) => {
+  try {
+    const plan = await Plan.findOne({ userId: req.auth.id });
+    if (!plan) return res.status(404).json({ message: "Plan not found." });
+    const milestones = Array.isArray(plan.milestones) ? plan.milestones : [];
+    const milestone = milestones.find((item) => item.id === req.params.milestoneId && !item.archived);
+    if (!milestone) return res.status(404).json({ message: "Milestone not found in your active strategy." });
+    const status = req.body.status;
+    if (!["not_started", "in_progress", "completed", "skipped"].includes(status)) return res.status(400).json({ message: "Choose a valid milestone status." });
+    milestone.status = status;
+    milestone.completedAt = status === "completed" ? milestone.completedAt || new Date() : null;
+    plan.markModified("milestones");
     await plan.save();
     return res.json({ plan: serialize(plan) });
   } catch (error) { return next(error); }

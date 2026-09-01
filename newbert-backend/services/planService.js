@@ -6,17 +6,24 @@ const { normalizeTargetType } = require("./targetRequirementsService");
 const { buildPrioritizedGaps } = require("./studentIntelligence/roadmapPriorityService");
 const { buildRoadmapStructure } = require("./studentIntelligence/roadmapBuilderService");
 const { nextBestAction } = require("./studentIntelligence/nextBestActionService");
+const { buildBenchmark, findClosestSeniors } = require("./alumniMatchingService");
+const { buildTargetBenchmark } = require("./targetBenchmarkService");
+const { buildCurrentPosition, buildMilestoneStrategy, buildPreparationGaps, overallReadiness } = require("./studentIntelligence/preparationIntelligenceService");
 
 function cleanTarget(input = {}, profile = {}) {
   const type = normalizeTargetType(input.type, input.role || profile.targetRole);
   const role = String(input.role || profile.targetRole || "").trim();
-  const weeklyHours = Math.min(60, Math.max(2, Number(input.weeklyHours) || 10));
+  const suppliedHours = input.weeklyHours == null || input.weeklyHours === "" ? null : Number(input.weeklyHours);
+  const weeklyHours = Number.isFinite(suppliedHours) ? Math.min(80, Math.max(1, suppliedHours)) : null;
   const deadline = input.deadline && !Number.isNaN(new Date(input.deadline).getTime()) ? new Date(input.deadline) : null;
   const allowedStyles = ["balanced", "aggressive", "college-friendly", "revision-heavy", "practice-heavy"];
   const planStyle = allowedStyles.includes(input.planStyle) ? input.planStyle : "balanced";
   const jobIds = cleanList(input.jobIds || input.targetJobIds).slice(0, 5);
+  const company = String(input.company || profile.targetCompany || "").trim() || null;
+  const targetType = ["specific_company", "company_category", "role_only"].includes(input.targetType) ? input.targetType : company ? "specific_company" : "role_only";
+  const companyCategory = ["product", "service", "startup"].includes(input.companyCategory) ? input.companyCategory : null;
   const mode = input.mode === "job" || jobIds.length ? "job" : "role";
-  return { mode, type, role, company: String(input.company || profile.targetCompany || "").trim() || null, jobIds, deadline, weeklyHours, planStyle, customGoal: String(input.customGoal || "").trim() || null };
+  return { mode, targetType, type, role, company: targetType === "specific_company" ? company : null, companyCategory: targetType === "company_category" ? companyCategory : null, region: String(input.region || "India").trim() || null, jobIds, deadline, weeklyHours, planStyle, customGoal: String(input.customGoal || "").trim() || null };
 }
 
 function cleanList(values) {
@@ -103,7 +110,8 @@ function estimateTimeline(gaps, weeklyHours, deadline) {
     const base = gap.priority === "high" ? 18 : gap.priority === "medium" ? 12 : 6;
     return sum + Math.max(3, Math.round(base * ((100 - gap.currentScore) / 100)));
   }, 12);
-  let minWeeks = Math.max(5, Math.min(24, Math.ceil(work / weeklyHours)));
+  if (!Number.isFinite(Number(weeklyHours)) || Number(weeklyHours) <= 0) return { minWeeks: null, maxWeeks: null, estimatedWeeks: null, deadlineConstrained: false, disclaimer: "Add your available hours per week to receive an effort-based preparation estimate." };
+  let minWeeks = Math.max(2, Math.min(24, Math.ceil(work / weeklyHours)));
   let maxWeeks = Math.max(minWeeks, Math.min(28, Math.ceil(minWeeks * 1.25)));
   let deadlineConstrained = false;
   if (deadline) {
@@ -195,7 +203,7 @@ function calculatePlanStreak(tasks) {
   return streak;
 }
 
-function buildPlan(profile, alumni, targetInput, existingPlan = null, jobContexts = []) {
+function buildPlan(profile, alumni, targetInput, existingPlan = null, jobContexts = [], benchmarkInput = null) {
   const target = cleanTarget(targetInput, profile);
   const selfAssessment = {
     currentStageStory: String(targetInput.currentStageStory || existingPlan?.selfAssessment?.currentStageStory || "").trim().slice(0, 8000),
@@ -206,11 +214,22 @@ function buildPlan(profile, alumni, targetInput, existingPlan = null, jobContext
     completed: cleanList(targetInput.understoodCurrentStage.completed), inProgress: cleanList(targetInput.understoodCurrentStage.inProgress), strengths: cleanList(targetInput.understoodCurrentStage.strengths), weakAreas: cleanList(targetInput.understoodCurrentStage.weakAreas), notStarted: cleanList(targetInput.understoodCurrentStage.notStarted), blockers: cleanList(targetInput.understoodCurrentStage.blockers || selfAssessment.blockers), target: cleanList(targetInput.understoodCurrentStage.target),
   } : extractCurrentStage(selfAssessment);
   const seniorMatch = selectSenior(profile, alumni, target);
+  const seniorCohort = findClosestSeniors(profile, alumni, 5, { target });
+  const seniorBenchmark = buildBenchmark(profile, seniorCohort);
+  const seniorBenchmarkGroup = seniorBenchmark ? {
+    ...seniorBenchmark,
+    members: seniorCohort.map((item) => ({ id: String(item.alumni._id), name: item.alumni.name, company: item.alumni.placement?.company || item.alumni.company || null, role: item.alumni.placement?.role || item.alumni.role || null })),
+    evidenceType: "verified_newbert_alumni",
+  } : null;
   const normalizedProfile = normalizeStudentProfile({ ...profile, targetRole: target.role });
   normalizedProfile.goals.targetRole = target.role;
   const ai01 = calculateProfileReadiness(normalizedProfile);
   const prioritizedGaps = buildPrioritizedGaps({ ai01, jobContexts }).filter((gap) => !topicMatches(gap.item, understoodCurrentStage.completed));
   const roadmap = buildRoadmapStructure({ prioritizedGaps, normalizedProfile, existingTasks: existingPlan?.tasks || [] });
+  const targetBenchmark = benchmarkInput || buildTargetBenchmark({ target, jobs: jobContexts.map((context) => context.job), alumni });
+  const currentPosition = buildCurrentPosition(profile, targetBenchmark);
+  const preparationGaps = buildPreparationGaps({ benchmark: targetBenchmark, currentPosition, alumni });
+  const strategy = buildMilestoneStrategy({ gaps: preparationGaps, existingMilestones: existingPlan?.milestones || [] });
   const alumniSignals = existingPlan?.alumniSignals || [];
   const taskCategories = { dsa: ["dsa-interview"], projects: ["project-evidence"], development: ["core-skills", "project-evidence"], fundamentals: ["foundations"], subjects: ["foundations"], tests: ["dsa-interview", "application-readiness"], pyq: ["foundations", "dsa-interview"], revision: ["foundations"], duration: ["application-readiness"] };
   const tasks = roadmap.tasks.map((task) => {
@@ -220,19 +239,20 @@ function buildPlan(profile, alumni, targetInput, existingPlan = null, jobContext
   const phases = roadmap.phases;
   const compatibilityGaps = prioritizedGaps.map((gap) => ({ ...gap, key: gap.id, label: gap.item, detail: gap.reasons.join(" "), currentScore: 0, status: gap.priority === "high" ? "Needs Improvement" : "Developing", type: gap.category }));
   const timelineEstimate = estimateTimeline(compatibilityGaps, target.weeklyHours, target.deadline);
-  const timeline = { ...timelineEstimate, estimatedWeeks: Math.max(timelineEstimate.estimatedWeeks, ...tasks.filter((task) => !task.archived).map((task) => task.scheduledWeek), 1) };
+  const timeline = timelineEstimate.estimatedWeeks == null ? timelineEstimate : { ...timelineEstimate, estimatedWeeks: Math.max(timelineEstimate.estimatedWeeks, ...tasks.filter((task) => !task.archived).map((task) => task.scheduledWeek), 1) };
   const snapshot = meaningfulSnapshot(profile, target, selfAssessment, jobContexts);
   const meaningfulChange = !existingPlan || existingPlan.profileSnapshot?.signature !== snapshot.signature;
   const version = existingPlan ? Number(existingPlan.version || 1) + (meaningfulChange ? 1 : 0) : 1;
   const roadmapHistory = [...(existingPlan?.roadmapHistory || [])];
   if (existingPlan && meaningfulChange) roadmapHistory.push({ version: existingPlan.version || 1, analysisVersion: existingPlan.analysisVersion || "legacy", targetSnapshot: existingPlan.targetSnapshot || existingPlan.target, completedTaskIds: (existingPlan.tasks || []).filter((task) => task.completed || task.status === "completed").map((task) => task.id), skippedTaskIds: (existingPlan.tasks || []).filter((task) => task.status === "skipped").map((task) => task.id), retiredAt: new Date() });
   const coverageCategories = Object.fromEntries(Object.entries(ai01.coverage || {}).filter(([key, value]) => key !== "overall" && value.status === "available").map(([key, value]) => [key, value.value]));
-  const targetSnapshot = { mode: target.mode, role: target.role, company: target.company, jobs: jobContexts.map(({ job }) => ({ id: String(job._id || job.id), title: job.title, company: job.company })) };
+  const targetSnapshot = { mode: target.mode, targetType: target.targetType, role: target.role, company: target.company, companyCategory: target.companyCategory, region: target.region, jobs: jobContexts.map(({ job }) => ({ id: String(job._id || job.id), title: job.title, company: job.company })) };
   const action = nextBestAction(tasks);
   return {
     userId: profile.userId,
     target,
     seniorMatch,
+    seniorBenchmarkGroup,
     alumniSignals,
     readiness: { total: ai01.coverage?.overall?.value ?? null, categories: coverageCategories },
     dataConfidence: ai01.dataConfidence,
@@ -251,7 +271,15 @@ function buildPlan(profile, alumni, targetInput, existingPlan = null, jobContext
     analysisVersion: "AI-03.1",
     targetSnapshot,
     roadmapHistory: roadmapHistory.slice(-10),
-    generationVersion: 3,
+    targetBenchmark,
+    currentPosition,
+    preparationGaps,
+    biggestBlockers: preparationGaps.filter((gap) => !["ready", "optional"].includes(gap.gapType)).slice(0, 3),
+    milestones: strategy.milestones,
+    strategyPhases: strategy.phases,
+    targetConfidence: targetBenchmark.confidence === "high" && ai01.dataConfidence?.level === "high" ? "high" : targetBenchmark.confidence === "low" ? "exploratory" : "medium",
+    overallReadiness: overallReadiness(currentPosition),
+    generationVersion: 4,
     lastCalculatedAt: new Date(),
   };
 }
