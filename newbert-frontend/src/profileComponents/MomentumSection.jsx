@@ -13,7 +13,16 @@ function buildYear(year, activityCalendar) {
     const item = activity.get(dateString);
     const github = Number(item?.github) || 0;
     const leetcode = Number(item?.leetcode) || 0;
-    days.push({ date: new Date(date), dateString, month: date.getMonth(), weekday: date.getDay(), github, leetcode, total: github + leetcode, future: date > today });
+    const projectSource = item?.projectActivity ?? item?.project ?? item?.projects;
+    const projectActivity = projectSource == null ? null : Number(projectSource) || 0;
+    days.push({
+      date: new Date(date), dateString, month: date.getMonth(), weekday: date.getDay(),
+      github, githubCommits: Number(item?.githubCommits) || 0,
+      leetcode, leetcodeAccepted: Number(item?.leetcodeAccepted) || 0,
+      projectActivity,
+      total: Number(item?.total) || github + leetcode + (projectActivity || 0),
+      future: date > today,
+    });
   }
   return days;
 }
@@ -58,7 +67,7 @@ function streakStatus(days) {
   return "Elite consistency";
 }
 
-export default function MomentumSection({ activityCalendar = [], lastSyncedAt, currentStreak = 0, longestStreak = 0, ownerName = "You", isOwn = false, heatmapVisible = true, streakStatsVisible = true }) {
+export default function MomentumSection({ activityCalendar = [], lastSyncedAt, currentStreak = 0, longestStreak = 0, ownerName = "You", isOwn = false, heatmapVisible = true, streakStatsVisible = true, compact = false, collegeRank = null, loadingRank = false }) {
   const currentYear = new Date().getFullYear();
   const activityYears = activityCalendar.map((day) => Number(String(day.date || "").slice(0, 4))).filter(Number.isFinite);
   const yearOptions = [...new Set([currentYear, currentYear - 1, currentYear - 2, ...activityYears])].sort((a, b) => b - a);
@@ -78,6 +87,27 @@ export default function MomentumSection({ activityCalendar = [], lastSyncedAt, c
   const shownCurrent = selectedYear === currentYear ? Number(currentStreak) || 0 : metrics.yearEndStreak;
   const shownLongest = selectedYear === currentYear ? Number(longestStreak) || 0 : metrics.longestStreak;
   const gap = Math.max(0, shownLongest - shownCurrent);
+  const monthDelta = useMemo(() => {
+    const now = new Date();
+    const currentMonth = days.filter((day) => day.month === now.getMonth() && !day.future).reduce((sum, day) => sum + day.total, 0);
+    const previousMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+    const previousTotal = days.filter((day) => day.month === previousMonth).reduce((sum, day) => sum + day.total, 0);
+    return currentMonth - previousTotal;
+  }, [days]);
+
+  if (compact) return <section className="overflow-hidden rounded-lg bg-[#111c2e] text-white shadow-[0_18px_50px_rgba(0,0,0,.18)]">
+    <div className="flex flex-wrap items-start justify-between gap-4 px-5 pt-5 md:px-6 md:pt-6"><div><p className="text-xs font-extrabold uppercase tracking-widest text-orange-400">Activity</p><h2 className="mt-1 text-xl font-black">Verified work, day by day</h2></div><select value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value))} aria-label="Activity year" className="rounded-md border border-white/15 bg-[#0b1220] px-3 py-2 text-xs font-extrabold text-white outline-none focus:border-orange-400">{yearOptions.map((year) => <option key={year}>{year}</option>)}</select></div>
+    <div className="mt-5 grid grid-cols-2 gap-px bg-white/10 lg:grid-cols-4">
+      <CompactMetric label="Verified activities" value={metrics.totalActivities.toLocaleString()} />
+      <CompactMetric label="Current streak" value={streakStatsVisible ? `${shownCurrent} days` : "Private"} />
+      <CompactMetric label="Growth this month" value={`${monthDelta >= 0 ? "+" : ""}${monthDelta}`} />
+      <CompactMetric label="College rank" value={!streakStatsVisible ? "Private" : loadingRank ? "Loading" : collegeRank ? `#${collegeRank}` : "Build activity"} />
+    </div>
+    <div className="px-5 pb-5 md:px-6 md:pb-6">
+      {!heatmapVisible ? <PrivateNotice text="Activity history is private."/> : activityCalendar.length === 0 ? <div className="mt-5 rounded-lg bg-white/[.04] p-5"><p className="font-extrabold text-white">Your activity graph is ready for its first signal.</p><p className="mt-1 text-sm text-slate-400">Connect GitHub or LeetCode to verify coding work and build your streak.</p></div> : <Heatmap weeks={weeks} monthLabels={monthLabels}/>} 
+      {lastSyncedAt && heatmapVisible && <p className="mt-3 text-right text-[11px] text-slate-500">Updated {new Date(lastSyncedAt).toLocaleString()}</p>}
+    </div>
+  </section>;
 
   return <section className="overflow-hidden rounded-2xl border border-orange-400/20 bg-[#101827] text-white shadow-[0_18px_50px_rgba(2,6,23,.22)]">
     <div className="border-b border-white/10 p-5 md:p-7">
@@ -102,8 +132,9 @@ function Heatmap({ weeks, monthLabels }) {
 }
 
 function Tooltip({ day, x, y }) {
-  return <div className="pointer-events-none fixed z-[100] w-52 rounded-lg border border-white/15 bg-[#0b1220] p-3 shadow-2xl" style={{ left: Math.min(x + 14, window.innerWidth - 225), top: Math.max(12, y - 132) }}><p className="text-xs font-extrabold text-white">{day.date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}</p><p className="mt-2 text-sm font-black text-emerald-300">{day.total} verified activities</p><div className="mt-2 space-y-1 text-xs text-slate-300">{day.github > 0 && <p>GitHub: {day.github}</p>}{day.leetcode > 0 && <p>LeetCode: {day.leetcode}</p>}{day.total === 0 && <p>No activity</p>}</div></div>;
+  return <div className="pointer-events-none fixed z-[100] w-56 rounded-lg border border-white/15 bg-[#0b1220] p-3 shadow-2xl" style={{ left: Math.min(x + 14, window.innerWidth - 240), top: Math.max(12, y - 164) }}><p className="text-xs font-extrabold text-white">{day.date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}</p><p className="mt-2 text-sm font-black text-emerald-300">{day.total} verified activities</p><div className="mt-2 space-y-1 text-xs text-slate-300"><p>GitHub contributions: {day.github}</p><p>GitHub commits: {day.githubCommits}</p><p>LeetCode submissions: {day.leetcode}</p><p>LeetCode accepted: {day.leetcodeAccepted}</p><p>Project activity: {day.projectActivity == null ? "Not tracked" : day.projectActivity}</p></div></div>;
 }
 
 function Metric({ label, value, detail }) { return <div className="rounded-xl border border-white/10 bg-white/[.04] p-4"><p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">{label}</p><p className="mt-3 text-xl font-black text-white">{value}</p><p className="mt-1 text-xs text-slate-400">{detail}</p></div>; }
+function CompactMetric({ label, value }) { return <div className="bg-[#0e1828] px-4 py-3"><p className="text-[10px] font-bold uppercase text-slate-500">{label}</p><p className="mt-1 text-lg font-black text-white">{value}</p></div>; }
 function PrivateNotice({ text }) { return <p className="mt-5 rounded-xl border border-white/10 bg-white/5 p-5 text-sm font-bold text-slate-300">{text}</p>; }

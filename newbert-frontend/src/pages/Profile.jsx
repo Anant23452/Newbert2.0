@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { getSavedJobs } from "../utils/jobApplications";
 import API from "../Services/api";
 import useAuth from "../hook/useAuth";
 import { BRANCH_OPTIONS, TARGET_ROLE_OPTIONS, getSkillSuggestions, normalizeSkillName } from "../data/profileOptions";
 import CollegeAutocomplete from "../Components/CollegeAutocomplete";
+import CareerDashboard from "../profileComponents/CareerDashboard";
 import MomentumSection from "../profileComponents/MomentumSection";
 import StreakLeaderboardPreview from "../profileComponents/StreakLeaderboardPreview";
 
@@ -12,7 +12,6 @@ export default function Profile() {
   const { profile, loading: profileLoading, error: profileError, saveProfile, logout } = useAuth();
   const [editing, setEditing] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [savedJobs] = useState(getSavedJobs);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -47,7 +46,7 @@ export default function Profile() {
       />
     );
 
-  return <ProfileDashboard profile={profile} savedJobs={savedJobs} onEdit={() => setEditing(true)} onLogout={() => { logout(); navigate("/", { replace: true }); }} />;
+  return <CareerDashboard profile={profile} onEdit={() => setEditing(true)} onLogout={() => { logout(); navigate("/", { replace: true }); }} />;
 }
 
 function ProfileLoading() { return <main className="profile-page min-h-screen px-5 py-12"><div className="mx-auto max-w-6xl animate-pulse space-y-5"><div className="h-44 rounded-2xl bg-slate-200/70"/><div className="grid gap-6 lg:grid-cols-2"><div className="h-80 rounded-2xl bg-slate-200/70"/><div className="h-80 rounded-2xl bg-slate-200/70"/></div></div></main>; }
