@@ -25,6 +25,7 @@ import {
 import { addAlumniPathToRoadmap } from "../Services/alumniService";
 import API from "../Services/api";
 import MomentumSection from "./MomentumSection";
+import FeaturedProjects from "./FeaturedProjects";
 
 const reveal = {
   hidden: { opacity: 0, y: 8 },
@@ -213,6 +214,7 @@ function CareerDashboardView({
         </section>
 
         <JourneyTimeline profile={profile} />
+        <FeaturedProjects profile={profile} onEdit={onEdit} onProfileUpdated={() => { window.location.reload(); }} />
         <SkillsAndProjects profile={profile} privacy={privacy} privacyState={privacyState} onPrivacyChange={onPrivacyChange} onEdit={onEdit} />
       </div>
     </main>
@@ -223,7 +225,7 @@ function ProfileSubnav() {
   return (
     <nav aria-label="Profile sections" className="sticky top-16 z-20 -mx-1 mb-4 overflow-x-auto rounded-md border border-white/10 bg-[#0b1220]/95 px-2 py-2 backdrop-blur">
       <div className="flex min-w-max items-center gap-1">
-        {[['Overview', 'overview'], ['Skills', 'skills'], ['Activity', 'activity'], ['Journey', 'journey']].map(([label, id]) => (
+        {[['Overview', 'overview'], ['Skills', 'skills'], ['Activity', 'activity'], ['Journey', 'journey'], ['Projects', 'featured-projects']].map(([label, id]) => (
           <a key={id} href={`#${id}`} className="rounded-md px-3 py-2 text-xs font-extrabold text-slate-400 hover:bg-white/5 hover:text-orange-300">{label}</a>
         ))}
       </div>

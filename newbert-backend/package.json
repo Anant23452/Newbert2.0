@@ -17,7 +17,10 @@
     "seed:dummy-alumni": "node scripts/seedDummyAlumni.js",
     "clear:dummy-alumni": "node scripts/clearDummyAlumni.js",
     "seed:demo-alumni": "node scripts/seedDummyAlumni.js",
-    "remove:demo-alumni": "node scripts/clearDummyAlumni.js"
+    "remove:demo-alumni": "node scripts/clearDummyAlumni.js",
+    "seed:demo-courses": "node scripts/seedDemoCourses.js",
+    "remove:demo-courses": "node scripts/removeDemoCourses.js",
+    "clear:demo-courses": "node scripts/removeDemoCourses.js"
   },
   "dependencies": {
     "@google/genai": "^2.18.0",

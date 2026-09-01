@@ -66,7 +66,42 @@ function ReadinessBreakdown({ readiness, profileSnapshot }) {
 
 function GapAnalysis({ gaps }) { return <section className="rounded-lg border border-slate-200 bg-[#f8fafc] p-6 text-slate-950 md:p-8"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-600">Prioritized gaps</p><h2 className="mt-2 text-2xl font-black">What moves readiness next</h2><div className="mt-6 grid gap-5 md:grid-cols-2">{gaps.length ? gaps.map((gap) => <article key={gap.key} className="rounded-lg border border-slate-200 bg-white p-4"><div className="flex items-start justify-between gap-3"><div><h3 className="font-extrabold">{gap.label}</h3><p className="mt-1 text-xs text-slate-500">{gap.category?.replaceAll("-", " ")}</p></div><span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-extrabold ${priorityTone[gap.priority] || priorityTone.medium}`}>{gap.priority} · {gap.priorityScore}</span></div><details className="mt-4"><summary className="cursor-pointer text-xs font-extrabold text-orange-700">Why this?</summary><ul className="mt-2 space-y-1 text-xs leading-5 text-slate-600">{gap.reasons?.map((reason) => <li key={reason}>• {reason}</li>)}</ul>{gap.relatedJobs?.length ? <p className="mt-2 text-xs text-slate-500">Target jobs: {gap.relatedJobs.join(", ")}</p> : null}</details></article>) : <p className="text-sm text-slate-600">No evidence-backed gap is currently available. Add profile evidence or choose a supported target.</p>}</div></section>; }
 
-function Timeline({ phases, currentPhase }) { return <section className="rounded-2xl border border-white/10 bg-[#172033] p-6 md:p-8"><p className="text-xs font-extrabold uppercase tracking-widest text-orange-400">Personalized timeline</p><h2 className="mt-2 text-2xl font-black">Your phases</h2><div className="mt-7 grid gap-3 md:grid-cols-5">{phases.map((phase, index) => { const current = phase.id === currentPhase?.id; return <article key={phase.id} className={`relative rounded-xl border p-4 ${current ? "border-orange-400 bg-orange-400/10" : "border-white/10 bg-white/5"}`}><p className="text-xs font-black text-orange-300">{String(index + 1).padStart(2, "0")}</p><h3 className="mt-2 font-extrabold">{phase.title}</h3><p className="mt-1 text-xs text-slate-400">Weeks {phase.startWeek}–{phase.endWeek}</p>{current && <span className="mt-3 inline-flex rounded-full bg-orange-400 px-2 py-1 text-[10px] font-black text-slate-950">You are here</span>}<ul className="mt-4 space-y-1 text-xs leading-5 text-slate-300">{phase.goals.slice(0, 3).map((goal) => <li key={goal}>• {goal}</li>)}</ul></article>; })}</div></section>; }
+function Timeline({ phases, currentPhase }) {
+  return (
+    <section className="rounded-2xl border border-white/10 bg-[#172033] p-6 md:p-8">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-widest text-orange-400">Personalized timeline</p>
+          <h2 className="mt-2 text-2xl font-black">Your phases</h2>
+        </div>
+        <Link to="/courses" className="inline-flex items-center gap-1 rounded-lg border border-orange-400/30 bg-orange-400/10 px-3 py-1.5 text-xs font-extrabold text-orange-200 hover:bg-orange-400/20">
+          Match learning resources →
+        </Link>
+      </div>
+      <div className="mt-7 grid gap-3 md:grid-cols-5">
+        {phases.map((phase, index) => {
+          const current = phase.id === currentPhase?.id;
+          return (
+            <article key={phase.id} className={`relative rounded-xl border p-4 ${current ? "border-orange-400 bg-orange-400/10" : "border-white/10 bg-white/5"}`}>
+              <p className="text-xs font-black text-orange-300">{String(index + 1).padStart(2, "0")}</p>
+              <h3 className="mt-2 font-extrabold">{phase.title}</h3>
+              <p className="mt-1 text-xs text-slate-400">Weeks {phase.startWeek}–{phase.endWeek}</p>
+              {current && <span className="mt-3 inline-flex rounded-full bg-orange-400 px-2 py-1 text-[10px] font-black text-slate-950">You are here</span>}
+              <ul className="mt-4 space-y-1 text-xs leading-5 text-slate-300">{phase.goals.slice(0, 3).map((goal) => <li key={goal}>• {goal}</li>)}</ul>
+              {current && (
+                <div className="mt-4 border-t border-white/10 pt-3">
+                  <Link to="/courses" className="text-[11px] font-extrabold text-orange-300 hover:underline">
+                    Find {phase.title} resource →
+                  </Link>
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 function TaskSection({ eyebrow, title, tasks, busyTask, onStatus }) { const completed = tasks.filter((task) => task.status === "completed" || task.completed).length; const percent = tasks.length ? Math.round((completed / tasks.length) * 100) : 0; return <section className="rounded-lg border border-white/10 bg-[#172033] p-6"><div className="flex items-end justify-between gap-3"><div><p className="text-xs font-extrabold uppercase tracking-widest text-orange-400">{eyebrow}</p><h2 className="mt-2 text-xl font-black">{title}</h2></div><p className="text-xs font-extrabold text-slate-400">{completed} / {tasks.length} · {percent}%</p></div><div className="mt-5 divide-y divide-white/10">{tasks.length ? tasks.map((task) => <article key={task.id} className="py-4"><div className="flex flex-wrap items-start justify-between gap-3"><div className="max-w-md"><p className={`text-sm font-bold ${task.status === "completed" ? "text-slate-500 line-through" : "text-slate-100"}`}>{task.title}</p>{task.description && <p className="mt-1 text-xs leading-5 text-slate-400">{task.description}</p>}<details className="mt-2"><summary className="cursor-pointer text-[11px] font-extrabold text-orange-300">Why this? · Evidence</summary><ul className="mt-2 space-y-1 text-xs text-slate-400">{task.reasons?.map((reason) => <li key={reason}>• {reason}</li>)}</ul><p className="mt-2 text-xs text-slate-500">Evidence: {task.evidence?.some((item) => item.supported) ? "Target-job evidence available" : "No strong current student evidence"}</p></details></div><select aria-label={`Status for ${task.title}`} value={task.status || (task.completed ? "completed" : "not_started")} disabled={busyTask === task.id} onChange={(event) => onStatus(task, event.target.value)} className="rounded-md border border-white/15 bg-[#111827] px-2 py-2 text-xs font-bold text-white"><option value="not_started">Not started</option><option value="in_progress">In progress</option><option value="completed">Completed</option><option value="skipped">Skipped</option></select></div></article>) : <p className="py-5 text-sm text-slate-400">No tasks are scheduled here yet.</p>}</div></section>; }
 
