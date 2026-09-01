@@ -106,6 +106,7 @@ function BookingDialog({ alumni, path, onClose }) {
         alumniId: alumni._id,
         topicCategory: form.topicCategory,
         topicDetails: form.topicDetails,
+        phone: form.phone,
         requestedDateTime: `${form.date}T${form.time}`,
         durationMinutes: Number(form.durationMinutes),
         path,

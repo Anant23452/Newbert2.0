@@ -10,7 +10,8 @@ exports.createRequest = async (req, res, next) => { try {
   if (!topicCategory || (alumni.availableTopics.length && !alumni.availableTopics.includes(topicCategory))) return res.status(400).json({ message: "Choose an available mentorship topic." });
   const requestedDateTime = new Date(req.body.requestedDateTime); if (Number.isNaN(requestedDateTime.getTime())) return res.status(400).json({ message: "Choose a valid preferred date and time." });
   const durationMinutes = Number(req.body.durationMinutes); if (![30, 60].includes(durationMinutes)) return res.status(400).json({ message: "Choose a 30 or 60 minute session." });
-  const booking = await MentorshipBooking.create({ studentId: req.auth.id, alumniId: alumni._id, topicCategory, topicDetails: req.body.topicDetails, requestedDateTime, durationMinutes });
+  const phone = req.body.phone ? String(req.body.phone).trim() : null;
+  const booking = await MentorshipBooking.create({ studentId: req.auth.id, alumniId: alumni._id, topicCategory, topicDetails: req.body.topicDetails, phone, requestedDateTime, durationMinutes });
   return res.status(201).json({ message: "Mentorship request sent.", booking: serializeBooking(booking) });
 } catch (error) { return next(error); } };
 exports.listMyRequests = async (req, res, next) => { try { const bookings = await MentorshipBooking.find({ studentId: req.auth.id }).populate("alumniId", "name avatarUrl college").sort({ createdAt: -1 }); return res.json({ requests: bookings.map(serializeBooking) }); } catch (error) { return next(error); } };

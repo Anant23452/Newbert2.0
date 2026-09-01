@@ -15,7 +15,9 @@
     "migrate:college-references": "node scripts/migrateCollegeReferences.js",
     "migrate:profile-colleges": "node scripts/migrateProfileColleges.js",
     "seed:dummy-alumni": "node scripts/seedDummyAlumni.js",
-    "clear:dummy-alumni": "node scripts/clearDummyAlumni.js"
+    "clear:dummy-alumni": "node scripts/clearDummyAlumni.js",
+    "seed:demo-alumni": "node scripts/seedDummyAlumni.js",
+    "remove:demo-alumni": "node scripts/clearDummyAlumni.js"
   },
   "dependencies": {
     "@google/genai": "^2.18.0",
