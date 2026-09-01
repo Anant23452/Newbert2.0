@@ -26,6 +26,7 @@ import { addAlumniPathToRoadmap } from "../Services/alumniService";
 import API from "../Services/api";
 import MomentumSection from "./MomentumSection";
 import FeaturedProjects from "./FeaturedProjects";
+import SkillsNewbertUnderstands from "./SkillsNewbertUnderstands";
 
 const reveal = {
   hidden: { opacity: 0, y: 8 },
@@ -214,8 +215,8 @@ function CareerDashboardView({
         </section>
 
         <JourneyTimeline profile={profile} />
+        <SkillsNewbertUnderstands profile={profile} onProfileUpdated={() => { window.location.reload(); }} onEdit={onEdit} />
         <FeaturedProjects profile={profile} onEdit={onEdit} onProfileUpdated={() => { window.location.reload(); }} />
-        <SkillsAndProjects profile={profile} privacy={privacy} privacyState={privacyState} onPrivacyChange={onPrivacyChange} onEdit={onEdit} />
       </div>
     </main>
   );

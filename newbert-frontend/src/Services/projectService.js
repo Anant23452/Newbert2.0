@@ -25,6 +25,21 @@ export async function refreshProjectAnalysis(projectId) {
   return data;
 }
 
+export async function confirmProjectTechnologies(projectId, technologies) {
+  const { data } = await API.post(`/projects/${projectId}/confirm-technologies`, { technologies });
+  return data;
+}
+
+export async function getEffectiveSkills() {
+  const { data } = await API.get("/profiles/skills/effective");
+  return data;
+}
+
+export async function getSkillEvidence(skill) {
+  const { data } = await API.get(`/profiles/skills/${encodeURIComponent(skill)}/evidence`);
+  return data;
+}
+
 export async function deleteProject(projectId) {
   const { data } = await API.delete(`/projects/${projectId}`);
   return data;

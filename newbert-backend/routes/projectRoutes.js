@@ -6,6 +6,7 @@ const {
   addGithubProject,
   toggleFeaturedProject,
   refreshProjectAnalysis,
+  confirmProjectTechnologies,
   deleteProject,
 } = require("../Controllers/projectController");
 
@@ -17,6 +18,7 @@ router.post("/github/analyze", analyzeGithubRepository);
 router.post("/github/add", addGithubProject);
 router.patch("/:id/featured", toggleFeaturedProject);
 router.post("/:id/refresh", refreshProjectAnalysis);
+router.post("/:id/confirm-technologies", confirmProjectTechnologies);
 router.delete("/:id", deleteProject);
 
 module.exports = router;

@@ -79,11 +79,19 @@ function extractStudentGaps(plan = null, profile = {}) {
  */
 function calculateCourseFit(course, profile = {}, plan = null, reviews = []) {
   const studentGaps = extractStudentGaps(plan, profile);
+  
+  // Extract student known / verified skills from profile, project details, and GitHub stats
+  const projectTechs = (profile.projectDetails || profile.projectsDetail || []).flatMap((p) => [
+    ...(p.technologies || []),
+    ...(p.confirmedTechnologies || []),
+    ...(p.detectedTechnologies || []).map((t) => t.name || t.canonical),
+  ]);
+  
   const studentKnownSkills = new Set(
     normalizeSkillList([
       ...(profile.skills || []),
       ...(profile.githubStats?.languages || []),
-      ...(profile.projectDetails?.flatMap((p) => p.technologies || []) || []),
+      ...projectTechs,
     ])
   );
 
@@ -92,6 +100,14 @@ function calculateCourseFit(course, profile = {}, plan = null, reviews = []) {
     ...(course.topicsCovered || []),
   ]);
   const courseSkillsSet = new Set(courseSkills);
+
+  // Check if course skills are already strongly evidenced in projects
+  const verifiedProjectSkills = new Set(
+    (profile.projectDetails || profile.projectsDetail || [])
+      .flatMap((p) => (p.detectedTechnologies || []).filter((t) => t.level === "VERIFIED_PROJECT_USAGE" || t.level === "STUDENT_CONFIRMED").map((t) => t.canonical || normalizeSkill(t.name)))
+  );
+
+  const allCourseSkillsAlreadyEvidenced = courseSkills.length > 0 && courseSkills.every((s) => verifiedProjectSkills.has(s) || studentKnownSkills.has(s));
 
   // 1. GAP COVERAGE SCORE (45%)
   let totalGapWeight = 0;
@@ -125,6 +141,11 @@ function calculateCourseFit(course, profile = {}, plan = null, reviews = []) {
     // If student has no recorded gaps, score by overlap with unlearned skills
     const unlearnedCount = courseSkills.filter((s) => !studentKnownSkills.has(s)).length;
     gapScore = courseSkills.length > 0 ? Math.round((unlearnedCount / courseSkills.length) * 80) : 50;
+  }
+
+  // If all skills in this course are already evidenced in projects and there is no gap in them, reduce gapScore substantially
+  if (allCourseSkillsAlreadyEvidenced && coveredGaps.length === 0) {
+    gapScore = Math.min(gapScore, 20);
   }
 
   // 2. TARGET RELEVANCE SCORE (25%)
@@ -227,7 +248,9 @@ function calculateCourseFit(course, profile = {}, plan = null, reviews = []) {
   if (course.priceType === "free") {
     reasons.push("✓ High-quality free learning resource");
   }
-  if (knowledgeRatio >= 0.75 && course.level === "beginner") {
+  if (allCourseSkillsAlreadyEvidenced && coveredGaps.length === 0) {
+    reasons.push("○ Already evidenced through your projects. No beginner course needed.");
+  } else if (knowledgeRatio >= 0.75 && course.level === "beginner") {
     reasons.push("○ Foundational content (good for quick revision)");
   }
 

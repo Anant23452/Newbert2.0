@@ -1,4 +1,4 @@
-const { normalizeSkill, skillLabel } = require("./skillNormalizationService");
+const { normalizeSkill, skillLabel, isCareerSkill } = require("./skillNormalizationService");
 const { SKILL_SIGNALS } = require("../config/skillSignals");
 
 const SCAN_LIMITS = Object.freeze({
@@ -211,26 +211,32 @@ async function analyzeRepository(repoFullName, defaultBranch = "main") {
 
   // Check Tailwind
   if (allNpmDeps.has("tailwindcss") || filePaths.some((p) => /tailwind\.config/i.test(p)) || combinedContent.includes("@tailwind")) {
-    const hasClassUsage = combinedContent.includes("className=") || combinedContent.includes("class=");
+    const hasClassUsage = /className=["'][^"']*\b(flex|grid|p-\d|px-\d|py-\d|bg-|text-|rounded|items-|justify-|border-|shadow)\b/i.test(combinedContent) ||
+      /@tailwind\s+(?:base|components|utilities)/i.test(combinedContent) ||
+      (combinedContent.includes("className=") && filePaths.some((p) => /\.(?:jsx|tsx)$/i.test(p)));
+    
     verifiedUsages.set("tailwind", {
       name: "Tailwind CSS",
       canonical: "tailwind",
       level: hasClassUsage ? "VERIFIED_PROJECT_USAGE" : "DETECTED",
       evidenceLabel: hasClassUsage ? "Strong project evidence" : "Detected in manifest",
-      reason: hasClassUsage ? "Tailwind dependency + class implementations verified in components" : "Tailwind configuration found in repository",
-      confidence: hasClassUsage ? 0.85 : 0.6,
+      reason: hasClassUsage
+        ? "Tailwind CSS dependency + utility class implementations verified in components"
+        : "Tailwind configuration found in repository, but strong class usage evidence not yet found in inspected files",
+      confidence: hasClassUsage ? 0.88 : 0.55,
     });
   }
 
   // Check Vite / Next.js configs
   if (allNpmDeps.has("next") || filePaths.some((p) => /next\.config/i.test(p))) {
+    const hasNextUsage = filePaths.some((p) => /(?:^|\/)(?:app|pages)\//i.test(p)) || /from\s+["']next[\/"]/i.test(combinedContent);
     verifiedUsages.set("nextjs", {
       name: "Next.js",
       canonical: "nextjs",
-      level: "VERIFIED_PROJECT_USAGE",
-      evidenceLabel: "Strong project evidence",
-      reason: "Next.js framework dependencies & configuration verified",
-      confidence: 0.88,
+      level: hasNextUsage ? "VERIFIED_PROJECT_USAGE" : "DETECTED",
+      evidenceLabel: hasNextUsage ? "Strong project evidence" : "Detected in manifest",
+      reason: hasNextUsage ? "Next.js framework dependency & project structure verified" : "Next.js dependency installed in package.json",
+      confidence: hasNextUsage ? 0.9 : 0.6,
     });
   }
 
@@ -345,7 +351,7 @@ async function analyzeRepository(repoFullName, defaultBranch = "main") {
     const hasExt = (signal.extensions || []).some((ext) => filePaths.some((file) => file.toLowerCase().endsWith(ext)));
     const hasPattern = (signal.patterns || []).some((pattern) => combinedContent.includes(pattern));
 
-    if (hasDep && hasPattern) {
+    if (hasDep && (hasPattern || hasExt)) {
       verifiedUsages.set(key, {
         name: signal.label,
         canonical: key,
@@ -361,8 +367,8 @@ async function analyzeRepository(repoFullName, defaultBranch = "main") {
           canonical: key,
           level: "DETECTED",
           evidenceLabel: "Detected in manifest",
-          reason: `${signal.label} found in dependency configuration`,
-          confidence: 0.65,
+          reason: `${signal.label} found in dependency configuration, but actual usage not yet verified`,
+          confidence: 0.55,
         });
       }
     } else if (hasPattern && (hasExt || filePaths.length >= 3)) {
@@ -379,10 +385,15 @@ async function analyzeRepository(repoFullName, defaultBranch = "main") {
     }
   }
 
-  // Merge detected technologies: verified items take precedence
-  const detectedList = [...verifiedUsages.values()];
+  // Merge detected technologies: verified items take precedence, filter non-career utility packages
+  const detectedList = [];
+  for (const item of verifiedUsages.values()) {
+    if (isCareerSkill(item.name) && isCareerSkill(item.canonical)) {
+      detectedList.push(item);
+    }
+  }
   for (const [key, item] of detectedSignals) {
-    if (!verifiedUsages.has(key)) {
+    if (!verifiedUsages.has(key) && isCareerSkill(item.name) && isCareerSkill(item.canonical)) {
       detectedList.push(item);
     }
   }

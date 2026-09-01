@@ -296,6 +296,66 @@ exports.refreshProjectAnalysis = async (req, res, next) => {
 };
 
 /**
+ * POST /api/projects/:id/confirm-technologies
+ * Student explicitly confirms usage of detected technologies in a project
+ */
+exports.confirmProjectTechnologies = async (req, res, next) => {
+  try {
+    const profile = await getAuthenticatedProfile(req.auth.id);
+    const projectId = String(req.params.id);
+    const existingList = profile.projectDetails || [];
+    const project = existingList.find((p) => String(p.id) === projectId || String(p._id) === projectId);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found." });
+    }
+
+    const confirmedNames = Array.isArray(req.body.technologies) ? req.body.technologies.map(String) : [];
+    const updatedDetected = (project.detectedTechnologies || []).map((tech) => {
+      if (confirmedNames.includes(tech.name) || confirmedNames.includes(tech.canonical)) {
+        return {
+          ...tech,
+          level: tech.level === "VERIFIED_PROJECT_USAGE" ? "VERIFIED_PROJECT_USAGE" : "STUDENT_CONFIRMED",
+          evidenceLabel: tech.level === "VERIFIED_PROJECT_USAGE" ? "Strong project evidence" : "Detected & student-confirmed",
+          reason: tech.level === "VERIFIED_PROJECT_USAGE" ? tech.reason : `${tech.name} configuration detected in repository and confirmed by student`,
+          confidence: Math.max(tech.confidence || 0.5, 0.75),
+        };
+      }
+      return tech;
+    });
+
+    const combinedConfirmed = [...new Set([...(project.confirmedTechnologies || project.technologies || []), ...confirmedNames])];
+
+    const updatedProject = normalizeProject({
+      ...project,
+      detectedTechnologies: updatedDetected,
+      confirmedTechnologies: combinedConfirmed,
+      technologies: combinedConfirmed,
+    });
+
+    const scored = scoreProject(updatedProject);
+    profile.projectDetails = existingList.map((p) => (String(p.id) === projectId || String(p._id) === projectId ? scored : p));
+
+    const skillEvidence = buildSkillEvidence(profile);
+    profile.evidenceCache = {
+      ...(profile.evidenceCache || {}),
+      readiness: { updatedAt: new Date(), data: skillEvidence },
+    };
+
+    await profile.save();
+    await Plan.findOneAndUpdate({ userId: req.auth.id }, { $set: { needsRecalculation: true } });
+
+    return res.json({
+      message: "Technologies confirmed successfully.",
+      project: scored,
+      projects: profile.projectDetails,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
  * DELETE /api/projects/:id
  * Removes a project from profile
  */

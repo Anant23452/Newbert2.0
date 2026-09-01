@@ -21,6 +21,7 @@ import {
   deleteProject,
   refreshProjectAnalysis,
   toggleFeaturedProject,
+  confirmProjectTechnologies,
 } from "../Services/projectService";
 
 const reveal = {
@@ -473,17 +474,21 @@ function ProjectDetailsDrawer({ project, onClose }) {
               <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Verified Evidence Signals</h3>
               <div className="mt-2 space-y-2">
                 {detected.length ? (
-                  detected.map((item) => (
-                    <div key={item.name} className="rounded-lg border border-white/5 bg-[#0d1727] p-3 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="font-black text-white">{item.name}</span>
-                        <span className={`text-[10px] font-extrabold ${item.level === "VERIFIED_PROJECT_USAGE" ? "text-emerald-300" : "text-orange-300"}`}>
-                          {item.level === "VERIFIED_PROJECT_USAGE" ? "✓ Verified code usage" : "? Detected"}
-                        </span>
+                  detected.map((item) => {
+                    const isVerified = item.level === "VERIFIED_PROJECT_USAGE";
+                    const isConfirmed = item.level === "STUDENT_CONFIRMED";
+                    return (
+                      <div key={item.name} className="rounded-lg border border-white/5 bg-[#0d1727] p-3 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-black text-white">{item.name}</span>
+                          <span className={`text-[10px] font-extrabold ${isVerified ? "text-emerald-300" : isConfirmed ? "text-cyan-300" : "text-orange-300"}`}>
+                            {isVerified ? "✓ Verified code usage" : isConfirmed ? "? Student confirmed" : "? Detected in config"}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11px] leading-4 text-slate-400">{item.reason}</p>
                       </div>
-                      <p className="mt-1 text-[11px] leading-4 text-slate-400">{item.reason}</p>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="text-xs text-slate-400">Manual project submission.</p>
                 )}

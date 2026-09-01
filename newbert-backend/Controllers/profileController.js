@@ -9,7 +9,8 @@ const { isProfileComplete, profileStrength } = require("../services/profileCompl
 const { findCollegeByIdentifier, resolveProfileCollege, sameCollegeQuery } = require("../services/collegeService");
 const { DEFAULT_SECTIONS, normalizePrivacy, serializePublicProfile } = require("../services/publicProfileService");
 const { getPublicStreakSnapshot } = require("../services/leaderboardService");
-const { buildSkillEvidence } = require("../services/skillEvidenceService");
+const { buildSkillEvidence, buildEffectiveSkillInventory } = require("../services/skillEvidenceService");
+const { normalizeSkill } = require("../services/skillNormalizationService");
 
 const INVALID_LEETCODE_USERNAMES = new Set(["u", "profile"]);
 const kolkataDay = () => { const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date()); const value = Object.fromEntries(parts.map((part) => [part.type, part.value])); return `${value.year}-${value.month}-${value.day}`; };
@@ -82,6 +83,7 @@ function response(profile, user) {
   const leetcodeStats = normalizeLeetcodeStats(profile.leetcodeStats);
   const activityCalendar = sanitizedActivity(profile, leetcodeStats);
   const streaks = calculateStreaks(activityCalendar);
+  const effectiveInventory = buildEffectiveSkillInventory(profile, { targetRole: profile.targetRole });
   return {
     userId: String(user._id),
     name: user.name,
@@ -107,6 +109,9 @@ function response(profile, user) {
     projectDetails: profile.projectDetails || [],
     cgpa: profile.cgpa ?? null,
     skills: profile.skills,
+    effectiveSkills: effectiveInventory.effectiveSkills,
+    effectiveCategories: effectiveInventory.categories,
+    effectiveInventory,
     githubStats: profile.githubStats || null,
     leetcodeStats,
     activityCalendar,
@@ -324,15 +329,26 @@ exports.syncPublicProfiles = async (req, res, next) => {
   } catch (error) { return next(error); }
 };
 
-exports.getSeniorMatch = async (req, res, next) => {
+exports.getEffectiveSkills = async (req, res, next) => {
   try {
     const profile = await Profile.findOne({ userId: req.auth.id }).lean();
-    if (!profile?.college) return res.json({ match: null, reason: "Add your college to find verified seniors from your campus." });
-    const alumni = await Alumni.find({ ...sameCollegeQuery(profile), verified: true, outcomeType: "placement" }).lean();
-    if (!alumni.length) return res.json({ match: null, reason: "No verified senior match available yet. We're adding more alumni from your college." });
-    const student = { ...profile, leetcodeStats: normalizeLeetcodeStats(profile.leetcodeStats) };
-    const match = findBestSeniorMatch(student, alumni);
-    return res.json({ match, reason: match ? null : "Complete your skills or sync a coding profile to calculate a senior match." });
+    if (!profile) return res.status(404).json({ message: "Profile not found." });
+    const inventory = buildEffectiveSkillInventory(profile, { targetRole: profile.targetRole });
+    return res.json(inventory);
+  } catch (error) { return next(error); }
+};
+
+exports.getSkillEvidenceDetail = async (req, res, next) => {
+  try {
+    const profile = await Profile.findOne({ userId: req.auth.id }).lean();
+    if (!profile) return res.status(404).json({ message: "Profile not found." });
+    const inventory = buildEffectiveSkillInventory(profile, { targetRole: profile.targetRole });
+    const targetCanonical = normalizeSkill(req.params.skill);
+    const detail = inventory.effectiveSkills.find(
+      (s) => s.canonical === targetCanonical || s.skill.toLowerCase() === String(req.params.skill).toLowerCase()
+    );
+    if (!detail) return res.status(404).json({ message: `No evidence found for skill "${req.params.skill}".` });
+    return res.json(detail);
   } catch (error) { return next(error); }
 };
 

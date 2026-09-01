@@ -293,3 +293,151 @@ test("No Course Required intelligence: High readiness or minor targeted problem 
   assert.equal(result.noCourseAdvisory.recommended, false);
   assert.ok(result.noCourseAdvisory.message.includes("targeted problems"));
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. EFFECTIVE SKILL INVENTORY & PROVENANCE TESTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+const { buildEffectiveSkillInventory } = require("../services/skillEvidenceService");
+const { getSkillTargetRelevance, isCareerSkill } = require("../services/skillNormalizationService");
+
+test("Effective Skill Inventory: Manual skill only is classified as SELF_REPORTED and unverified proficiency", () => {
+  const profile = {
+    skills: [{ name: "Java", score: 50, source: "manual" }],
+    projectDetails: [],
+  };
+
+  const inventory = buildEffectiveSkillInventory(profile, { targetRole: "Software Engineer" });
+  const java = inventory.effectiveSkills.find((s) => s.canonical === "java");
+
+  assert.ok(java);
+  assert.equal(java.evidenceStrength, "SELF_REPORTED");
+  assert.equal(java.proficiency, "UNVERIFIED");
+  assert.equal(java.hasManualClaim, true);
+  assert.equal(java.hasProjectEvidence, false);
+});
+
+test("Effective Skill Inventory: Single GitHub verified project produces VERIFIED_PROJECT_USAGE", () => {
+  const project = scoreProject({
+    name: "Newbert2.0",
+    technologies: ["React", "Node.js"],
+    detectedTechnologies: [
+      { name: "React", canonical: "react", level: "VERIFIED_PROJECT_USAGE", reason: "React component usage verified" },
+      { name: "Node.js", canonical: "nodejs", level: "VERIFIED_PROJECT_USAGE", reason: "Node server routes verified" },
+    ],
+    evidence: { hasRepository: true, hasFrontend: true, hasBackend: true },
+    source: "github",
+  });
+
+  const profile = {
+    skills: [],
+    projectDetails: [project],
+  };
+
+  const inventory = buildEffectiveSkillInventory(profile, { targetRole: "Frontend Developer" });
+  const react = inventory.effectiveSkills.find((s) => s.canonical === "react");
+
+  assert.ok(react);
+  assert.equal(react.evidenceStrength, "VERIFIED_PROJECT_USAGE");
+  assert.equal(react.verifiedProjectCount, 1);
+  assert.equal(react.targetRelevance, "HIGH");
+  assert.equal(react.sources[0].type, "verified_project_usage");
+});
+
+test("Effective Skill Inventory: Same skill across 2 projects strengthens to STRONG_REPEATED_PROJECT_USAGE", () => {
+  const proj1 = scoreProject({
+    name: "Newbert2.0",
+    technologies: ["React", "Node.js", "Mongoose", "Vite"],
+    detectedTechnologies: [
+      { name: "React", canonical: "react", level: "VERIFIED_PROJECT_USAGE" },
+      { name: "Node.js", canonical: "nodejs", level: "VERIFIED_PROJECT_USAGE" },
+      { name: "Mongoose", canonical: "mongoose", level: "VERIFIED_PROJECT_USAGE" },
+      { name: "Vite", canonical: "vite", level: "VERIFIED_PROJECT_USAGE" },
+      { name: "Tailwind CSS", canonical: "tailwind", level: "DETECTED" },
+    ],
+    evidence: { hasRepository: true, hasFrontend: true, hasBackend: true },
+    source: "github",
+  });
+
+  const proj2 = scoreProject({
+    name: "Devhub",
+    technologies: ["React", "TypeScript", "Next.js", "JavaScript"],
+    detectedTechnologies: [
+      { name: "React", canonical: "react", level: "VERIFIED_PROJECT_USAGE" },
+      { name: "TypeScript", canonical: "typescript", level: "VERIFIED_PROJECT_USAGE" },
+      { name: "Next.js", canonical: "nextjs", level: "VERIFIED_PROJECT_USAGE" },
+      { name: "JavaScript", canonical: "javascript", level: "VERIFIED_PROJECT_USAGE" },
+      { name: "Tailwind CSS", canonical: "tailwind", level: "DETECTED" },
+    ],
+    evidence: { hasRepository: true, hasFrontend: true },
+    source: "github",
+  });
+
+  const profile = {
+    skills: [],
+    projectDetails: [proj1, proj2],
+  };
+
+  const inventory = buildEffectiveSkillInventory(profile, { targetRole: "Frontend Developer" });
+  const react = inventory.effectiveSkills.find((s) => s.canonical === "react");
+  const tailwind = inventory.effectiveSkills.find((s) => s.canonical === "tailwind");
+
+  assert.ok(react);
+  assert.equal(react.evidenceStrength, "STRONG_REPEATED_PROJECT_USAGE");
+  assert.equal(react.verifiedProjectCount, 2);
+  assert.equal(react.projectCount, 2);
+
+  // Tailwind was only detected in config
+  assert.ok(tailwind);
+  assert.equal(tailwind.evidenceStrength, "DETECTED");
+});
+
+test("Effective Skill Inventory: Manual claim + GitHub verification merges into single canonical skill with provenance", () => {
+  const proj = scoreProject({
+    name: "portfolio-app",
+    technologies: ["React"],
+    detectedTechnologies: [
+      { name: "React", canonical: "react", level: "VERIFIED_PROJECT_USAGE" },
+    ],
+    evidence: { hasRepository: true },
+    source: "github",
+  });
+
+  const profile = {
+    skills: [{ name: "react.js", score: 20, source: "manual" }],
+    projectDetails: [proj],
+  };
+
+  const inventory = buildEffectiveSkillInventory(profile, { targetRole: "Frontend Developer" });
+  const reactMatches = inventory.effectiveSkills.filter((s) => s.canonical === "react");
+
+  // Must not have duplicate "React" and "react.js"
+  assert.equal(reactMatches.length, 1);
+  assert.equal(reactMatches[0].hasManualClaim, true);
+  assert.equal(reactMatches[0].hasProjectEvidence, true);
+  assert.equal(reactMatches[0].evidenceStrength, "VERIFIED_PROJECT_USAGE");
+});
+
+test("Utility packages are NOT promoted to career skills", () => {
+  assert.equal(isCareerSkill("axios"), false);
+  assert.equal(isCareerSkill("clsx"), false);
+  assert.equal(isCareerSkill("lucide-react"), false);
+  assert.equal(isCareerSkill("date-fns"), false);
+  assert.equal(isCareerSkill("react-toastify"), false);
+
+  assert.equal(isCareerSkill("React"), true);
+  assert.equal(isCareerSkill("Node.js"), true);
+  assert.equal(isCareerSkill("TypeScript"), true);
+  assert.equal(isCareerSkill("PostgreSQL"), true);
+  assert.equal(isCareerSkill("Docker"), true);
+});
+
+test("Target relevance differs by target role", () => {
+  assert.equal(getSkillTargetRelevance("react", "Frontend Developer"), "HIGH");
+  assert.equal(getSkillTargetRelevance("react", "Backend Developer"), "MEDIUM");
+
+  assert.equal(getSkillTargetRelevance("nodejs", "Backend Developer"), "HIGH");
+  assert.equal(getSkillTargetRelevance("nodejs", "Frontend Developer"), "MEDIUM");
+
+  assert.equal(getSkillTargetRelevance("python", "Data Scientist"), "HIGH");
+});

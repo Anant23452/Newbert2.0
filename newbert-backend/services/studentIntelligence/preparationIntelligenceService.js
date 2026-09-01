@@ -77,8 +77,9 @@ function categoryEvidence(profile = {}) {
   for (const skill of evidence.skills) {
     const keys = new Set([categoryFor({ skill: skill.normalizedSkill, category: null })]);
     if (/javascript|typescript|python|java|cplusplus|programming/.test(skill.normalizedSkill)) keys.add("programming");
-    if (/javascript|typescript|react|html|css/.test(skill.normalizedSkill)) keys.add("frontend");
-    if (/node|express|spring|django|flask|fastapi|restapi/.test(skill.normalizedSkill)) keys.add("backend");
+    if (/javascript|typescript|react|nextjs|tailwind|html|css/.test(skill.normalizedSkill)) keys.add("frontend");
+    if (/node|express|mongodb|mongoose|postgresql|mysql|redis|prisma|spring|django|flask|fastapi|restapi/.test(skill.normalizedSkill)) keys.add("backend");
+    if (/mongodb|mongoose|postgresql|mysql|redis|prisma|sql|dbms/.test(skill.normalizedSkill)) keys.add("dbms");
 
     for (const key of keys) {
       const current = map.get(key);
