@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const Alumni = require("../Models/Alumni");
 const College = require("../Models/College");
 const Profile = require("../Models/Profile");
+const collegeSeedData = require("../data/collegeSeedData");
 const rajkiyaColleges = require("../data/upRajkiyaEngineeringColleges");
 const {
   normalizeCollegeName,
@@ -19,24 +20,45 @@ test("normalization removes punctuation and collapses spacing without losing the
   );
 });
 
-test("maintained Rajkiya seed contains seven unique active colleges", () => {
-  assert.equal(rajkiyaColleges.length, 7);
-  assert.equal(new Set(rajkiyaColleges.map((college) => college.collegeId)).size, 7);
+test("maintained Rajkiya seed contains eight unique active colleges including Mirzapur", () => {
+  assert.equal(rajkiyaColleges.length, 8);
+  assert.equal(new Set(rajkiyaColleges.map((college) => college.collegeId)).size, 8);
   assert.ok(rajkiyaColleges.every((college) => college.isActive && college.stateCode === "UP"));
   assert.ok(rajkiyaColleges.some((college) => college.aliases.includes("REC AmbedkarNagar")));
+  assert.ok(rajkiyaColleges.some((college) => college.collegeId === "rec-mirzapur"));
 });
 
-test("search ranking prefers exact alias and useful contains matches", async () => {
+test("search handles prefixes, abbreviations, cities, and punctuation-heavy aliases", async () => {
   const originalFind = College.find;
   College.find = () => ({
-    limit: () => ({ lean: async () => rajkiyaColleges }),
+    limit: () => ({ lean: async () => collegeSeedData }),
   });
 
   try {
-    assert.equal((await searchColleges("REC Banda"))[0].collegeId, "rec-banda");
-    assert.equal((await searchColleges("son"))[0].collegeId, "rec-sonbhadra");
-    assert.equal((await searchColleges("REC Ambedkar Nagar"))[0].collegeId, "rec-ambedkar-nagar");
-    assert.equal((await searchColleges("raj"))[0].name, "Rajkiya Engineering College, Ambedkar Nagar");
+    const cases = [
+      ["r", "rec-ambedkar-nagar"],
+      ["ra", "rec-ambedkar-nagar"],
+      ["raj", "rec-ambedkar-nagar"],
+      ["rajkiya", "rec-ambedkar-nagar"],
+      ["rajkiya engineering", "rec-ambedkar-nagar"],
+      ["rec", "rec-ambedkar-nagar"],
+      ["REC", "rec-ambedkar-nagar"],
+      ["rec ambedkar", "rec-ambedkar-nagar"],
+      ["ambedkar", "rec-ambedkar-nagar"],
+      ["ambedkar nagar", "rec-ambedkar-nagar"],
+      ["Rajkiya Engineering College, (REC), Ambedkar Nagar", "rec-ambedkar-nagar"],
+      ["banda", "rec-banda"],
+      ["rec banda", "rec-banda"],
+      ["biet", "biet-jhansi"],
+      ["knit", "knit-sultanpur"],
+      ["iet lucknow", "iet-lucknow"],
+    ];
+    for (const [query, expectedId] of cases) {
+      assert.equal((await searchColleges(query))[0]?.collegeId, expectedId, query);
+    }
+    assert.deepEqual(await searchColleges(""), []);
+    assert.deepEqual(await searchColleges("   "), []);
+    assert.deepEqual(await searchColleges("definitely unknown college"), []);
   } finally {
     College.find = originalFind;
   }

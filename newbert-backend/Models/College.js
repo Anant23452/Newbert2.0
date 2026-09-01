@@ -3,6 +3,7 @@ const collegeSchema = new mongoose.Schema({
   collegeId: { type: String, required: true, unique: true, index: true, lowercase: true, trim: true },
   name: { type: String, required: true, trim: true, maxlength: 180 },
   shortName: { type: String, trim: true, maxlength: 100, index: true },
+  abbreviation: { type: String, trim: true, uppercase: true, maxlength: 30, index: true },
   normalizedName: { type: String, required: true, trim: true, maxlength: 180, index: true },
   city: { type: String, trim: true, maxlength: 100 }, district: { type: String, trim: true, maxlength: 100 },
   state: { type: String, trim: true, maxlength: 100, index: true }, stateCode: { type: String, trim: true, uppercase: true, maxlength: 8 },

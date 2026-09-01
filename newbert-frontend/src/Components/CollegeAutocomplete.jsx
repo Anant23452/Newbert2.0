@@ -188,7 +188,7 @@ export default function CollegeAutocomplete({
                 >
                   <span className="block text-sm font-bold text-slate-900">{college.name}</span>
                   <span className="mt-0.5 block text-xs text-slate-500">
-                    {[college.city, college.state, college.university].filter(Boolean).join(" · ")}
+                    {[college.city && college.state ? `${college.city}, ${college.state}` : college.city || college.state, college.abbreviation || college.shortName].filter(Boolean).join(" · ")}
                   </span>
                 </button>
               ))
