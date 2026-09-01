@@ -8,7 +8,15 @@ const { buildRoadmapStructure } = require("./studentIntelligence/roadmapBuilderS
 const { nextBestAction } = require("./studentIntelligence/nextBestActionService");
 const { buildBenchmark, findClosestSeniors } = require("./alumniMatchingService");
 const { buildTargetBenchmark } = require("./targetBenchmarkService");
-const { buildCurrentPosition, buildMilestoneStrategy, buildPreparationGaps, overallReadiness } = require("./studentIntelligence/preparationIntelligenceService");
+const {
+  buildCurrentPosition,
+  buildMilestoneStrategy,
+  buildPreparationGaps,
+  deriveAlreadyCovered,
+  deriveNextBestMove,
+  deriveConfidenceActions,
+  overallReadiness,
+} = require("./studentIntelligence/preparationIntelligenceService");
 
 function cleanTarget(input = {}, profile = {}) {
   const type = normalizeTargetType(input.type, input.role || profile.targetRole);
@@ -247,7 +255,9 @@ function buildPlan(profile, alumni, targetInput, existingPlan = null, jobContext
   if (existingPlan && meaningfulChange) roadmapHistory.push({ version: existingPlan.version || 1, analysisVersion: existingPlan.analysisVersion || "legacy", targetSnapshot: existingPlan.targetSnapshot || existingPlan.target, completedTaskIds: (existingPlan.tasks || []).filter((task) => task.completed || task.status === "completed").map((task) => task.id), skippedTaskIds: (existingPlan.tasks || []).filter((task) => task.status === "skipped").map((task) => task.id), retiredAt: new Date() });
   const coverageCategories = Object.fromEntries(Object.entries(ai01.coverage || {}).filter(([key, value]) => key !== "overall" && value.status === "available").map(([key, value]) => [key, value.value]));
   const targetSnapshot = { mode: target.mode, targetType: target.targetType, role: target.role, company: target.company, companyCategory: target.companyCategory, region: target.region, jobs: jobContexts.map(({ job }) => ({ id: String(job._id || job.id), title: job.title, company: job.company })) };
-  const action = nextBestAction(tasks);
+  const alreadyCovered = deriveAlreadyCovered(preparationGaps);
+  const nextBestMove = deriveNextBestMove(preparationGaps, strategy.milestones);
+  const confidenceActions = deriveConfidenceActions(target, currentPosition, snapshot);
   return {
     userId: profile.userId,
     target,
@@ -260,7 +270,8 @@ function buildPlan(profile, alumni, targetInput, existingPlan = null, jobContext
     prioritizedGaps,
     phases,
     tasks,
-    nextBestAction: action,
+    nextBestAction: nextBestAction(tasks),
+    nextBestMove,
     timeline: { ...timeline, startDate: existingPlan?.timeline?.startDate || new Date() },
     progress: { ...calculateProgress(tasks), streak: calculatePlanStreak(tasks) },
     profileSnapshot: snapshot,
@@ -274,6 +285,8 @@ function buildPlan(profile, alumni, targetInput, existingPlan = null, jobContext
     targetBenchmark,
     currentPosition,
     preparationGaps,
+    alreadyCovered,
+    confidenceActions,
     biggestBlockers: preparationGaps.filter((gap) => !["ready", "optional"].includes(gap.gapType)).slice(0, 3),
     milestones: strategy.milestones,
     strategyPhases: strategy.phases,

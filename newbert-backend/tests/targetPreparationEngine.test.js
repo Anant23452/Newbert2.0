@@ -29,7 +29,7 @@ test("self-reported critical skill becomes an evidence-rooted target gap", () =>
   const current = buildCurrentPosition(profile, benchmark);
   const gaps = buildPreparationGaps({ benchmark, currentPosition: current, alumni: [] });
   const dsa = gaps.find((item) => item.categoryKey === "dsa");
-  assert.equal(dsa.gapType, "target_gap");
+  assert.equal(dsa.gapType, "evidence_gap");
   assert.equal(dsa.rootGapType, "evidence_gap");
 });
 

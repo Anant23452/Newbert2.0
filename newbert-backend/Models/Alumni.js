@@ -114,6 +114,8 @@ const alumniSchema = new mongoose.Schema({
   privacy: { type: mongoose.Schema.Types.Mixed, default: () => ({ profile: true, academics: true, preparation: true, courses: true, advice: true, mentorship: true }) },
   isDummyData: { type: Boolean, default: false, index: true },
   dummyKey: { type: String, trim: true, sparse: true },
+  isDemo: { type: Boolean, default: false, index: true },
+  demoKey: { type: String, trim: true, sparse: true, index: true },
   verified: { type: Boolean, default: false },
 }, { timestamps: true });
 

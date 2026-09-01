@@ -99,6 +99,9 @@ function normalizePlanDocument(value) {
   return {
     ...value, tasks, phases, gaps, readiness, profileSnapshot, progress, timeline,
     preparationGaps: Array.isArray(value.preparationGaps) ? value.preparationGaps : [],
+    alreadyCovered: Array.isArray(value.alreadyCovered) ? value.alreadyCovered : [],
+    confidenceActions: Array.isArray(value.confidenceActions) ? value.confidenceActions : [],
+    nextBestMove: value.nextBestMove && typeof value.nextBestMove === "object" ? value.nextBestMove : null,
     biggestBlockers: Array.isArray(value.biggestBlockers) ? value.biggestBlockers : [],
     milestones: Array.isArray(value.milestones) ? value.milestones : [],
     strategyPhases: Array.isArray(value.strategyPhases) ? value.strategyPhases : [],
