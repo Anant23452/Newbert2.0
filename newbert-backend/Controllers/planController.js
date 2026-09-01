@@ -40,8 +40,64 @@ function sameGoal(left, right) {
   return (left.mode || "role") === (right.mode || "role") && left.type === right.type && left.role === right.role && (left.company || "") === (right.company || "") && ids(left) === ids(right) && date(left.deadline) === date(right.deadline) && Number(left.weeklyHours) === Number(right.weeklyHours);
 }
 
+function normalizePlanDocument(value) {
+  // Guarantee every field the frontend destructures actually exists.
+  // Old MongoDB documents may be missing fields added in later schema versions.
+  // These defaults must never overwrite real data — they only fill absent fields.
+
+  // tasks / phases / gaps ­— always arrays
+  const tasks = Array.isArray(value.tasks) ? value.tasks : [];
+  const phases = Array.isArray(value.phases) ? value.phases : [];
+  const gaps = Array.isArray(value.gaps) ? value.gaps : [];
+
+  // readiness.categories — the field that produced the production crash.
+  // Old plans stored readiness as { total: N } without a categories sub-object.
+  const rawReadiness = value.readiness && typeof value.readiness === "object" ? value.readiness : {};
+  const readiness = {
+    ...rawReadiness,
+    total: rawReadiness.total ?? null,
+    categories:
+      rawReadiness.categories &&
+      typeof rawReadiness.categories === "object" &&
+      !Array.isArray(rawReadiness.categories)
+        ? rawReadiness.categories
+        : {},
+  };
+
+  // profileSnapshot — can be null on very old documents
+  const profileSnapshot =
+    value.profileSnapshot && typeof value.profileSnapshot === "object"
+      ? value.profileSnapshot
+      : {};
+
+  // progress — always an object with numeric fields
+  const rawProgress = value.progress && typeof value.progress === "object" ? value.progress : {};
+  const progress = {
+    totalTasks: rawProgress.totalTasks ?? 0,
+    completedTasks: rawProgress.completedTasks ?? 0,
+    skippedTasks: rawProgress.skippedTasks ?? 0,
+    inProgressTasks: rawProgress.inProgressTasks ?? 0,
+    percent: rawProgress.percent ?? 0,
+    streak: rawProgress.streak ?? 0,
+  };
+
+  // timeline — always an object
+  const rawTimeline = value.timeline && typeof value.timeline === "object" ? value.timeline : {};
+  const timeline = {
+    minWeeks: rawTimeline.minWeeks ?? 5,
+    maxWeeks: rawTimeline.maxWeeks ?? 8,
+    estimatedWeeks: rawTimeline.estimatedWeeks ?? 6,
+    startDate: rawTimeline.startDate || value.createdAt || new Date(),
+    disclaimer: rawTimeline.disclaimer ?? "",
+    deadlineConstrained: rawTimeline.deadlineConstrained ?? false,
+  };
+
+  return { ...value, tasks, phases, gaps, readiness, profileSnapshot, progress, timeline };
+}
+
 function serialize(plan, options = {}) {
-  const value = plan.toObject ? plan.toObject() : plan;
+  const raw = plan.toObject ? plan.toObject() : plan;
+  const value = normalizePlanDocument(raw);
   const start = new Date(value.timeline.startDate || value.createdAt || Date.now());
   const currentWeek = Math.max(1, Math.min(value.timeline.estimatedWeeks, Math.floor((Date.now() - start.getTime()) / 604800000) + 1));
   let currentPhase = value.phases.find((phase) => currentWeek >= phase.startWeek && currentWeek <= phase.endWeek) || value.phases.at(-1) || null;
