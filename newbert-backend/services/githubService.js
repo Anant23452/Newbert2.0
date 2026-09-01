@@ -1,4 +1,5 @@
 const { analyzeRepositorySnapshot } = require("./skillEvidenceService");
+const { kolkataDate, getKolkataToday } = require("../utils/dateNormalization");
 
 const SCAN_LIMITS = Object.freeze({ repositories: 5, filesPerRepository: 20, maxFileBytes: 100000 });
 const IGNORE_PATH = /(^|\/)(node_modules|dist|build|vendor|coverage|\.next|generated)(\/|$)|(?:package-lock|yarn\.lock|pnpm-lock)/i;
@@ -23,6 +24,41 @@ async function scanRepository(repo, headers) {
   return { name: repo.name, url: repo.html_url, liveUrl: repo.homepage || null, description: repo.description || null, language: repo.language || null, hasReadme: files.some((file) => /(^|\/)readme/i.test(file)), filesInspected: files.length, ...analyzeRepositorySnapshot({ dependencies, devDependencies, files, content }) };
 }
 
+async function fetchRecentEvents(username, headers) {
+  try {
+    const eventsResponse = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}/events?per_page=100`, { headers });
+    if (!eventsResponse.ok) return [];
+    const events = await eventsResponse.json();
+    if (!Array.isArray(events)) return [];
+
+    const activityByDate = new Map();
+    for (const event of events) {
+      if (!event.created_at) continue;
+      const date = kolkataDate(event.created_at);
+      if (!date) continue;
+
+      let commits = 0;
+      let count = 1;
+      if (event.type === "PushEvent") {
+        commits = event.payload?.commits?.length || event.payload?.size || event.payload?.distinct_size || 1;
+        count = commits;
+      } else if (event.type === "PullRequestEvent" || event.type === "CreateEvent" || event.type === "IssuesEvent") {
+        count = 1;
+        commits = 0;
+      }
+
+      const existing = activityByDate.get(date) || { date, count: 0, commits: 0 };
+      existing.count += count;
+      existing.commits += commits;
+      activityByDate.set(date, existing);
+    }
+
+    return [...activityByDate.values()];
+  } catch {
+    return [];
+  }
+}
+
 async function getGithubActivity(username, years) {
   const headers = { Accept: "application/vnd.github+json", "User-Agent": "Newbert", ...(process.env.GITHUB_TOKEN && { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }) };
   const userResponse = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, { headers });
@@ -41,18 +77,39 @@ async function getGithubActivity(username, years) {
   const scans = await Promise.allSettled(repos.filter((repo) => !repo.fork && !repo.archived).slice(0, SCAN_LIMITS.repositories).map((repo) => scanRepository(repo, headers)));
   const repositories = scans.filter((result) => result.status === "fulfilled").map((result) => result.value);
 
-  let activity = [];
+  let activityMap = new Map();
   let activityError = null;
   let commitActivityAvailable = false;
-  if (!process.env.GITHUB_TOKEN) {
-    activityError = "GitHub activity is unavailable until GITHUB_TOKEN is configured in Render.";
-  } else {
-    const calendarResults = await Promise.allSettled(years.map((year) => fetchContributionYear(user.login, year)));
-    activity = calendarResults.filter((result) => result.status === "fulfilled").flatMap((result) => result.value);
-    commitActivityAvailable = calendarResults.some((result) => result.status === "fulfilled");
-    const failure = calendarResults.find((result) => result.status === "rejected");
-    if (failure) activityError = failure.reason.message;
+
+  // 1. Fetch real-time REST events (normalized to Asia/Kolkata date)
+  const recentEvents = await fetchRecentEvents(user.login, headers);
+  if (recentEvents.length > 0) {
+    commitActivityAvailable = true;
+    for (const ev of recentEvents) {
+      activityMap.set(ev.date, { date: ev.date, count: ev.count, commits: ev.commits });
+    }
   }
+
+  // 2. Fetch GraphQL contribution calendar if token available
+  if (process.env.GITHUB_TOKEN) {
+    const calendarResults = await Promise.allSettled(years.map((year) => fetchContributionYear(user.login, year)));
+    const calendarDays = calendarResults.filter((result) => result.status === "fulfilled").flatMap((result) => result.value);
+    if (calendarDays.length > 0) {
+      commitActivityAvailable = true;
+      for (const day of calendarDays) {
+        const existing = activityMap.get(day.date);
+        const count = Math.max(day.count || 0, existing?.count || 0);
+        const commits = Math.max(day.commits || 0, existing?.commits || 0, count);
+        activityMap.set(day.date, { date: day.date, count: Math.max(count, commits), commits });
+      }
+    }
+    const failure = calendarResults.find((result) => result.status === "rejected");
+    if (failure && !calendarDays.length && !recentEvents.length) activityError = failure.reason.message;
+  } else if (!recentEvents.length) {
+    activityError = "GitHub activity is unavailable until GITHUB_TOKEN is configured in Render.";
+  }
+
+  const activity = [...activityMap.values()].sort((a, b) => a.date.localeCompare(b.date));
 
   return {
     username: user.login,
@@ -75,12 +132,16 @@ async function getGithubActivity(username, years) {
 
 async function fetchContributionYear(username, year) {
   const currentYear = new Date().getUTCFullYear();
+  const toDate = year === currentYear
+    ? new Date(Date.now() + 86400000 * 2).toISOString()
+    : `${year}-12-31T23:59:59Z`;
+
   const response = await fetch("https://api.github.com/graphql", {
     method: "POST",
     headers: { "Content-Type": "application/json", "User-Agent": "Newbert", Authorization: `Bearer ${process.env.GITHUB_TOKEN}` },
     body: JSON.stringify({
       query: "query($login:String!,$from:DateTime!,$to:DateTime!){user(login:$login){contributionsCollection(from:$from,to:$to){contributionCalendar{weeks{contributionDays{date contributionCount}}}commitContributionsByRepository(maxRepositories:100){contributions(first:100){nodes{occurredAt commitCount}}}}}}",
-      variables: { login: username, from: `${year}-01-01T00:00:00Z`, to: year === currentYear ? new Date().toISOString() : `${year}-12-31T23:59:59Z` },
+      variables: { login: username, from: `${year}-01-01T00:00:00Z`, to: toDate },
     }),
   });
   const payload = await response.json();
@@ -95,13 +156,13 @@ async function fetchContributionYear(username, year) {
   }
   return collection.contributionCalendar.weeks
     .flatMap((week) => week.contributionDays)
-    .map((day) => ({ date: day.date, count: Number(day.contributionCount) || 0, commits: commitsByDate.get(day.date) || 0 }));
+    .map((day) => {
+      const istDate = kolkataDate(day.date) || day.date;
+      const count = Number(day.contributionCount) || 0;
+      const commits = commitsByDate.get(istDate) ?? commitsByDate.get(day.date) ?? count;
+      return { date: istDate, count: Math.max(count, commits), commits };
+    });
 }
 
-function kolkataDate(value) {
-  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(value));
-  const date = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${date.year}-${date.month}-${date.day}`;
-}
+module.exports = { getGithubActivity, scanRepository, fetchRecentEvents, SCAN_LIMITS };
 
-module.exports = { getGithubActivity, scanRepository, SCAN_LIMITS };

@@ -55,7 +55,12 @@ function publicActivityCalendar(profile, visible) {
   return (profile.activityCalendar || []).map((day) => {
     const github = visible.github ? Number(day.github) || 0 : 0;
     const leetcode = visible.leetcode ? Number(day.leetcode) || 0 : 0;
-    return { date: day.date, github, leetcode, total: github + leetcode };
+    return {
+      date: day.date,
+      github,
+      leetcode,
+      total: github + leetcode,
+    };
   }).filter((day) => /^\d{4}-\d{2}-\d{2}$/.test(day.date || "") && day.total > 0);
 }
 
@@ -100,8 +105,8 @@ function serializePublicProfile(profile, user, today, streakLeaderboard = null) 
       publicRepos: Number(profile.githubStats.publicRepos) || 0,
       followers: Number(profile.githubStats.followers) || 0,
       languages: profile.githubStats.languages || [],
-      commitsToday: Number(today?.githubCommits) || 0,
-      metricAvailable: Boolean(profile.githubStats.commitActivityAvailable),
+      commitsToday: Number(today?.githubCommits) || Number(today?.github) || 0,
+      metricAvailable: Boolean(profile.githubStats.commitActivityAvailable || profile.githubStats.contributionActivityAvailable),
     } : { connected: false };
   }
   if (visible.leetcode) {

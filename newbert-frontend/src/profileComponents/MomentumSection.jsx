@@ -12,15 +12,22 @@ function buildYear(year, activityCalendar) {
     const dateString = `${year}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     const item = activity.get(dateString);
     const github = Number(item?.github) || 0;
+    const githubCommits = Number(item?.githubCommits) || github;
     const leetcode = Number(item?.leetcode) || 0;
     const projectSource = item?.projectActivity ?? item?.project ?? item?.projects;
     const projectActivity = projectSource == null ? null : Number(projectSource) || 0;
+    const total = Number(item?.total) || (github + leetcode + (projectActivity || 0));
     days.push({
-      date: new Date(date), dateString, month: date.getMonth(), weekday: date.getDay(),
-      github, githubCommits: Number(item?.githubCommits) || 0,
-      leetcode, leetcodeAccepted: Number(item?.leetcodeAccepted) || 0,
+      date: new Date(date),
+      dateString,
+      month: date.getMonth(),
+      weekday: date.getDay(),
+      github,
+      githubCommits,
+      leetcode,
+      leetcodeAccepted: Number(item?.leetcodeAccepted) || 0,
       projectActivity,
-      total: Number(item?.total) || github + leetcode + (projectActivity || 0),
+      total,
       future: date > today,
     });
   }
@@ -132,7 +139,49 @@ function Heatmap({ weeks, monthLabels }) {
 }
 
 function Tooltip({ day, x, y }) {
-  return <div className="pointer-events-none fixed z-[100] w-56 rounded-lg border border-white/15 bg-[#0b1220] p-3 shadow-2xl" style={{ left: Math.min(x + 14, window.innerWidth - 240), top: Math.max(12, y - 164) }}><p className="text-xs font-extrabold text-white">{day.date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}</p><p className="mt-2 text-sm font-black text-emerald-300">{day.total} verified activities</p><div className="mt-2 space-y-1 text-xs text-slate-300"><p>GitHub contributions: {day.github}</p><p>GitHub commits: {day.githubCommits}</p><p>LeetCode submissions: {day.leetcode}</p><p>LeetCode accepted: {day.leetcodeAccepted}</p><p>Project activity: {day.projectActivity == null ? "Not tracked" : day.projectActivity}</p></div></div>;
+  const dateFormatted = day.date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return (
+    <div
+      className="pointer-events-none fixed z-[100] w-60 rounded-xl border border-white/20 bg-[#0b1220]/95 p-3.5 backdrop-blur-md shadow-2xl"
+      style={{
+        left: Math.min(x + 14, window.innerWidth - 260),
+        top: Math.max(12, y - 180),
+      }}
+    >
+      <p className="text-xs font-black uppercase tracking-wider text-slate-400">{dateFormatted}</p>
+      <p className="mt-1.5 text-base font-black text-emerald-400">
+        {day.total} verified {day.total === 1 ? "activity" : "activities"}
+      </p>
+      <div className="mt-2.5 space-y-1 text-xs text-slate-300 border-t border-white/10 pt-2">
+        {day.github > 0 || day.githubCommits > 0 ? (
+          <p className="flex justify-between">
+            <span className="text-slate-400">GitHub:</span>
+            <span className="font-bold text-white">
+              {day.githubCommits || day.github} {day.githubCommits === 1 ? "commit" : "commits"}
+              {day.github && day.github !== day.githubCommits ? ` (${day.github} total)` : ""}
+            </span>
+          </p>
+        ) : null}
+        {day.leetcode > 0 || day.leetcodeAccepted > 0 ? (
+          <p className="flex justify-between">
+            <span className="text-slate-400">LeetCode:</span>
+            <span className="font-bold text-white">
+              {day.leetcodeAccepted || day.leetcode} {day.leetcodeAccepted === 1 ? "problem" : "problems"}
+            </span>
+          </p>
+        ) : null}
+        {day.projectActivity != null && day.projectActivity > 0 ? (
+          <p className="flex justify-between">
+            <span className="text-slate-400">Projects:</span>
+            <span className="font-bold text-white">{day.projectActivity} verified</span>
+          </p>
+        ) : null}
+        {day.total === 0 ? (
+          <p className="text-slate-500 italic">No activity recorded on this day</p>
+        ) : null}
+      </div>
+    </div>
+  );
 }
 
 function Metric({ label, value, detail }) { return <div className="rounded-xl border border-white/10 bg-white/[.04] p-4"><p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">{label}</p><p className="mt-3 text-xl font-black text-white">{value}</p><p className="mt-1 text-xs text-slate-400">{detail}</p></div>; }

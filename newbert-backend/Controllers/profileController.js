@@ -11,9 +11,9 @@ const { DEFAULT_SECTIONS, normalizePrivacy, serializePublicProfile } = require("
 const { getPublicStreakSnapshot } = require("../services/leaderboardService");
 const { buildSkillEvidence, buildEffectiveSkillInventory } = require("../services/skillEvidenceService");
 const { normalizeSkill } = require("../services/skillNormalizationService");
+const { kolkataDate, getKolkataToday, previousKolkataDay } = require("../utils/dateNormalization");
 
 const INVALID_LEETCODE_USERNAMES = new Set(["u", "profile"]);
-const kolkataDay = () => { const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date()); const value = Object.fromEntries(parts.map((part) => [part.type, part.value])); return `${value.year}-${value.month}-${value.day}`; };
 
 function normalizeLeetcodeStats(stats) {
   if (!stats || INVALID_LEETCODE_USERNAMES.has(String(stats.username || "").toLowerCase())) return null;
@@ -30,7 +30,7 @@ exports.getPublicProfile = async (req, res, next) => {
   try {
     const [profile, user] = await Promise.all([Profile.findOne({ userId: req.params.userId }).lean(), User.findById(req.params.userId).select("name avatarUrl").lean()]);
     if (!profile || !user) return res.status(404).json({ message: "Profile not found." });
-    const today = (profile.activityCalendar || []).find((day) => day.date === kolkataDay());
+    const today = (profile.activityCalendar || []).find((day) => day.date === getKolkataToday());
     const streakLeaderboard = await getPublicStreakSnapshot(req.params.userId);
     res.json(serializePublicProfile(profile, user, today, streakLeaderboard));
   } catch (error) { next(error); }
@@ -38,12 +38,18 @@ exports.getPublicProfile = async (req, res, next) => {
 
 function mergeActivity(githubActivity = [], leetcodeActivity = []) {
   const days = new Map();
-  for (const item of githubActivity) days.set(item.date, { date: item.date, github: Number(item.count) || 0, githubCommits: Number(item.commits) || 0, leetcode: 0, leetcodeAcceptedProblems: [] });
+  for (const item of githubActivity) {
+    const date = kolkataDate(item.date) || item.date;
+    const count = Number(item.count) || 0;
+    const commits = Number(item.commits) || count;
+    days.set(date, { date, github: count, githubCommits: commits, leetcode: 0, leetcodeAcceptedProblems: [] });
+  }
   for (const item of leetcodeActivity) {
-    const day = days.get(item.date) || { date: item.date, github: 0, githubCommits: 0, leetcode: 0, leetcodeAcceptedProblems: [] };
+    const date = kolkataDate(item.date) || item.date;
+    const day = days.get(date) || { date, github: 0, githubCommits: 0, leetcode: 0, leetcodeAcceptedProblems: [] };
     day.leetcode += Number(item.count) || 0;
     day.leetcodeAcceptedProblems = [...new Set([...(day.leetcodeAcceptedProblems || []), ...(item.acceptedProblems || [])])];
-    days.set(item.date, day);
+    days.set(date, day);
   }
   return [...days.values()].map((day) => ({ ...day, leetcodeAccepted: day.leetcodeAcceptedProblems.length, total: day.github + day.leetcode })).filter((day) => day.total > 0).sort((a, b) => a.date.localeCompare(b.date));
 }
@@ -59,13 +65,12 @@ function calculateStreaks(activity) {
     longestStreak = Math.max(longestStreak, running);
     previous = current;
   }
-  const previousDay = (value) => { const date = new Date(`${value}T00:00:00Z`); date.setUTCDate(date.getUTCDate() - 1); return date.toISOString().slice(0, 10); };
-  let cursor = kolkataDay();
-  if (!activeDates.has(cursor)) cursor = previousDay(cursor);
+  let cursor = getKolkataToday();
+  if (!activeDates.has(cursor)) cursor = previousKolkataDay(cursor);
   let currentStreak = 0;
   while (activeDates.has(cursor)) {
     currentStreak += 1;
-    cursor = previousDay(cursor);
+    cursor = previousKolkataDay(cursor);
   }
   return { currentStreak, longestStreak };
 }
@@ -74,8 +79,9 @@ function sanitizedActivity(profile, leetcodeStats) {
   const leetcodeIsValid = Boolean(leetcodeStats);
   return (profile.activityCalendar || []).map((day) => {
     const github = Number(day.github) || 0;
+    const githubCommits = Number(day.githubCommits) || github;
     const leetcode = leetcodeIsValid ? Number(day.leetcode) || 0 : 0;
-    return { date: day.date, github, githubCommits: Number(day.githubCommits) || 0, leetcode, leetcodeAccepted: Number(day.leetcodeAccepted) || 0, leetcodeAcceptedProblems: Array.isArray(day.leetcodeAcceptedProblems) ? day.leetcodeAcceptedProblems : [], total: github + leetcode };
+    return { date: day.date, github, githubCommits, leetcode, leetcodeAccepted: Number(day.leetcodeAccepted) || 0, leetcodeAcceptedProblems: Array.isArray(day.leetcodeAcceptedProblems) ? day.leetcodeAcceptedProblems : [], total: github + leetcode };
   }).filter((day) => day.total > 0);
 }
 
