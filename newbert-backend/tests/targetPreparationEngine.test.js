@@ -12,7 +12,7 @@ test("verified current JD evidence outranks the fallback role baseline", () => {
   assert.equal(benchmark.sourceLayer, "exact_company_role_jobs");
   assert.equal(benchmark.confidence, "medium");
   assert.equal(benchmark.evidenceSummary.officialJobs, 1);
-  assert.equal(benchmark.categories.find((item) => item.key === "dsa").source, "official_job");
+  assert.equal(benchmark.categories.find((item) => item.key === "coding" || item.key === "dsa")?.source, "official_job");
 });
 
 test("missing company evidence is labeled as a role-baseline fallback", () => {
@@ -28,7 +28,7 @@ test("self-reported critical skill becomes an evidence-rooted target gap", () =>
   const profile = { skills: [{ name: "DSA", source: "manual" }], projectDetails: [] };
   const current = buildCurrentPosition(profile, benchmark);
   const gaps = buildPreparationGaps({ benchmark, currentPosition: current, alumni: [] });
-  const dsa = gaps.find((item) => item.categoryKey === "dsa");
+  const dsa = gaps.find((item) => item.categoryKey === "coding" || item.categoryKey === "dsa");
   assert.equal(dsa.gapType, "evidence_gap");
   assert.equal(dsa.rootGapType, "evidence_gap");
 });

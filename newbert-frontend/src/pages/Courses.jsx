@@ -333,6 +333,20 @@ function CatalogCourseCard({ item, onWhy }) {
 
         <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-400">{course.description}</p>
 
+        {/* Subtle Roadmap Fit Badges */}
+        {match.score >= 65 && (
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <span className="inline-flex items-center gap-1 rounded-md bg-orange-400/10 border border-orange-400/20 px-2 py-0.5 text-[10px] font-black text-orange-300">
+              🎯 {match.score}% fit for your roadmap
+            </span>
+            {match.coveredGaps?.length > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                🎯 Matches your {match.coveredGaps[0]} gap
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="mt-3 flex flex-wrap gap-1.5">
           {(course.skillsCovered || []).slice(0, 4).map((s) => (
             <span key={s} className="rounded bg-white/5 px-2 py-0.5 text-[10px] font-bold text-slate-300">

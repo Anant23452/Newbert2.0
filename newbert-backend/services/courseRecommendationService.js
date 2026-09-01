@@ -151,6 +151,7 @@ function calculateCourseFit(course, profile = {}, plan = null, reviews = []) {
   // 2. TARGET RELEVANCE SCORE (25%)
   const targetRole = norm(plan?.target?.role || profile.targetRole || "software engineer");
   const targetType = norm(plan?.target?.type || "placement");
+  const companyCat = norm(plan?.target?.companyCategory || profile.targetCompanyCategory || "");
   const courseGoals = (course.goals || []).map(norm);
   const courseTargetRoles = (course.targetRoles || []).map(norm);
   const allCourseRoles = [...courseGoals, ...courseTargetRoles];
@@ -167,6 +168,37 @@ function calculateCourseFit(course, profile = {}, plan = null, reviews = []) {
   } else if (course.category && targetRole.includes(norm(course.category))) {
     targetScore = 70;
   }
+
+  // Company category affinity
+  let categoryAffinityBonus = 0;
+  let categoryAffinityReason = null;
+  const courseTags = normalizeSkillList([
+    course.category || "",
+    ...(course.skillsCovered || []),
+    ...(course.topicsCovered || []),
+  ]);
+
+  if (companyCat.includes("service")) {
+    const isServiceMatch = courseTags.some((t) => /aptitude|dbms|sql|oop|communication|java|basic/.test(t));
+    if (isServiceMatch) {
+      categoryAffinityBonus = 15;
+      categoryAffinityReason = "✓ Recommended for Service-based company preparation";
+    }
+  } else if (companyCat.includes("product")) {
+    const isProductMatch = courseTags.some((t) => /dsa|algorithm|systemdesign|architecture|concurrency/.test(t));
+    if (isProductMatch) {
+      categoryAffinityBonus = 15;
+      categoryAffinityReason = "✓ High priority for Product-company technical interviews";
+    }
+  } else if (companyCat.includes("startup")) {
+    const isStartupMatch = courseTags.some((t) => /backend|frontend|fullstack|api|docker|deployment|postgres|react|node/.test(t));
+    if (isStartupMatch) {
+      categoryAffinityBonus = 15;
+      categoryAffinityReason = "✓ Practical engineering and project-building skill for Startups";
+    }
+  }
+
+  targetScore = Math.min(100, targetScore + categoryAffinityBonus);
 
   // 3. LEVEL FIT SCORE (15%)
   const coveredKnownCount = courseSkills.filter((s) => studentKnownSkills.has(s)).length;
@@ -238,6 +270,9 @@ function calculateCourseFit(course, profile = {}, plan = null, reviews = []) {
   const reasons = [];
   if (coveredGaps.length > 0) {
     reasons.push(`✓ Covers your priority gaps in ${coveredGaps.slice(0, 3).join(", ")}`);
+  }
+  if (categoryAffinityReason) {
+    reasons.push(categoryAffinityReason);
   }
   if (isDirectTargetMatch) {
     reasons.push(`✓ Highly relevant to your target role (${plan?.target?.role || profile.targetRole || "Software Engineer"})`);

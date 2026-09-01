@@ -331,23 +331,42 @@ export default function PreparationDashboard({
 function TargetHeader({ plan, recalculating, onChangeGoal, onRecalculate, onShowEvidence }) {
   const benchmark = plan.targetBenchmark || {};
   const isExploratory = (plan.targetConfidence || "exploratory") === "exploratory";
+  const cat = plan.target?.companyCategory || "product";
+  const catLabel = cat === "service" ? "SERVICE-BASED" : cat === "startup" ? "STARTUP" : "PRODUCT-BASED";
+  const companyName = plan.target?.company?.trim() || null;
 
   return (
-    <header className="overflow-hidden rounded-lg bg-[#111c30] shadow-2xl shadow-black/20">
+    <header className="overflow-hidden rounded-2xl border border-white/10 bg-[#111c30] shadow-2xl shadow-black/20">
       <div className="grid gap-7 p-6 md:p-8 lg:grid-cols-[1.2fr_.8fr]">
         <div>
-          <div className="flex items-center gap-2 text-xs font-black uppercase text-orange-300">
-            <Target className="h-4 w-4" /> My target
+          <div className="flex items-center gap-2">
+            <span className="rounded bg-orange-400/20 px-2 py-0.5 text-[10px] font-black uppercase text-orange-300">
+              MY TARGET
+            </span>
+            <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase text-slate-200">
+              {catLabel}
+            </span>
           </div>
-          <h1 className="mt-3 text-3xl font-black md:text-5xl">{plan.target.role}</h1>
-          <p className="mt-2 text-base font-semibold text-slate-300">
-            {plan.target.company || (plan.target.companyCategory ? `${titleCase(plan.target.companyCategory)} company` : "Role-level benchmark")}
-            {plan.target.region ? ` · ${plan.target.region}` : ""}
+
+          <h1 className="mt-3 text-3xl font-black md:text-5xl text-white">{plan.target.role || "Software Engineer"}</h1>
+          
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-300">
+            <span className="font-bold text-slate-400">Optional company:</span>
+            <span className={`rounded-md px-2.5 py-1 font-extrabold ${companyName ? "bg-orange-400/15 text-orange-300 border border-orange-400/30" : "bg-white/5 text-slate-400 border border-white/10"}`}>
+              {companyName || "Not selected"}
+            </span>
+            {plan.target.region ? <span className="text-slate-500">· {plan.target.region}</span> : null}
+          </div>
+
+          <p className="mt-2 text-xs text-slate-400">
+            {companyName
+              ? `Based on ${catLabel.toLowerCase()} benchmark + available ${companyName} evidence.`
+              : `Using ${catLabel.toLowerCase()} Software Engineering benchmark.`}
           </p>
 
           <div className="mt-5 flex flex-wrap gap-2">
             <Pill tone={isExploratory ? "amber" : "emerald"}>
-              {titleCase(plan.targetConfidence || "exploratory")} confidence
+              {titleCase(plan.targetConfidence || (companyName ? "medium" : "exploratory"))} confidence
             </Pill>
             <Pill>{readinessLabel[plan.overallReadiness] || "Needs evidence"}</Pill>
             {plan.target.deadline && <Pill>Target {formatDate(plan.target.deadline)}</Pill>}
@@ -355,18 +374,18 @@ function TargetHeader({ plan, recalculating, onChangeGoal, onRecalculate, onShow
           </div>
         </div>
 
-        <div className="flex flex-col justify-between rounded-lg bg-[#0b1425] p-5">
+        <div className="flex flex-col justify-between rounded-xl border border-white/5 bg-[#0b1425] p-5">
           <div>
             <div className="flex items-center justify-between">
-              <p className="text-xs font-black uppercase text-slate-400">Strategy Confidence</p>
-              <span className={`text-xs font-bold uppercase ${isExploratory ? "text-amber-300" : "text-emerald-300"}`}>
-                {plan.targetConfidence || "Exploratory"}
+              <p className="text-xs font-black uppercase text-slate-400">Target Strategy Benchmark</p>
+              <span className={`text-xs font-bold uppercase ${companyName ? "text-emerald-300" : "text-sky-300"}`}>
+                {companyName ? "Company Tailored" : "Category Baseline"}
               </span>
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-300">
-              {isExploratory
-                ? "Based mainly on the role benchmark because no specific company has been selected yet. Connect company evidence to make requirements specific."
-                : "Target requirements are tailored using verified job descriptions and specific company hiring criteria."}
+              {companyName
+                ? `Preparation milestones and assessment priorities incorporate ${companyName}-specific signals overlaid on the ${catLabel.toLowerCase()} baseline.`
+                : `Using universal ${catLabel.toLowerCase()} software engineering expectations. Choosing a specific company is optional and can refine your priorities anytime.`}
             </p>
           </div>
 
@@ -374,31 +393,38 @@ function TargetHeader({ plan, recalculating, onChangeGoal, onRecalculate, onShow
             <button
               type="button"
               onClick={onShowEvidence}
-              className="text-xs font-bold text-orange-300 hover:text-orange-200"
+              className="text-xs font-bold text-orange-300 hover:text-orange-200 inline-flex items-center gap-1"
             >
               See evidence signals →
             </button>
-            {isExploratory && (
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={onChangeGoal}
-                className="rounded bg-white/8 px-3 py-1.5 text-xs font-bold text-slate-200 hover:bg-white/12"
+                className="rounded-lg bg-white/8 px-3 py-1.5 text-xs font-bold text-slate-200 hover:bg-white/12 transition"
               >
-                Choose target company
+                {companyName ? "Change company" : "Choose company"}
               </button>
-            )}
+              <button
+                type="button"
+                onClick={onChangeGoal}
+                className="rounded-lg bg-orange-400/15 border border-orange-400/30 px-3 py-1.5 text-xs font-bold text-orange-300 hover:bg-orange-400/25 transition"
+              >
+                Change category
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-black/15 px-6 py-4 md:px-8">
-        <p className="text-xs text-slate-400">Target → Expectations → Evidence → Gaps → Milestones</p>
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-black/25 px-6 py-3.5 md:px-8 border-t border-white/5">
+        <p className="text-xs text-slate-400">Target Category → Expectations → Evidence → Gaps → Milestones</p>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={onRecalculate}
             disabled={recalculating}
-            className="inline-flex items-center gap-2 rounded-md bg-white/8 px-3 py-2 text-xs font-bold hover:bg-white/12 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-white/8 px-3.5 py-2 text-xs font-bold hover:bg-white/12 disabled:opacity-50 transition"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${recalculating ? "animate-spin" : ""}`} />
             {recalculating ? "Refreshing" : "Refresh"}
@@ -406,7 +432,7 @@ function TargetHeader({ plan, recalculating, onChangeGoal, onRecalculate, onShow
           <button
             type="button"
             onClick={onChangeGoal}
-            className="rounded-md bg-orange-400 px-3 py-2 text-xs font-black text-slate-950 hover:bg-orange-300"
+            className="rounded-lg bg-orange-500 px-3.5 py-2 text-xs font-black text-slate-950 hover:bg-orange-400 transition"
           >
             Change target
           </button>

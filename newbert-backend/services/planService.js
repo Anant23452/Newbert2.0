@@ -27,11 +27,28 @@ function cleanTarget(input = {}, profile = {}) {
   const allowedStyles = ["balanced", "aggressive", "college-friendly", "revision-heavy", "practice-heavy"];
   const planStyle = allowedStyles.includes(input.planStyle) ? input.planStyle : "balanced";
   const jobIds = cleanList(input.jobIds || input.targetJobIds).slice(0, 5);
-  const company = String(input.company || profile.targetCompany || "").trim() || null;
-  const targetType = ["specific_company", "company_category", "role_only"].includes(input.targetType) ? input.targetType : company ? "specific_company" : "role_only";
-  const companyCategory = ["product", "service", "startup"].includes(input.companyCategory) ? input.companyCategory : null;
+
+  const rawCat = input.companyCategory || input.category || null;
+  const companyCategory = ["product", "service", "startup"].includes(rawCat) ? rawCat : (rawCat && rawCat.toLowerCase().includes("service") ? "service" : rawCat && rawCat.toLowerCase().includes("startup") ? "startup" : (input.targetType === "company_category" ? "product" : null));
+
+  const company = String(input.company || input.targetCompany || profile.targetCompany || "").trim() || null;
+  const targetType = company ? "specific_company" : (companyCategory ? "company_category" : (input.targetType || "role_only"));
   const mode = input.mode === "job" || jobIds.length ? "job" : "role";
-  return { mode, targetType, type, role, company: targetType === "specific_company" ? company : null, companyCategory: targetType === "company_category" ? companyCategory : null, region: String(input.region || "India").trim() || null, jobIds, deadline, weeklyHours, planStyle, customGoal: String(input.customGoal || "").trim() || null };
+
+  return {
+    mode,
+    targetType,
+    type,
+    role,
+    company: company || null,
+    companyCategory: companyCategory || (company ? (company.toLowerCase().includes("tcs") || company.toLowerCase().includes("infosys") || company.toLowerCase().includes("wipro") || company.toLowerCase().includes("accenture") ? "service" : "product") : "product"),
+    region: String(input.region || "India").trim() || null,
+    jobIds,
+    deadline,
+    weeklyHours,
+    planStyle,
+    customGoal: String(input.customGoal || "").trim() || null,
+  };
 }
 
 function cleanList(values) {

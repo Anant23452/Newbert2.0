@@ -75,34 +75,97 @@ function categoryEvidence(profile = {}) {
   const map = new Map();
 
   for (const skill of evidence.skills) {
-    const keys = new Set([categoryFor({ skill: skill.normalizedSkill, category: null })]);
-    if (/javascript|typescript|python|java|cplusplus|programming/.test(skill.normalizedSkill)) keys.add("programming");
-    if (/javascript|typescript|react|nextjs|tailwind|html|css/.test(skill.normalizedSkill)) keys.add("frontend");
-    if (/node|express|mongodb|mongoose|postgresql|mysql|redis|prisma|spring|django|flask|fastapi|restapi/.test(skill.normalizedSkill)) keys.add("backend");
-    if (/mongodb|mongoose|postgresql|mysql|redis|prisma|sql|dbms/.test(skill.normalizedSkill)) keys.add("dbms");
+    const norm = skill.normalizedSkill || skill.canonical || normalizeSkill(skill.skill || "");
+    const key = categoryFor({ skill: norm, category: null });
+    const keys = new Set([key]);
 
-    for (const key of keys) {
-      const current = map.get(key);
+    // Primary 6 simplified categories
+    if (/javascript|typescript|python|java|cplusplus|programming|dsa|algorithm|problem/.test(norm)) {
+      keys.add("coding");
+    }
+    if (/dbms|sql|database|postgres|mysql|mongo|operating|linux|network|concurrency|csfundamental/.test(norm)) {
+      keys.add("cs_core");
+    }
+    if (/react|next|node|express|api|backend|frontend|mongo|postgres|docker|git|auth|web/.test(norm)) {
+      keys.add("development");
+    }
+    if (/systemdesign|architecture|scalab|microservice|distributed|caching|redis/.test(norm)) {
+      keys.add("system_design");
+    }
+    if (/aptitude|reasoning|communication|presentation|interview|hr/.test(norm)) {
+      keys.add("assessment");
+    }
+
+    // Legacy granular keys
+    if (/javascript|typescript|python|java|cplusplus|programming/.test(norm)) keys.add("programming");
+    if (/dsa|datastructure|algorithm|problemsolving|leetcode/.test(norm)) keys.add("dsa");
+    if (/javascript|typescript|react|nextjs|tailwind|html|css/.test(norm)) keys.add("frontend");
+    if (/node|express|mongodb|mongoose|postgresql|mysql|redis|prisma|spring|django|flask|fastapi|restapi/.test(norm)) keys.add("backend");
+    if (/mongodb|mongoose|postgresql|mysql|redis|prisma|sql|dbms/.test(norm)) keys.add("dbms");
+    if (/operatingsystem|\bos\b|linux/.test(norm)) keys.add("operatingSystems");
+    if (/network|tcp|http/.test(norm)) keys.add("computerNetworks");
+    if (/systemdesign|architecture/.test(norm)) keys.add("systemDesign");
+    if (/aptitude|reasoning/.test(norm)) keys.add("aptitude");
+    if (/communication|presentation/.test(norm)) keys.add("communication");
+
+    for (const k of keys) {
+      const current = map.get(k);
       if (!current || skill.score > current.score) {
-        map.set(key, { ...skill, key });
+        map.set(k, { ...skill, key: k });
       }
     }
   }
 
+  // DSA / LeetCode into coding & dsa
+  if ((evidence.leetcode?.totalSolved || 0) > 0 || (evidence.dsa?.score || 0) > 0) {
+    const dsaScore = evidence.leetcode?.score ?? evidence.dsa?.score ?? (evidence.leetcode?.totalSolved > 100 ? 70 : 30);
+    for (const k of ["coding", "dsa"]) {
+      const existing = map.get(k);
+      if (!existing || dsaScore > existing.score) {
+        map.set(k, {
+          key: k,
+          skill: k === "coding" ? "Coding & Problem Solving" : "DSA",
+          score: dsaScore,
+          sources: [
+            ...(existing?.sources || []),
+            { source: "leetcode", evidence: `${evidence.leetcode?.totalSolved || 0} solved problems on LeetCode` },
+          ],
+        });
+      }
+    }
+  }
+
+  // Projects evidence mapping into project_evidence & development & projects
   const projects = evidence.projects;
   if (projects?.score != null || projects?.count != null) {
     const hasVerifiedProjects = projects.structured?.some((p) => p.source === "github" || p.evidence?.hasRepository);
     const score = projects.score ?? (projects.count > 0 ? 15 : 0);
-    map.set("projects", {
-      key: "projects",
-      skill: "Projects",
-      score,
-      sources: hasVerifiedProjects
-        ? [{ source: "project", evidence: `${projects.structured.length} verified structured project(s)` }]
-        : projects.structured?.length
-        ? [{ source: "project", evidence: `${projects.structured.length} project record(s)` }]
-        : [{ source: "profile", evidence: `${projects.count} self-reported project(s)` }],
-    });
+    const projectSources = hasVerifiedProjects
+      ? [{ source: "project", evidence: `${projects.structured.length} verified structured project(s)` }]
+      : projects.structured?.length
+      ? [{ source: "project", evidence: `${projects.structured.length} project record(s)` }]
+      : [{ source: "profile", evidence: `${projects.count} self-reported project(s)` }];
+
+    for (const k of ["project_evidence", "projects"]) {
+      map.set(k, {
+        key: k,
+        skill: k === "project_evidence" ? "Project Evidence" : "Projects",
+        score,
+        sources: projectSources,
+      });
+    }
+
+    // Also support development position with project proof
+    const existingDev = map.get("development");
+    const devProjectScore = hasVerifiedProjects ? Math.max(score, 75) : score;
+    if (!existingDev || devProjectScore > existingDev.score) {
+      map.set("development", {
+        key: "development",
+        skill: "Development & Project Engineering",
+        score: Math.max(existingDev?.score || 0, Math.min(90, devProjectScore)),
+        sources: [...(existingDev?.sources || []), ...projectSources],
+      });
+    }
   }
 
   return { evidence, map };
@@ -238,23 +301,24 @@ function buildPreparationGaps({ benchmark, currentPosition, alumni = [] }) {
 }
 
 const PHASE_BY_CATEGORY = Object.freeze({
-  dbms: "foundations",
-  oop: "foundations",
-  operatingSystems: "foundations",
-  computerNetworks: "foundations",
-  csFundamentals: "foundations",
+  coding: "targeted-dsa",
+  cs_core: "foundations",
+  development: "development-evidence",
+  project_evidence: "development-evidence",
+  system_design: "project-interview",
+  assessment: "target-simulation",
+
+  // Legacy & GATE fallbacks
   dsa: "targeted-dsa",
   programming: "foundations",
+  csFundamentals: "foundations",
+  dbms: "foundations",
   projects: "development-evidence",
-  development: "development-evidence",
   frontend: "development-evidence",
   backend: "development-evidence",
-  cloud: "development-evidence",
-  devops: "development-evidence",
   systemDesign: "project-interview",
-  communication: "project-interview",
-  interviewPreparation: "target-simulation",
   aptitude: "target-simulation",
+  communication: "project-interview",
   engineeringMathematics: "gate-foundations",
   coreSubjects: "gate-foundations",
   pyq: "gate-practice",
@@ -263,11 +327,11 @@ const PHASE_BY_CATEGORY = Object.freeze({
 });
 
 const PHASES = Object.freeze([
-  ["foundations", "Close Interview Foundations"],
-  ["targeted-dsa", "Targeted Problem Solving"],
-  ["development-evidence", "Development & Portfolio Evidence"],
-  ["project-interview", "Project & Architecture Interview Prep"],
-  ["target-simulation", "Target Simulation & Technical Mocks"],
+  ["foundations", "Close Interview Foundations & CS Core"],
+  ["targeted-dsa", "Targeted Problem Solving & Coding"],
+  ["development-evidence", "Development & Engineering Execution"],
+  ["project-interview", "Project Architecture & System Design"],
+  ["target-simulation", "Assessment, Simulation & Communication"],
   ["gate-foundations", "GATE Foundations"],
   ["gate-practice", "PYQ Practice"],
   ["gate-mocks", "Mock-Test Practice"],
@@ -279,36 +343,51 @@ function milestoneId(gap) {
 }
 
 /**
- * Specific completion criteria per category (Part 14)
+ * Specific completion criteria per category (Simplified 6 Categories)
  */
 function completionRule(gap) {
   if (gap.gapType === "evidence_gap") {
-    if (gap.categoryKey === "programming") {
-      return "Done when verified GitHub repository code or a programming skill check confirms core language proficiency.";
-    }
-    if (gap.categoryKey === "projects") {
+    if (gap.categoryKey === "project_evidence" || gap.categoryKey === "projects") {
       return "Done when at least 2 structured projects with public repositories or live deployments are verified.";
+    }
+    if (gap.categoryKey === "coding" || gap.categoryKey === "programming") {
+      return "Done when verified GitHub repository code or a programming check confirms language implementation and problem solving.";
     }
     return "Done when you add reviewable evidence from a connected GitHub repository, structured project, or relevant assessment.";
   }
 
   if (gap.gapType === "validation_needed") {
-    if (gap.categoryKey === "csFundamentals" || gap.categoryKey === "dbms" || gap.categoryKey === "oop") {
-      return "Done when a CS fundamentals baseline check establishes your initial topic coverage.";
+    if (gap.categoryKey === "cs_core" || gap.categoryKey === "csFundamentals") {
+      return "Done when a CS Core baseline check establishes your initial topic coverage (DBMS, OS, Networks).";
+    }
+    if (gap.categoryKey === "assessment") {
+      return "Done when an online aptitude/assessment practice simulation is completed.";
     }
     return "Done when an initial baseline assessment or verified project proof establishes your starting level.";
   }
 
-  if (gap.categoryKey === "csFundamentals" || gap.categoryKey === "dbms") {
-    return "Done when core concepts (DBMS normalization, indexing, ACID transactions, OOP design) are demonstrated.";
+  if (gap.categoryKey === "coding" || gap.categoryKey === "dsa") {
+    return "Done when core pattern proficiency (arrays, strings, trees, graphs, DP, OOP) is verified through accepted solutions.";
   }
 
-  if (gap.categoryKey === "dsa") {
-    return "Done when core pattern proficiency (arrays, strings, trees, graphs, DP) is verified through accepted solutions.";
+  if (gap.categoryKey === "cs_core" || gap.categoryKey === "dbms" || gap.categoryKey === "csFundamentals") {
+    return "Done when core concepts (DBMS normalization/indexing/ACID, OS concurrency, Computer Networks) are demonstrated.";
   }
 
-  if (gap.categoryKey === "projects" || gap.categoryKey === "development" || gap.categoryKey === "backend" || gap.categoryKey === "frontend") {
-    return "Done when production-quality features (APIs, state management, DB schemas) are verified in code.";
+  if (gap.categoryKey === "development" || gap.categoryKey === "projects") {
+    return "Done when production-quality features (APIs, state management, DB schemas, auth, Git) are verified in code.";
+  }
+
+  if (gap.categoryKey === "project_evidence") {
+    return "Done when reviewable code usage across featured projects demonstrates full architectural ownership.";
+  }
+
+  if (gap.categoryKey === "system_design") {
+    return "Done when system architecture, caching, database partitioning, and scalability tradeoffs are demonstrated.";
+  }
+
+  if (gap.categoryKey === "assessment" || gap.categoryKey === "aptitude") {
+    return "Done when online assessment practice sets, aptitude tests, and structured project walkthrough explanations are completed.";
   }
 
   return "Done when reviewable work or assessment confirms proficiency meeting the target benchmark.";
@@ -388,6 +467,7 @@ function deriveAlreadyCovered(gaps) {
     .filter((g) => g.gapType === "ready")
     .map((g) => ({
       key: g.categoryKey,
+      categoryKey: g.categoryKey,
       label: g.label,
       position: g.current.position,
       reason: "Strong verified evidence currently meets the role benchmark.",

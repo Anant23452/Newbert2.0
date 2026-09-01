@@ -105,28 +105,71 @@ function internshipCount(value) {
   return Array.isArray(value) ? value.length : numeric(value);
 }
 
+function inferAlumniCompanyCategory(alumni) {
+  const company = String(alumni.placement?.company || alumni.company || "").toLowerCase();
+  const role = String(alumni.placement?.role || alumni.role || "").toLowerCase();
+  if (alumni.companyCategory) return alumni.companyCategory;
+  if (/infosys|tcs|wipro|accenture|cognizant|capgemini|hcl|tech mahindra/.test(company)) return "service";
+  if (/startup|labs|technologies|fintech/.test(company) || /backend|fullstack|frontend/.test(role)) return "startup";
+  return "product";
+}
+
 function calculatePlacementSimilarity(student, alumni, target = {}) {
   const role = target.role || student.targetRole || "Software Developer";
   const seniorRole = alumni.placement?.role || alumni.role;
   const seniorCompany = alumni.placement?.company || alumni.company;
   const targetCompany = target.company?.trim();
+  const targetCategory = target.companyCategory || (targetCompany && /infosys|tcs|wipro|accenture/.test(targetCompany.toLowerCase()) ? "service" : "product");
+  const seniorCategory = inferAlumniCompanyCategory(alumni);
 
   let companyScore = null;
   if (targetCompany && seniorCompany) {
     companyScore = exactSimilarity(targetCompany, seniorCompany);
   }
 
+  const categoryScore = targetCategory === seniorCategory ? 100 : 50;
+
+  // Differentiated category weighting based on company type
+  let dsaWeight = 20;
+  let skillsWeight = 15;
+  let projectsWeight = 10;
+  let categoryWeight = 25;
+
+  if (targetCategory === "service") {
+    skillsWeight = 25; // Aptitude, CS fundamentals, OOP
+    dsaWeight = 15;
+    projectsWeight = 10;
+    categoryWeight = 25;
+  } else if (targetCategory === "product") {
+    dsaWeight = 30; // Deep DSA problem solving
+    projectsWeight = 15;
+    skillsWeight = 15;
+    categoryWeight = 25;
+  } else if (targetCategory === "startup") {
+    projectsWeight = 30; // Practical project execution & stack evidence
+    skillsWeight = 20;
+    dsaWeight = 10;
+    categoryWeight = 25;
+  }
+
   const criteria = [
-    { key: "role", weight: 25, score: roleSimilarity(role, seniorRole) },
-    { key: "collegeBranch", weight: 20, score: exactSimilarity(student.branch, alumni.branch) ?? exactSimilarity(student.college, alumni.college) },
-    { key: "dsa", weight: 20, score: boundedSimilarity(studentDsa(student), alumniDsa(alumni)) },
-    { key: "skills", weight: 15, score: skillSimilarity(student, alumni) },
-    { key: "projects", weight: 10, score: boundedSimilarity(student.projects, alumni.projects) },
-    { key: "company", weight: companyScore != null ? 20 : 0, score: companyScore },
+    { key: "category", weight: categoryWeight, score: categoryScore },
+    { key: "role", weight: 20, score: roleSimilarity(role, seniorRole) },
+    { key: "collegeBranch", weight: 10, score: exactSimilarity(student.branch, alumni.branch) ?? exactSimilarity(student.college, alumni.college) },
+    { key: "dsa", weight: dsaWeight, score: boundedSimilarity(studentDsa(student), alumniDsa(alumni)) },
+    { key: "skills", weight: skillsWeight, score: skillSimilarity(student, alumni) },
+    { key: "projects", weight: projectsWeight, score: boundedSimilarity(student.projects, alumni.projects) },
+    { key: "company", weight: companyScore != null ? 25 : 0, score: companyScore },
     { key: "cgpa", weight: 5, score: boundedSimilarity(student.cgpa, alumni.cgpa) },
   ];
 
-  return { ...weighted(criteria), label: "Profile Match" };
+  const label = companyScore === 100
+    ? `Exact ${seniorCompany} Benchmark`
+    : targetCategory
+    ? `Similar ${targetCategory.charAt(0).toUpperCase() + targetCategory.slice(1)}-based Benchmark`
+    : "Profile Match";
+
+  return { ...weighted(criteria), label };
 }
 
 function calculateGateSimilarity(student, alumni, target = {}, stage = {}) {

@@ -234,6 +234,7 @@ function buildEffectiveSkillInventory(profile = {}, options = {}) {
     return {
       skill: item.skill,
       canonical,
+      normalizedSkill: canonical,
       category,
       score: item.score,
       level: item.level,
