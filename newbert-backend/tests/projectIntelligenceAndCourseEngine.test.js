@@ -7,6 +7,7 @@ const {
   levelFor,
 } = require("../services/skillEvidenceService");
 const {
+  exceedsFeaturedLimit,
   scoreProject,
   normalizeProjectEvidence,
   normalizeProject,
@@ -91,6 +92,8 @@ test("Featured project constraint: Maximum 3 featured projects supported in prof
 
   const normalized = normalizeProjectEvidence({ projectDetails: projects });
   assert.equal(normalized.featured.length, 3);
+  assert.equal(exceedsFeaturedLimit(projects), true);
+  assert.equal(exceedsFeaturedLimit(projects.slice(0, 3)), false);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

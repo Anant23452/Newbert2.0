@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import {
   CheckCircle2,
   Code2,
   ExternalLink,
+  Eye,
+  EyeOff,
   FolderGit2,
   Github,
   Globe,
@@ -21,7 +23,7 @@ import {
   deleteProject,
   refreshProjectAnalysis,
   toggleFeaturedProject,
-  confirmProjectTechnologies,
+  updateProjectVisibility,
 } from "../Services/projectService";
 
 const reveal = {
@@ -69,6 +71,20 @@ export default function FeaturedProjects({ profile, onEdit, onProfileUpdated }) 
     }
   };
 
+  const handleVisibility = async (projectId, visibility) => {
+    setBusyId(projectId);
+    setMessage("");
+    try {
+      const result = await updateProjectVisibility(projectId, visibility);
+      if (onProfileUpdated) onProfileUpdated(result.projects);
+      setMessage(result.message);
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Could not update project visibility.");
+    } finally {
+      setBusyId("");
+    }
+  };
+
   const handleDeleteProject = async (projectId) => {
     if (!window.confirm("Remove this project from your profile evidence?")) return;
     setBusyId(projectId);
@@ -84,7 +100,7 @@ export default function FeaturedProjects({ profile, onEdit, onProfileUpdated }) 
   };
 
   return (
-    <motion.section
+    <Motion.section
       id="featured-projects"
       initial="hidden"
       whileInView="visible"
@@ -148,7 +164,7 @@ export default function FeaturedProjects({ profile, onEdit, onProfileUpdated }) 
               onDetails={() => setSelectedProject(project)}
               onToggleFeatured={() => handleToggleFeatured(project.id)}
               onRefresh={() => handleRefreshProject(project.id)}
-              onDelete={() => handleDeleteProject(project.id)}
+              onVisibility={(visibility) => handleVisibility(project.id, visibility)}
               busy={busyId === project.id}
             />
           ))}
@@ -206,8 +222,8 @@ export default function FeaturedProjects({ profile, onEdit, onProfileUpdated }) 
         onClose={() => setAllProjectsOpen(false)}
         projects={allProjects}
         onToggleFeatured={handleToggleFeatured}
-        onRefresh={handleRefreshProject}
         onDelete={handleDeleteProject}
+        onVisibility={handleVisibility}
         onAddNew={() => {
           setAllProjectsOpen(false);
           setModalOpen(true);
@@ -220,11 +236,11 @@ export default function FeaturedProjects({ profile, onEdit, onProfileUpdated }) 
         project={selectedProject}
         onClose={() => setSelectedProject(null)}
       />
-    </motion.section>
+    </Motion.section>
   );
 }
 
-function ProjectCard({ project, onDetails, onToggleFeatured, onRefresh, onDelete, busy }) {
+function ProjectCard({ project, onDetails, onToggleFeatured, onRefresh, onVisibility, busy }) {
   const techs = project.confirmedTechnologies?.length ? project.confirmedTechnologies : project.technologies || [];
   const isStrong = project.evidenceLevel === "strong";
   const badgeTone = isStrong
@@ -241,11 +257,15 @@ function ProjectCard({ project, onDetails, onToggleFeatured, onRefresh, onDelete
           <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${badgeTone}`}>
             {project.evidenceLabel || (isStrong ? "Strong project evidence" : "Used in project")}
           </span>
-          {project.isFeatured && (
-            <span className="flex items-center gap-1 text-[10px] font-bold text-orange-400" title="Featured on main profile">
-              <Pin size={11} className="fill-orange-400" /> Featured
+          <div className="flex flex-col items-end gap-1">
+            <span className={`flex items-center gap-1 text-[10px] font-bold ${project.isFeatured ? "text-orange-400" : "text-slate-500"}`}>
+              <Pin size={11} className={project.isFeatured ? "fill-orange-400" : ""} /> {project.isFeatured ? "Featured" : "Not featured"}
             </span>
-          )}
+            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+              {project.visibility === "private" ? <EyeOff size={11} /> : <Eye size={11} />}
+              {project.visibility === "private" ? "Private" : "Public"}
+            </span>
+          </div>
         </div>
 
         {/* Title & Description */}
@@ -324,18 +344,27 @@ function ProjectCard({ project, onDetails, onToggleFeatured, onRefresh, onDelete
           >
             <Pin size={12} className={project.isFeatured ? "fill-orange-400 text-orange-400" : ""} />
           </button>
+          <button
+            type="button"
+            onClick={() => onVisibility(project.visibility === "private" ? "public" : "private")}
+            disabled={busy}
+            title={project.visibility === "private" ? "Make project public" : "Make project private"}
+            className="grid h-7 w-7 place-items-center rounded-md text-slate-400 hover:bg-white/10 hover:text-white disabled:opacity-40"
+          >
+            {project.visibility === "private" ? <EyeOff size={12} /> : <Eye size={12} />}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-function AllProjectsModal({ isOpen, onClose, projects, onToggleFeatured, onRefresh, onDelete, onAddNew, busyId }) {
+function AllProjectsModal({ isOpen, onClose, projects, onToggleFeatured, onDelete, onVisibility, onAddNew, busyId }) {
   if (!isOpen) return null;
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/75 p-4 backdrop-blur-sm">
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
@@ -365,6 +394,7 @@ function AllProjectsModal({ isOpen, onClose, projects, onToggleFeatured, onRefre
                       <span className="rounded bg-orange-400/20 px-1.5 py-0.5 text-[10px] font-black text-orange-300">Featured</span>
                     )}
                     <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] font-bold text-slate-400">{p.evidenceLevel || "moderate"}</span>
+                    <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] font-bold text-slate-300">{p.visibility === "private" ? "Private" : "Public"}</span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {(p.confirmedTechnologies || p.technologies || []).map((tech) => (
@@ -373,6 +403,15 @@ function AllProjectsModal({ isOpen, onClose, projects, onToggleFeatured, onRefre
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onVisibility(p.id, p.visibility === "private" ? "public" : "private")}
+                    disabled={busyId === p.id}
+                    className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-white/10"
+                  >
+                    {p.visibility === "private" ? <EyeOff size={12} /> : <Eye size={12} />}
+                    {p.visibility === "private" ? "Make public" : "Make private"}
+                  </button>
                   <button
                     type="button"
                     onClick={() => onToggleFeatured(p.id)}
@@ -416,7 +455,7 @@ function AllProjectsModal({ isOpen, onClose, projects, onToggleFeatured, onRefre
               Close
             </button>
           </div>
-        </motion.div>
+        </Motion.div>
       </div>
     </AnimatePresence>
   );
@@ -425,18 +464,17 @@ function AllProjectsModal({ isOpen, onClose, projects, onToggleFeatured, onRefre
 function ProjectDetailsDrawer({ project, onClose }) {
   if (!project) return null;
   const detected = project.detectedTechnologies || [];
-  const confirmed = project.confirmedTechnologies || project.technologies || [];
 
   return (
     <AnimatePresence>
-      <motion.div
+      <Motion.div
         className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-[2px]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onMouseDown={onClose}
       >
-        <motion.aside
+        <Motion.aside
           role="dialog"
           aria-modal="true"
           aria-label={`Project details for ${project.title || project.name}`}
@@ -529,8 +567,8 @@ function ProjectDetailsDrawer({ project, onClose }) {
               </p>
             )}
           </div>
-        </motion.aside>
-      </motion.div>
+        </Motion.aside>
+      </Motion.div>
     </AnimatePresence>
   );
 }

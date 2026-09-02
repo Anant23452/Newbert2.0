@@ -134,7 +134,7 @@ export default function LeaderboardMetrics() {
     }
     if (activeBoard === "github") {
       const count = githubRange === "overall" ? entry.github?.totalContributions : entry.github?.[githubRange];
-      return `💻 ${count || 0} ${githubRange === "overall" ? "contributions" : "commits"}`;
+      return `💻 ${count || 0} verified activities`;
     }
     if (activeBoard === "dsa") {
       const count = leetcodeRange === "overall" ? entry.leetcode?.totalSolved : entry.leetcode?.[leetcodeRange];
@@ -175,7 +175,7 @@ export default function LeaderboardMetrics() {
               Real activity. Transparent rankings.
             </h1>
             <p className="mt-2 text-sm text-slate-400">
-              Ranked from verified GitHub commits, LeetCode solutions, and consecutive coding streaks.
+              Ranked from verified GitHub activity, LeetCode solutions, and consecutive coding streaks.
             </p>
           </div>
 

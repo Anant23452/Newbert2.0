@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/src/index.css" />
+    <title>Podium QA</title>
+  </head>
+  <body class="bg-[#0b1220] p-6">
+    <div id="root"></div>
+    <script type="module">
+      import React from "react";
+      import { createRoot } from "react-dom/client";
+      import { MemoryRouter } from "react-router-dom";
+      import PodiumTopThree from "/src/components/LeaderBoard/PodiumTopThree.jsx";
+
+      const users = [
+        { rank: 1, userId: "1", name: "Anant Kumar", college: { name: "REC Ambedkar Nagar" }, streak: { current: 52 } },
+        { rank: 2, userId: "2", name: "Dileep Yadav", college: { name: "AKTU Lucknow" }, streak: { current: 41 } },
+        { rank: 3, userId: "3", name: "A Student With A Very Long Name", college: { name: "Institute of Engineering and Technology" }, streak: { current: 29 } },
+      ];
+      createRoot(document.getElementById("root")).render(
+        React.createElement(MemoryRouter, null, React.createElement(PodiumTopThree, { users, metricType: "streak" })),
+      );
+    </script>
+  </body>
+</html>

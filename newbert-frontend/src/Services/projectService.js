@@ -20,6 +20,11 @@ export async function toggleFeaturedProject(projectId) {
   return data;
 }
 
+export async function updateProjectVisibility(projectId, visibility) {
+  const { data } = await API.patch(`/projects/${projectId}/visibility`, { visibility });
+  return data;
+}
+
 export async function refreshProjectAnalysis(projectId) {
   const { data } = await API.post(`/projects/${projectId}/refresh`);
   return data;

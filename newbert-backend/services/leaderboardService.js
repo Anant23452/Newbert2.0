@@ -16,20 +16,20 @@ function activityMetrics(profile) {
   const metricFor = (range) => {
     const dates = getDatesForRange(range);
     const acceptedProblems = new Set();
-    let githubCommits = 0;
+    let githubActivity = 0;
     for (const day of days) {
       if (dates && !dates.has(day.date)) continue;
       for (const slug of day.leetcodeAcceptedProblems || []) if (slug) acceptedProblems.add(slug);
-      githubCommits += Number(day.githubCommits) || Number(day.github) || 0;
+      githubActivity += Number(day.github) || 0;
     }
-    return { leetcode: acceptedProblems.size, github: githubCommits };
+    return { leetcode: acceptedProblems.size, github: githubActivity };
   };
   const activeDays = days.filter((day) => Number(day.total) > 0 || Number(day.github) > 0 || Number(day.leetcode) > 0);
   return {
     today: metricFor("today"),
     "7d": metricFor("7d"),
     "30d": metricFor("30d"),
-    githubContributions: days.reduce((total, day) => total + (Number(day.github) || Number(day.githubCommits) || 0), 0),
+    githubContributions: days.reduce((total, day) => total + (Number(day.github) || 0), 0),
     lastActivityDate: activeDays.map((day) => day.date).sort().at(-1) || "",
   };
 }
@@ -56,7 +56,7 @@ function buildLeaderboardEntry(profile, user) {
     overallScore,
     streak: streakVisible ? { current: currentStreak, longest: longestStreak } : { current: 0, longest: 0, private: true },
     leetcode: leetcodeConnected ? { connected: true, activityAvailable: Boolean(profile.leetcodeStats?.acceptedActivityAvailable), totalSolved, today: activity.today.leetcode, "7d": activity["7d"].leetcode, "30d": activity["30d"].leetcode } : { connected: false, activityAvailable: false },
-    github: githubConnected ? { connected: true, commitActivityAvailable: Boolean(profile.githubStats?.commitActivityAvailable), contributionActivityAvailable: Boolean(profile.githubStats?.contributionActivityAvailable || (profile.githubStats?.lastSyncedAt && !profile.githubStats?.activityError)), totalContributions: githubTotal, today: activity.today.github, "7d": activity["7d"].github, "30d": activity["30d"].github } : { connected: false, commitActivityAvailable: false, contributionActivityAvailable: false },
+    github: githubConnected ? { connected: true, activityAvailable: Boolean(profile.githubStats?.contributionActivityAvailable), contributionActivityAvailable: Boolean(profile.githubStats?.contributionActivityAvailable), totalContributions: githubTotal, today: activity.today.github, "7d": activity["7d"].github, "30d": activity["30d"].github } : { connected: false, activityAvailable: false, contributionActivityAvailable: false },
     lastSyncedAt: profile.lastSyncedAt || null,
   };
 }
@@ -133,11 +133,11 @@ async function getLeaderboard({ userId, scope, search, leetcodeRange, githubRang
   Object.assign(leetcode, { range: lcRange, label: rangeLabel(lcRange), metric: "questions", coverage: lcRange === "overall" ? "all solved problems" : "latest 100 accepted submissions", status: sectionStatus(mineEntry, "leetcode", lcAvailable, lcMetric) });
 
   // GitHub Board
-  const ghAvailable = (entry) => ghRange === "overall" ? entry.github.contributionActivityAvailable : entry.github.commitActivityAvailable;
+  const ghAvailable = (entry) => entry.github.activityAvailable;
   const ghMetric = (entry) => ghRange === "overall" ? entry.github.totalContributions : entry.github[ghRange];
   const github = rankEntries(entries.filter((entry) => ghAvailable(entry) && ghMetric(entry) > 0), ghMetric, userId, search);
   github.top = github.users.slice(0, 3);
-  Object.assign(github, { range: ghRange, label: rangeLabel(ghRange), metric: ghRange === "overall" ? "contributions" : "commits", status: sectionStatus(mineEntry, "github", ghAvailable, ghMetric) });
+  Object.assign(github, { range: ghRange, label: rangeLabel(ghRange), metric: "verified GitHub activity", status: sectionStatus(mineEntry, "github", ghAvailable, ghMetric) });
 
   return { scope, needsCollege: false, resolvedCollege, college: scope === "college" ? resolvedCollege : null, overall, streak, leetcode, github };
 }
@@ -160,4 +160,3 @@ async function getPublicStreakSnapshot(userId) {
 }
 
 module.exports = { VALID_RANGES, VALID_STREAK_RANGES, activityMetrics, buildLeaderboardEntry, rankEntries, getLeaderboard, getPublicStreakSnapshot, canJoinPublicLeaderboard };
-

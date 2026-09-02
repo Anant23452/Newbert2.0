@@ -16,6 +16,7 @@ const {
   getDatesForRange: serviceGetDates,
 } = require("../services/leaderboardService");
 const { serializePublicProfile } = require("../services/publicProfileService");
+const { fetchRecentEvents } = require("../services/githubService");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. DATE / TIMEZONE NORMALIZATION (IST, UTC+5:30)
@@ -92,6 +93,28 @@ test("mergeActivity correctly preserves 9 commits on Sep 1 and 1 commit on Sep 2
   assert.equal(sep2.github, 1);
   assert.equal(sep2.githubCommits, 1);
   assert.equal(sep2.total, 1);
+});
+
+test("recent GitHub events count supported verified work and do not label unrelated events as commits", async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async () => ({
+    ok: true,
+    json: async () => [
+      { type: "PushEvent", created_at: "2026-09-01T17:00:00Z", payload: { size: 9 } },
+      { type: "PullRequestEvent", created_at: "2026-09-01T17:10:00Z", payload: {} },
+      { type: "WatchEvent", created_at: "2026-09-01T17:20:00Z", payload: {} },
+      { type: "PushEvent", created_at: "2026-09-01T19:00:00Z", payload: { size: 1 } },
+    ],
+  });
+  try {
+    const activity = await fetchRecentEvents("student-a", {});
+    assert.deepEqual(activity, [
+      { date: "2026-09-01", count: 10, commits: 9, pullRequests: 1, issues: 0, repositoriesCreated: 0 },
+      { date: "2026-09-02", count: 1, commits: 1, pullRequests: 0, issues: 0, repositoriesCreated: 0 },
+    ]);
+  } finally {
+    global.fetch = originalFetch;
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

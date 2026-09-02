@@ -14,6 +14,11 @@ const WEIGHTS = Object.freeze({
   featureDepth: 10,
   technologyBreadth: 5,
 });
+const MAX_FEATURED_PROJECTS = 3;
+
+function exceedsFeaturedLimit(projects = []) {
+  return projects.filter((project) => project?.isFeatured === true).length > MAX_FEATURED_PROJECTS;
+}
 
 function bool(value) { return value === true; }
 
@@ -35,6 +40,7 @@ function normalizeProject(project = {}) {
     liveUrl: project.liveUrl || project.deploymentUrl || project.homepage || null,
     repositoryFullName: project.repositoryFullName || null,
     repositoryName: project.repositoryName || null,
+    repositoryPrivate: Boolean(project.repositoryPrivate || project.isPrivate),
     primaryLanguage: project.primaryLanguage || null,
     technologies,
     confirmedTechnologies: technologies,
@@ -139,7 +145,9 @@ function normalizeProjectEvidence(profile = {}) {
 }
 
 module.exports = {
+  MAX_FEATURED_PROJECTS,
   WEIGHTS,
+  exceedsFeaturedLimit,
   normalizeProject,
   normalizeProjectEvidence,
   scoreProject,

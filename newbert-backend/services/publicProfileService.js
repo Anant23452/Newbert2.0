@@ -51,6 +51,36 @@ function safeLinkedinUrl(value) {
   }
 }
 
+function safeHttpUrl(value) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function serializeFeaturedProjects(profile) {
+  return (profile.projectDetails || [])
+    .filter((project) => project?.isFeatured === true && project.visibility !== "private")
+    .slice(0, 3)
+    .map((project) => {
+      const technologies = project.confirmedTechnologies?.length
+        ? project.confirmedTechnologies
+        : project.technologies || [];
+      return {
+        id: String(project.id || project._id || project.repositoryName || project.name),
+        name: String(project.title || project.name || "Project"),
+        description: project.description ? String(project.description).slice(0, 280) : "",
+        technologies: [...new Set(technologies.map(String).map((item) => item.trim()).filter(Boolean))].slice(0, 8),
+        evidenceLabel: project.evidenceLabel ? String(project.evidenceLabel) : "",
+        repoUrl: project.repositoryPrivate ? "" : safeHttpUrl(project.repoUrl),
+        liveUrl: safeHttpUrl(project.liveUrl),
+      };
+    });
+}
+
 function publicActivityCalendar(profile, visible) {
   return (profile.activityCalendar || []).map((day) => {
     const github = visible.github ? Number(day.github) || 0 : 0;
@@ -58,6 +88,11 @@ function publicActivityCalendar(profile, visible) {
     return {
       date: day.date,
       github,
+      ...(visible.github ? {
+        githubCommits: Number(day.githubCommits) || 0,
+        githubPullRequests: Number(day.githubPullRequests) || 0,
+        githubIssues: Number(day.githubIssues) || 0,
+      } : {}),
       leetcode,
       total: github + leetcode,
     };
@@ -77,7 +112,16 @@ function serializePublicProfile(profile, user, today, streakLeaderboard = null) 
       leaderboardRankVisible: Boolean(visible.leaderboardRank),
     },
   };
-  if (result.private) return result;
+  if (result.private) {
+    return {
+      userId: result.userId,
+      name: result.name,
+      avatar: result.avatar,
+      private: true,
+      message: "This profile is private.",
+      visibleSections: [],
+    };
+  }
   result.cover = profile.coverUrl || "";
 
   if (visible.streakStats) {
@@ -93,8 +137,12 @@ function serializePublicProfile(profile, user, today, streakLeaderboard = null) 
     result.skills = (profile.skills || []).map((skill) => skill.name || skill).filter(Boolean);
   }
   if (visible.projects) {
+    const featured = serializeFeaturedProjects(profile);
     result.visibleSections.push("projects");
-    result.projects = { count: profile.projects ?? null };
+    result.projects = {
+      count: featured.length,
+      featured,
+    };
   }
   if (visible.github) {
     result.visibleSections.push("github");
@@ -105,8 +153,9 @@ function serializePublicProfile(profile, user, today, streakLeaderboard = null) 
       publicRepos: Number(profile.githubStats.publicRepos) || 0,
       followers: Number(profile.githubStats.followers) || 0,
       languages: profile.githubStats.languages || [],
-      commitsToday: Number(today?.githubCommits) || Number(today?.github) || 0,
-      metricAvailable: Boolean(profile.githubStats.commitActivityAvailable || profile.githubStats.contributionActivityAvailable),
+      activityToday: Number(today?.github) || 0,
+      commitsToday: Number(today?.githubCommits) || 0,
+      metricAvailable: Boolean(profile.githubStats.contributionActivityAvailable),
     } : { connected: false };
   }
   if (visible.leetcode) {
@@ -143,4 +192,4 @@ function serializePublicProfile(profile, user, today, streakLeaderboard = null) 
   return result;
 }
 
-module.exports = { DEFAULT_SECTIONS, normalizePrivacy, serializePublicProfile };
+module.exports = { DEFAULT_SECTIONS, normalizePrivacy, serializePublicProfile, serializeFeaturedProjects };

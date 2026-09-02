@@ -86,6 +86,7 @@ async function listUserRepositories(username) {
       updatedAt: repo.updated_at,
       pushedAt: repo.pushed_at,
       createdAt: repo.created_at,
+      isPrivate: Boolean(repo.private),
     }))
     .sort((a, b) => {
       // Non-forks first, then most recently updated
@@ -437,6 +438,7 @@ async function analyzeRepository(repoFullName, defaultBranch = "main") {
     repositoryId: repo.id,
     repositoryName: repo.name,
     repositoryFullName: repo.full_name || cleanName,
+    repositoryPrivate: Boolean(repo.private),
     title: repo.name.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
     description: repo.description || `Repository analyzed from GitHub (${repo.name})`,
     repoUrl: repo.html_url || `https://github.com/${cleanName}`,

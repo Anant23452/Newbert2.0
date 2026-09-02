@@ -1,5 +1,6 @@
 const express = require("express");
 const requireAuth = require("../middleWare/authMiddleware");
+const { optionalAuth } = require("../middleWare/authMiddleware");
 const {
   getMyProfile,
   updateMyProfile,
@@ -11,7 +12,7 @@ const {
 } = require("../Controllers/profileController");
 
 const router = express.Router();
-router.get("/:userId/public", getPublicProfile);
+router.get("/:userId/public", optionalAuth, getPublicProfile);
 router.use(requireAuth);
 router.get("/me", getMyProfile);
 router.put("/me", updateMyProfile);

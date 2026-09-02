@@ -35,9 +35,10 @@ function getKolkataToday() {
  * Returns date in Asia/Kolkata shifted by offsetDays (e.g. -1 for yesterday).
  */
 function getKolkataDayOffset(offsetDays = 0, baseDate = new Date()) {
-  const d = typeof baseDate === "string" || typeof baseDate === "number" ? new Date(baseDate) : new Date(baseDate.getTime());
-  d.setDate(d.getDate() + offsetDays);
-  return kolkataDate(d);
+  const base = kolkataDate(baseDate);
+  if (!base) return "";
+  const [year, month, day] = base.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + Number(offsetDays || 0))).toISOString().slice(0, 10);
 }
 
 /**

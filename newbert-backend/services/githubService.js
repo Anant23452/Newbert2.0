@@ -38,18 +38,31 @@ async function fetchRecentEvents(username, headers) {
       if (!date) continue;
 
       let commits = 0;
-      let count = 1;
+      let count = 0;
+      let pullRequests = 0;
+      let issues = 0;
+      let repositoriesCreated = 0;
       if (event.type === "PushEvent") {
         commits = event.payload?.commits?.length || event.payload?.size || event.payload?.distinct_size || 1;
         count = commits;
-      } else if (event.type === "PullRequestEvent" || event.type === "CreateEvent" || event.type === "IssuesEvent") {
+      } else if (event.type === "PullRequestEvent") {
         count = 1;
-        commits = 0;
+        pullRequests = 1;
+      } else if (event.type === "IssuesEvent") {
+        count = 1;
+        issues = 1;
+      } else if (event.type === "CreateEvent" && event.payload?.ref_type === "repository") {
+        count = 1;
+        repositoriesCreated = 1;
       }
+      if (!count) continue;
 
-      const existing = activityByDate.get(date) || { date, count: 0, commits: 0 };
+      const existing = activityByDate.get(date) || { date, count: 0, commits: 0, pullRequests: 0, issues: 0, repositoriesCreated: 0 };
       existing.count += count;
       existing.commits += commits;
+      existing.pullRequests += pullRequests;
+      existing.issues += issues;
+      existing.repositoriesCreated += repositoriesCreated;
       activityByDate.set(date, existing);
     }
 
@@ -86,7 +99,7 @@ async function getGithubActivity(username, years) {
   if (recentEvents.length > 0) {
     commitActivityAvailable = true;
     for (const ev of recentEvents) {
-      activityMap.set(ev.date, { date: ev.date, count: ev.count, commits: ev.commits });
+        activityMap.set(ev.date, { ...ev });
     }
   }
 
@@ -99,8 +112,15 @@ async function getGithubActivity(username, years) {
       for (const day of calendarDays) {
         const existing = activityMap.get(day.date);
         const count = Math.max(day.count || 0, existing?.count || 0);
-        const commits = Math.max(day.commits || 0, existing?.commits || 0, count);
-        activityMap.set(day.date, { date: day.date, count: Math.max(count, commits), commits });
+        const commits = Math.max(day.commits || 0, existing?.commits || 0);
+        activityMap.set(day.date, {
+          date: day.date,
+          count: Math.max(count, commits),
+          commits,
+          pullRequests: existing?.pullRequests || 0,
+          issues: existing?.issues || 0,
+          repositoriesCreated: existing?.repositoriesCreated || 0,
+        });
       }
     }
     const failure = calendarResults.find((result) => result.status === "rejected");
@@ -131,7 +151,7 @@ async function getGithubActivity(username, years) {
 }
 
 async function fetchContributionYear(username, year) {
-  const currentYear = new Date().getUTCFullYear();
+  const currentYear = Number(getKolkataToday().slice(0, 4));
   const toDate = year === currentYear
     ? new Date(Date.now() + 86400000 * 2).toISOString()
     : `${year}-12-31T23:59:59Z`;
@@ -157,12 +177,12 @@ async function fetchContributionYear(username, year) {
   return collection.contributionCalendar.weeks
     .flatMap((week) => week.contributionDays)
     .map((day) => {
-      const istDate = kolkataDate(day.date) || day.date;
+      // GitHub's contribution calendar already supplies a calendar date, not a timestamp.
+      const istDate = day.date;
       const count = Number(day.contributionCount) || 0;
-      const commits = commitsByDate.get(istDate) ?? commitsByDate.get(day.date) ?? count;
+      const commits = commitsByDate.get(istDate) || 0;
       return { date: istDate, count: Math.max(count, commits), commits };
     });
 }
 
 module.exports = { getGithubActivity, scanRepository, fetchRecentEvents, SCAN_LIMITS };
-

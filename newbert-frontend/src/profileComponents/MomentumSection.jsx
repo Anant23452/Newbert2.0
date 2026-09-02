@@ -12,7 +12,7 @@ function buildYear(year, activityCalendar) {
     const dateString = `${year}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     const item = activity.get(dateString);
     const github = Number(item?.github) || 0;
-    const githubCommits = Number(item?.githubCommits) || github;
+    const githubCommits = Number(item?.githubCommits) || 0;
     const leetcode = Number(item?.leetcode) || 0;
     const projectSource = item?.projectActivity ?? item?.project ?? item?.projects;
     const projectActivity = projectSource == null ? null : Number(projectSource) || 0;
@@ -24,6 +24,8 @@ function buildYear(year, activityCalendar) {
       weekday: date.getDay(),
       github,
       githubCommits,
+      githubPullRequests: Number(item?.githubPullRequests) || 0,
+      githubIssues: Number(item?.githubIssues) || 0,
       leetcode,
       leetcodeAccepted: Number(item?.leetcodeAccepted) || 0,
       projectActivity,
@@ -157,11 +159,13 @@ function Tooltip({ day, x, y }) {
           <p className="flex justify-between">
             <span className="text-slate-400">GitHub:</span>
             <span className="font-bold text-white">
-              {day.githubCommits || day.github} {day.githubCommits === 1 ? "commit" : "commits"}
-              {day.github && day.github !== day.githubCommits ? ` (${day.github} total)` : ""}
+              {day.github} verified {day.github === 1 ? "activity" : "activities"}
+              {day.githubCommits > 0 ? ` (${day.githubCommits} ${day.githubCommits === 1 ? "commit" : "commits"})` : ""}
             </span>
           </p>
         ) : null}
+        {day.githubPullRequests > 0 && <p className="flex justify-between"><span className="text-slate-400">Pull requests:</span><span className="font-bold text-white">{day.githubPullRequests}</span></p>}
+        {day.githubIssues > 0 && <p className="flex justify-between"><span className="text-slate-400">Issues:</span><span className="font-bold text-white">{day.githubIssues}</span></p>}
         {day.leetcode > 0 || day.leetcodeAccepted > 0 ? (
           <p className="flex justify-between">
             <span className="text-slate-400">LeetCode:</span>

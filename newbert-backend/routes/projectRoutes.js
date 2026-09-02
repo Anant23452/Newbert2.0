@@ -5,6 +5,7 @@ const {
   analyzeGithubRepository,
   addGithubProject,
   toggleFeaturedProject,
+  updateProjectVisibility,
   refreshProjectAnalysis,
   confirmProjectTechnologies,
   deleteProject,
@@ -17,6 +18,7 @@ router.get("/github/repos", getGithubRepositories);
 router.post("/github/analyze", analyzeGithubRepository);
 router.post("/github/add", addGithubProject);
 router.patch("/:id/featured", toggleFeaturedProject);
+router.patch("/:id/visibility", updateProjectVisibility);
 router.post("/:id/refresh", refreshProjectAnalysis);
 router.post("/:id/confirm-technologies", confirmProjectTechnologies);
 router.delete("/:id", deleteProject);

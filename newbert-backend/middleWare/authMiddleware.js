@@ -8,4 +8,14 @@ function requireAuth(req, res, next) {
   catch { return res.status(401).json({ message: "Your session is invalid or expired." }); }
 }
 
+function optionalAuth(req, res, next) {
+  const authorization = req.headers.authorization || "";
+  const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : null;
+  if (!token) return next();
+  try { req.auth = jwt.verify(token, process.env.JWT_SECRET); }
+  catch { req.auth = null; }
+  return next();
+}
+
 module.exports = requireAuth;
+module.exports.optionalAuth = optionalAuth;

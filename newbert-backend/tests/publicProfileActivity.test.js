@@ -25,10 +25,27 @@ function profile(overrides = {}) {
 test("private public profile does not expose streak, links, or daily activity", () => {
   const result = serializePublicProfile(profile({ privacy: { profileVisibility: "private", sections: {} } }), user, null, { visible: true });
   assert.equal(result.private, true);
-  assert.equal(result.leaderboard.streakDays, undefined);
+  assert.equal(result.leaderboard, undefined);
+  assert.equal(result.college, undefined);
+  assert.equal(result.branch, undefined);
   assert.equal(result.activityCalendar, undefined);
   assert.equal(result.linkedin, undefined);
   assert.equal(result.streakLeaderboard, undefined);
+});
+
+test("public profile returns at most three featured public projects with safe links", () => {
+  const projectDetails = [
+    { id: "one", name: "One", isFeatured: true, visibility: "public", repoUrl: "https://github.com/student/one", confirmedTechnologies: ["React"] },
+    { id: "two", name: "Two", isFeatured: true, visibility: "private", repoUrl: "https://github.com/student/two" },
+    { id: "three", name: "Three", isFeatured: true, visibility: "public", repositoryPrivate: true, repoUrl: "https://github.com/student/three", technologies: ["Node.js"] },
+    { id: "four", name: "Four", isFeatured: true, visibility: "public", liveUrl: "javascript:alert(1)" },
+    { id: "five", name: "Five", isFeatured: true, visibility: "public" },
+  ];
+  const result = serializePublicProfile(profile({ projectDetails }), user);
+  assert.deepEqual(result.projects.featured.map((project) => project.id), ["one", "three", "four"]);
+  assert.equal(result.projects.featured[1].repoUrl, "");
+  assert.equal(result.projects.featured[2].liveUrl, "");
+  assert.equal(result.projects.count, 3);
 });
 
 test("private heatmap keeps public streak totals but hides exact dates", () => {
@@ -61,4 +78,3 @@ test("current streak keeps yesterday's run while today is incomplete", () => {
   const activity = [-3, -2, -1].map((offset) => ({ date: indiaDate(offset), github: 1, leetcode: 0, total: 1 }));
   assert.equal(calculateStreaks(activity).currentStreak, 3);
 });
-

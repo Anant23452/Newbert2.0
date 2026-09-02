@@ -3,7 +3,7 @@ const User = require("../Models/User");
 const Plan = require("../Models/Plan");
 const { listUserRepositories, analyzeRepository } = require("../services/githubProjectAnalyzerService");
 const { buildSkillEvidence } = require("../services/skillEvidenceService");
-const { normalizeProject, scoreProject } = require("../services/projectEvidenceService");
+const { exceedsFeaturedLimit, normalizeProject, scoreProject } = require("../services/projectEvidenceService");
 
 /**
  * Helper to retrieve user profile and github username
@@ -132,6 +132,7 @@ exports.addGithubProject = async (req, res, next) => {
       liveUrl: body.liveUrl || projectAnalysis?.liveUrl || isEditing?.liveUrl || null,
       repositoryFullName: repoFullName || projectAnalysis?.repositoryFullName || null,
       repositoryName: repoName || projectAnalysis?.repositoryName || null,
+      repositoryPrivate: Boolean(projectAnalysis?.repositoryPrivate ?? body.repositoryPrivate ?? isEditing?.repositoryPrivate),
       primaryLanguage: projectAnalysis?.primaryLanguage || isEditing?.primaryLanguage || null,
       technologies: confirmedTech,
       confirmedTechnologies: confirmedTech,
@@ -143,7 +144,9 @@ exports.addGithubProject = async (req, res, next) => {
       source: "github",
       lastAnalyzedAt: new Date(),
       githubUpdatedAt: projectAnalysis?.githubUpdatedAt || new Date(),
-      visibility: "public",
+      visibility: ["public", "private"].includes(body.visibility)
+        ? body.visibility
+        : isEditing?.visibility || "public",
     });
 
     const scored = scoreProject(newProject);
@@ -157,16 +160,9 @@ exports.addGithubProject = async (req, res, next) => {
     }
 
     // Enforce max 3 featured projects
-    const featuredCount = updatedList.filter((p) => p.isFeatured).length;
-    if (featuredCount > 3 && scored.isFeatured) {
-      // Unpin earliest featured project
-      let unpinned = false;
-      updatedList = updatedList.map((p) => {
-        if (!unpinned && p.isFeatured && p.id !== scored.id) {
-          unpinned = true;
-          return { ...p, isFeatured: false };
-        }
-        return p;
+    if (exceedsFeaturedLimit(updatedList)) {
+      return res.status(400).json({
+        message: "You can feature a maximum of 3 projects. Unpin one before featuring another.",
       });
     }
 
@@ -192,6 +188,38 @@ exports.addGithubProject = async (req, res, next) => {
       projects: updatedList,
       featuredProjects: updatedList.filter((p) => p.isFeatured).slice(0, 3),
       skillEvidence: skillEvidence.skills.slice(0, 8),
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * PATCH /api/projects/:id/visibility
+ * Changes whether a confirmed project may appear on the owner's public profile.
+ */
+exports.updateProjectVisibility = async (req, res, next) => {
+  try {
+    const visibility = String(req.body.visibility || "");
+    if (!["public", "private"].includes(visibility)) {
+      return res.status(400).json({ message: "Choose public or private project visibility." });
+    }
+    const profile = await getAuthenticatedProfile(req.auth.id);
+    const projectId = String(req.params.id);
+    const target = (profile.projectDetails || []).find(
+      (project) => String(project.id) === projectId || String(project._id) === projectId,
+    );
+    if (!target) return res.status(404).json({ message: "Project not found in profile." });
+
+    profile.projectDetails = profile.projectDetails.map((project) => (
+      String(project.id) === projectId || String(project._id) === projectId
+        ? { ...project, visibility }
+        : project
+    ));
+    await profile.save();
+    return res.json({
+      message: `Project is now ${visibility}.`,
+      projects: profile.projectDetails,
     });
   } catch (error) {
     return next(error);

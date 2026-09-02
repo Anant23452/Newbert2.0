@@ -52,7 +52,8 @@ export default function CareerDashboard({ profile, onEdit, onLogout }) {
     setPrivacyState({ saving: key, status: "" });
     try {
       const { data } = await API.patch("/profiles/privacy", next);
-      setPrivacy(data.privacy);
+      const confirmation = await API.get("/profiles/me");
+      setPrivacy(confirmation.data.privacy || data.privacy);
       setPrivacyState({ saving: "", status: "Saved" });
     } catch {
       setPrivacy(previous);
@@ -154,6 +155,7 @@ function CareerDashboardView({
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <PrivacySelect label="Profile" value={privacy.profileVisibility} onChange={(value) => onPrivacyChange("profileVisibility", value)} disabled={Boolean(privacyState.saving)} dark />
+                {privacy.profileVisibility === "private" && <span className="rounded-md border border-orange-400/30 bg-orange-400/10 px-2 py-1.5 text-[11px] font-extrabold text-orange-200">Private profile</span>}
                 <button type="button" onClick={onEdit} className="inline-flex h-9 items-center gap-2 rounded-md bg-orange-500 px-3 text-xs font-extrabold text-slate-950 hover:bg-orange-400">
                   <Pencil size={15} /> Edit
                 </button>
