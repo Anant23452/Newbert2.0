@@ -78,3 +78,49 @@ test("current streak keeps yesterday's run while today is incomplete", () => {
   const activity = [-3, -2, -1].map((offset) => ({ date: indiaDate(offset), github: 1, leetcode: 0, total: 1 }));
   assert.equal(calculateStreaks(activity).currentStreak, 3);
 });
+
+test("private profile returns strictly minimal safe identity payload with zero leaks", () => {
+  const fullProfile = profile({
+    bio: "Secret bio",
+    skills: [{ name: "React" }, { name: "Node.js" }],
+    targetRole: "Frontend Engineer",
+    targetCompany: "Google",
+    cgpa: 9.2,
+    graduationYear: 2026,
+    projectDetails: [{ id: "p1", name: "Secret Project", isFeatured: true, visibility: "public" }],
+    privacy: { profileVisibility: "private", sections: { skills: true, projects: true, github: true } },
+  });
+  const result = serializePublicProfile(fullProfile, user, null, { visible: true });
+  assert.equal(result.private, true);
+  assert.equal(result.name, "Test Student");
+  assert.equal(result.message, "This profile is private.");
+  assert.deepEqual(result.visibleSections, []);
+  assert.equal(result.about, undefined);
+  assert.equal(result.skills, undefined);
+  assert.equal(result.projects, undefined);
+  assert.equal(result.github, undefined);
+  assert.equal(result.leetcode, undefined);
+  assert.equal(result.education, undefined);
+  assert.equal(result.careerGoal, undefined);
+  assert.equal(result.linkedin, undefined);
+  assert.equal(result.activityCalendar, undefined);
+  assert.equal(result.streakLeaderboard, undefined);
+  assert.equal(result.targetCompany, undefined);
+});
+
+test("hidden projects section hides all projects even if individual projects are public and featured", () => {
+  const projectDetails = [
+    { id: "p1", name: "Project 1", isFeatured: true, visibility: "public" },
+  ];
+  const result = serializePublicProfile(profile({ projectDetails, privacy: { profileVisibility: "public", sections: { projects: false } } }), user);
+  assert.equal(result.projects, undefined);
+  assert.ok(!result.visibleSections.includes("projects"));
+});
+
+test("canJoinPublicLeaderboard strictly blocks private profiles from public leaderboard rankings", () => {
+  const { canJoinPublicLeaderboard } = require("../services/leaderboardService");
+  assert.equal(canJoinPublicLeaderboard({ privacy: { profileVisibility: "private", sections: { leaderboardRank: true } } }), false);
+  assert.equal(canJoinPublicLeaderboard({ privacy: { profileVisibility: "public", sections: { leaderboardRank: false } } }), false);
+  assert.equal(canJoinPublicLeaderboard({ privacy: { profileVisibility: "public", sections: { leaderboardRank: true } } }), true);
+});
+

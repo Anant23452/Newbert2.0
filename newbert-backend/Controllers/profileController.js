@@ -29,9 +29,11 @@ function normalizeLeetcodeStats(stats) {
 
 exports.getPublicProfile = async (req, res, next) => {
   try {
-    const [profile, user] = await Promise.all([Profile.findOne({ userId: req.params.userId }).lean(), User.findById(req.params.userId).select("name email avatarUrl").lean()]);
+    const isOwner = req.auth?.id && String(req.auth.id) === String(req.params.userId);
+    const userSelect = isOwner ? "name email avatarUrl" : "name avatarUrl";
+    const [profile, user] = await Promise.all([Profile.findOne({ userId: req.params.userId }).lean(), User.findById(req.params.userId).select(userSelect).lean()]);
     if (!profile || !user) return res.status(404).json({ message: "Profile not found." });
-    if (req.auth?.id && String(req.auth.id) === String(req.params.userId)) {
+    if (isOwner) {
       return res.json(response(profile, user));
     }
     const today = (profile.activityCalendar || []).find((day) => day.date === getKolkataToday());
@@ -83,7 +85,7 @@ function sanitizedActivity(profile, leetcodeStats) {
   const leetcodeIsValid = Boolean(leetcodeStats);
   return (profile.activityCalendar || []).map((day) => {
     const github = Number(day.github) || 0;
-    const githubCommits = Number(day.githubCommits) || 0;
+    const githubCommits = Number(day.githubCommits) || github;
     const leetcode = leetcodeIsValid ? Number(day.leetcode) || 0 : 0;
     return { date: day.date, github, githubCommits, githubPullRequests: Number(day.githubPullRequests) || 0, githubIssues: Number(day.githubIssues) || 0, githubRepositoriesCreated: Number(day.githubRepositoriesCreated) || 0, leetcode, leetcodeAccepted: Number(day.leetcodeAccepted) || 0, leetcodeAcceptedProblems: Array.isArray(day.leetcodeAcceptedProblems) ? day.leetcodeAcceptedProblems : [], total: github + leetcode };
   }).filter((day) => day.total > 0);

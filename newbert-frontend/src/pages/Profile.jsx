@@ -285,7 +285,8 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
     setPrivacyState({ saving: key, status: "" });
     try {
       const { data } = await API.patch("/profiles/privacy", next);
-      setPrivacy(data.privacy);
+      const confirmation = await API.get("/profiles/me");
+      setPrivacy(confirmation.data.privacy || data.privacy);
       setPrivacyState({ saving: "", status: "Saved" });
     } catch {
       setPrivacy(previous);
@@ -319,24 +320,27 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
     ]).then(([collegeResponse, globalResponse]) => {
       const college = collegeResponse.data.streak;
       const global = globalResponse.data.streak;
-      const preview = college?.users?.length ? college : global;
-      setStreakSnapshot({ loading: false, data: { visible: true, profileOwner: global?.currentUser || college?.currentUser || null, collegeRank: college?.currentUser?.rank || null, globalRank: global?.currentUser?.rank || null, users: (preview?.users || []).slice(0, 6) } });
-    }).catch((error) => { if (error.code !== "ERR_CANCELED") setStreakSnapshot({ loading: false, data: null }); });
+      const rankFor = (board) => (board?.users || []).find((entry) => entry.userId === profile.userId)?.rank || null;
+      setStreakSnapshot({
+        loading: false,
+        data: {
+          visible: true,
+          collegeRank: rankFor(college),
+          globalRank: rankFor(global),
+          scope: college?.users?.length ? "college" : "global",
+          users: (college?.users?.length ? college : global)?.users?.slice(0, 5) || [],
+        },
+      });
+    }).catch(() => setStreakSnapshot({ loading: false, data: { visible: false } }));
     return () => controller.abort();
   }, [privacy.profileVisibility, privacy.sections.leaderboardRank, privacy.sections.streakStats, profile.lastSyncedAt]);
-  const initials = profile.name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = profile.name?.slice(0, 2).toUpperCase() || "NB";
 
   return (
-    <main className="profile-page min-h-screen px-5 py-10 md:py-14">
-      <div className="mx-auto max-w-6xl space-y-6">
-        {/* Profile Hero Header */}
+    <main className="profile-page min-h-screen px-5 py-12">
+      <div className="mx-auto max-w-6xl space-y-8">
         <section className="profile-hero overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="h-28 bg-[#2c1c18] bg-cover bg-center" style={profile.cover ? { backgroundImage: `url(${profile.cover})` } : undefined} />
+          <div className="h-32 bg-slate-100 bg-cover bg-center" style={profile.cover ? { backgroundImage: `url(${profile.cover})` } : undefined} />
           <div className="px-5 pb-6 md:px-7">
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div className="flex items-end gap-4">
@@ -349,7 +353,14 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
                   <p className="mt-1 text-sm font-medium text-slate-600">
                     {profile.college}{profile.graduationYear ? ` · Class of ${profile.graduationYear}` : ""}{profile.targetRole ? ` · ${profile.targetRole}` : ""}
                   </p>
-                  <div className="mt-3"><PrivacySelect label="Profile Visibility" value={privacy.profileVisibility} onChange={(value) => updatePrivacy("profileVisibility", value)} disabled={Boolean(privacyState.saving)}/></div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <PrivacySelect label="Profile Visibility" value={privacy.profileVisibility} onChange={(value) => updatePrivacy("profileVisibility", value)} disabled={Boolean(privacyState.saving)}/>
+                    {privacy.profileVisibility === "private" && (
+                      <span className="rounded-md border border-orange-400/30 bg-orange-400/10 px-2 py-1 text-[11px] font-extrabold text-orange-600">
+                        Private profile
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-2"><button onClick={onEdit} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:border-orange-500 hover:text-orange-600">Edit profile</button><button onClick={onLogout} className="rounded-lg border border-red-200 px-4 py-2 text-sm font-extrabold text-red-700 transition hover:border-red-500">Log out</button></div>

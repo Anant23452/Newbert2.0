@@ -178,8 +178,11 @@ function serializePublicProfile(profile, user, today, streakLeaderboard = null) 
     result.careerGoal = { role: profile.targetRole || "" };
   }
 
+  // LinkedIn is intentionally guarded: only visible on public profiles.
+  // There is no dedicated linkedin section toggle; it is controlled by overall profile visibility.
   const linkedinUrl = safeLinkedinUrl(profile.linkedinUrl);
   if (linkedinUrl) result.linkedin = { url: linkedinUrl };
+
   result.activitySources = {
     github: Boolean(visible.github && (profile.githubUsername || profile.githubStats?.username)),
     leetcode: Boolean(visible.leetcode && (profile.leetcodeUsername || profile.leetcodeStats?.username)),

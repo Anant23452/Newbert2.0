@@ -37,13 +37,22 @@ const normalize = (value) => String(value || "").trim().toLowerCase();
 const numeric = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
 const skillName = (skill) => typeof skill === "string" ? skill : skill?.name;
 
+import useAuth from "../hook/useAuth";
+
 const DEFAULT_PROFILE_PRIVACY = { profileVisibility: "public", sections: { about: true, skills: true, projects: true, github: true, leetcode: true, achievements: true, education: true, careerGoal: true, courses: true, activityHeatmap: true, streakStats: true, leaderboardRank: true } };
 
 export default function CareerDashboard({ profile, onEdit, onLogout }) {
+  const { refreshProfile } = useAuth();
   const [seniorMatch, setSeniorMatch] = useState({ loading: true, match: null, closest: [], benchmark: null, goal: "", reason: "", error: "" });
   const [privacy, setPrivacy] = useState(profile.privacy || DEFAULT_PROFILE_PRIVACY);
   const [privacyState, setPrivacyState] = useState({ saving: "", status: "" });
   const [streakSnapshot, setStreakSnapshot] = useState({ loading: true, data: null });
+
+  useEffect(() => {
+    if (profile?.privacy) {
+      setPrivacy(profile.privacy);
+    }
+  }, [profile?.privacy]);
 
   const updatePrivacy = async (key, value) => {
     const previous = privacy;
@@ -54,6 +63,7 @@ export default function CareerDashboard({ profile, onEdit, onLogout }) {
       const { data } = await API.patch("/profiles/privacy", next);
       const confirmation = await API.get("/profiles/me");
       setPrivacy(confirmation.data.privacy || data.privacy);
+      if (refreshProfile) await refreshProfile();
       setPrivacyState({ saving: "", status: "Saved" });
     } catch {
       setPrivacy(previous);
