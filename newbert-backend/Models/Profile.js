@@ -51,6 +51,7 @@ const profileSchema = new mongoose.Schema({
   evidenceCache: { type: mongoose.Schema.Types.Mixed, default: () => ({ github: null, leetcode: null, readiness: null }) },
   lastSyncedAt: Date,
   currentStreak: { type: Number, default: 0, min: 0 }, longestStreak: { type: Number, default: 0, min: 0 },
+  visibility: { type: String, enum: ["public", "private"], default: "public" },
   privacy: { type: privacySchema, default: () => ({}) },
   onboardingCompleted: { type: Boolean, default: false },
 }, { timestamps: true });

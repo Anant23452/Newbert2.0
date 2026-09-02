@@ -14,8 +14,9 @@ const DEFAULT_SECTIONS = Object.freeze({
 });
 
 function normalizePrivacy(privacy) {
+  const vis = privacy?.profileVisibility || privacy?.visibility;
   return {
-    profileVisibility: privacy?.profileVisibility === "private" ? "private" : "public",
+    profileVisibility: vis === "private" ? "private" : "public",
     sections: { ...DEFAULT_SECTIONS, ...(privacy?.sections || {}) },
   };
 }
@@ -116,8 +117,11 @@ function serializePublicProfile(profile, user, today, streakLeaderboard = null) 
     return {
       userId: result.userId,
       name: result.name,
+      displayName: result.name,
       avatar: result.avatar,
       private: true,
+      isPrivate: true,
+      visibility: "private",
       message: "This profile is private.",
       visibleSections: [],
     };

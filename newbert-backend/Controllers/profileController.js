@@ -29,17 +29,18 @@ function normalizeLeetcodeStats(stats) {
 
 exports.getPublicProfile = async (req, res, next) => {
   try {
-    const isOwner = req.auth?.id && String(req.auth.id) === String(req.params.userId);
-    const userSelect = isOwner ? "name email avatarUrl" : "name avatarUrl";
-    const [profile, user] = await Promise.all([Profile.findOne({ userId: req.params.userId }).lean(), User.findById(req.params.userId).select(userSelect).lean()]);
+    const isOwner = Boolean(req.auth?.id && String(req.auth.id) === String(req.params.userId));
+    const [profile, user] = await Promise.all([Profile.findOne({ userId: req.params.userId }).lean(), User.findById(req.params.userId).select("name avatarUrl").lean()]);
     if (!profile || !user) return res.status(404).json({ message: "Profile not found." });
-    if (isOwner) {
-      return res.json(response(profile, user));
-    }
+
     const today = (profile.activityCalendar || []).find((day) => day.date === getKolkataToday());
     const streakLeaderboard = await getPublicStreakSnapshot(req.params.userId);
-    res.json(serializePublicProfile(profile, user, today, streakLeaderboard));
-  } catch (error) { next(error); }
+    const serialized = serializePublicProfile(profile, user, today, streakLeaderboard);
+    if (isOwner) {
+      serialized.isOwner = true;
+    }
+    return res.json(serialized);
+  } catch (error) { return next(error); }
 };
 
 function mergeActivity(githubActivity = [], leetcodeActivity = []) {
@@ -137,6 +138,7 @@ function response(profile, user) {
       linkedin: { connected: Boolean(profile.linkedinUrl), synced: Boolean(profile.linkedinUrl), error: null },
     },
     privacy: normalizePrivacy(profile.privacy),
+    visibility: profile.visibility || profile.privacy?.profileVisibility || "public",
     ...streaks,
   };
 }
@@ -271,10 +273,10 @@ exports.updatePrivacy = async (req, res, next) => {
     }
     await Profile.findOneAndUpdate(
       { userId: req.auth.id },
-      { $set: { privacy: { profileVisibility: visibility, sections } } },
+      { $set: { visibility, "privacy.profileVisibility": visibility, "privacy.sections": sections } },
       { upsert: true, runValidators: true, setDefaultsOnInsert: true },
     );
-    return res.json({ message: "Privacy settings updated.", privacy: { profileVisibility: visibility, sections } });
+    return res.json({ message: "Privacy settings updated.", visibility, privacy: { profileVisibility: visibility, sections } });
   } catch (error) { return next(error); }
 };
 

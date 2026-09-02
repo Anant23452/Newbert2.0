@@ -138,6 +138,7 @@ test("calculateStreaks: 9 commits on Sep 1 + 1 commit on Sep 2 equals 2 streak d
 
 test("User ownership: Anant and Dileep Yadav receive distinct activity data with zero cross-user leakage", () => {
   const userAnant = { _id: "user-anant-001", name: "Anant Sharma", avatarUrl: "" };
+  const today = getKolkataToday();
   const profileAnant = {
     userId: userAnant._id,
     githubUsername: "anantsharma",
@@ -145,7 +146,7 @@ test("User ownership: Anant and Dileep Yadav receive distinct activity data with
     longestStreak: 12,
     activityCalendar: [
       { date: "2026-09-01", github: 9, githubCommits: 9, total: 9 },
-      { date: "2026-09-02", github: 1, githubCommits: 1, total: 1 },
+      { date: today, github: 1, githubCommits: 1, total: 1 },
     ],
     privacy: { profileVisibility: "public", sections: { github: true, streakStats: true, leaderboardRank: true } },
   };

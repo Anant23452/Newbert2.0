@@ -12,20 +12,49 @@ export default function PublicProfile() {
   const { profile: ownProfile } = useAuth();
   const [state, setState] = useState({ loading: true });
   useEffect(() => {
-    if (ownProfile?.userId === userId) { navigate("/profile", { replace: true }); return undefined; }
     let active = true;
     API.get(`/profiles/${userId}/public`).then(({ data }) => { if (active) setState({ profile: data, loading: false }); }).catch((error) => { if (active) setState({ error: error.response?.data?.message || "Profile not found.", loading: false }); });
     return () => { active = false; };
-  }, [userId, ownProfile?.userId, navigate]);
+  }, [userId]);
   if (state.loading) return <PublicProfileLoading/>;
   if (state.error) return <main className="min-h-screen bg-[#111827] p-10 text-white"><Link to="/leaderboard" className="text-orange-300">Back to Leaderboard</Link><p className="mt-8">{state.error}</p></main>;
   const p = state.profile;
   return (
     <main className="min-h-screen bg-[#0b1220] px-5 py-12 text-white">
       <div className="mx-auto max-w-5xl">
-        <Link to="/leaderboard" className="inline-flex items-center gap-1.5 text-sm font-extrabold text-orange-400 hover:text-orange-300 transition">
-          ← Back to Leaderboard
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link to="/leaderboard" className="inline-flex items-center gap-1.5 text-sm font-extrabold text-orange-400 hover:text-orange-300 transition">
+            ← Back to Leaderboard
+          </Link>
+          {p.isOwner && (
+            <Link to="/profile" className="text-xs font-extrabold text-amber-300 hover:text-amber-200 transition">
+              Go to Dashboard →
+            </Link>
+          )}
+        </div>
+
+        {p.isOwner && (
+          <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 shadow-lg">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl">👁️</span>
+              <div>
+                <p className="text-xs font-black text-amber-200">Owner Preview Mode</p>
+                <p className="text-[11px] text-amber-300/80">
+                  {p.private
+                    ? "Your profile is set to PRIVATE. Other students and recruiters see this locked screen."
+                    : "Your profile is set to PUBLIC. Other students see your featured projects and public stats."}
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/profile"
+              className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-black text-slate-950 hover:bg-amber-400 transition shrink-0"
+            >
+              Edit in Dashboard
+            </Link>
+          </div>
+        )}
+
         <header className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-[#111927]">
           <div className="h-32 bg-[#1b2438] bg-cover bg-center" style={p.cover ? { backgroundImage: `url(${p.cover})` } : undefined} />
           <div className="px-6 pb-6">

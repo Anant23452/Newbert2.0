@@ -28,7 +28,7 @@ const STREAK_RANGES = [
 export default function LeaderboardMetrics() {
   const { profile, isAuthenticated, refreshProfile } = useAuth();
   const [activeBoard, setActiveBoard] = useState("streak");
-  const [scope, setScope] = useState("college");
+  const [scope, setScope] = useState("global");
   const [search, setSearch] = useState("");
   const [leetcodeRange, setLeetcodeRange] = useState("7d");
   const [githubRange, setGithubRange] = useState("7d");
@@ -331,8 +331,25 @@ export default function LeaderboardMetrics() {
               />
             ) : (
               <div className="rounded-2xl border border-white/10 bg-[#111927] p-8 text-center text-slate-400">
-                <p className="text-sm font-bold">No activity recorded for this period yet.</p>
-                <p className="mt-1 text-xs">Sync your GitHub or LeetCode profile to claim a top rank.</p>
+                <p className="text-sm font-bold">
+                  {scope === "college"
+                    ? "No activity recorded for your college in this period yet."
+                    : "No activity recorded for this period yet."}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {scope === "college"
+                    ? "Switch to the global leaderboard to see leading performers across all colleges."
+                    : "Sync your GitHub or LeetCode profile to claim a top rank."}
+                </p>
+                {scope === "college" && (
+                  <button
+                    type="button"
+                    onClick={() => setScope("global")}
+                    className="mt-3.5 inline-block rounded-lg bg-orange-500 px-4 py-1.5 text-xs font-black text-slate-950 hover:bg-orange-400 transition shadow-md"
+                  >
+                    View Global Leaderboard
+                  </button>
+                )}
               </div>
             )}
 

@@ -10,11 +10,13 @@ import {
   CircleHelp,
   Code2,
   ExternalLink,
+  Eye,
   Flame,
   FolderGit2,
   Github,
   GraduationCap,
   Linkedin,
+  Lock,
   LogOut,
   Pencil,
   Route,
@@ -166,6 +168,9 @@ function CareerDashboardView({
               <div className="flex flex-wrap items-center gap-2">
                 <PrivacySelect label="Profile" value={privacy.profileVisibility} onChange={(value) => onPrivacyChange("profileVisibility", value)} disabled={Boolean(privacyState.saving)} dark />
                 {privacy.profileVisibility === "private" && <span className="rounded-md border border-orange-400/30 bg-orange-400/10 px-2 py-1.5 text-[11px] font-extrabold text-orange-200">Private profile</span>}
+                <Link to={`/profile/${profile.userId}`} className="inline-flex h-9 items-center gap-1.5 rounded-md border border-white/15 px-3 text-xs font-extrabold text-slate-300 hover:border-orange-400 hover:text-white transition">
+                  <Eye size={14} /> Public view
+                </Link>
                 <button type="button" onClick={onEdit} className="inline-flex h-9 items-center gap-2 rounded-md bg-orange-500 px-3 text-xs font-extrabold text-slate-950 hover:bg-orange-400">
                   <Pencil size={15} /> Edit
                 </button>
@@ -174,6 +179,23 @@ function CareerDashboardView({
                 </button>
               </div>
             </div>
+
+            {privacy.profileVisibility === "private" && (
+              <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-lg border border-orange-500/30 bg-orange-500/10 p-3.5 text-xs font-bold text-orange-200">
+                <div className="flex items-center gap-2.5">
+                  <Lock size={16} className="text-orange-400 shrink-0" />
+                  <span>Your profile is currently <strong>PRIVATE</strong>. Other students and recruiters cannot view your skills, projects, or activity.</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link to={`/profile/${profile.userId}`} className="rounded border border-orange-400/40 bg-orange-400/20 px-2.5 py-1 text-[11px] font-black text-orange-100 hover:bg-orange-400/30 transition">
+                    Preview Locked View
+                  </Link>
+                  <button type="button" onClick={() => onPrivacyChange("profileVisibility", "public")} className="rounded bg-orange-500 px-2.5 py-1 text-[11px] font-black text-slate-950 hover:bg-orange-400 transition">
+                    Make Public
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-white/10 lg:grid-cols-4">
               <SummaryMetric icon={Activity} label="Verified activities" value={activityTotal} />
