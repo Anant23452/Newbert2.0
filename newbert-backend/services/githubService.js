@@ -1,5 +1,5 @@
 const { analyzeRepositorySnapshot } = require("./skillEvidenceService");
-const { kolkataDate, getKolkataToday } = require("../utils/dateNormalization");
+const { toActivityDate, kolkataDate, getKolkataToday } = require("../utils/dateNormalization");
 
 const SCAN_LIMITS = Object.freeze({ repositories: 5, filesPerRepository: 20, maxFileBytes: 100000 });
 const IGNORE_PATH = /(^|\/)(node_modules|dist|build|vendor|coverage|\.next|generated)(\/|$)|(?:package-lock|yarn\.lock|pnpm-lock)/i;
@@ -24,9 +24,14 @@ async function scanRepository(repo, headers) {
   return { name: repo.name, url: repo.html_url, liveUrl: repo.homepage || null, description: repo.description || null, language: repo.language || null, hasReadme: files.some((file) => /(^|\/)readme/i.test(file)), filesInspected: files.length, ...analyzeRepositorySnapshot({ dependencies, devDependencies, files, content }) };
 }
 
-async function fetchRecentEvents(username, headers) {
+async function fetchRecentEvents(username, headers, timezone = "Asia/Kolkata") {
   try {
     const eventsResponse = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}/events?per_page=100`, { headers });
+    if (eventsResponse.status === 403 || eventsResponse.status === 429) {
+      const empty = [];
+      Object.defineProperty(empty, "rateLimited", { value: true, enumerable: false, writable: true });
+      return empty;
+    }
     if (!eventsResponse.ok) return [];
     const events = await eventsResponse.json();
     if (!Array.isArray(events)) return [];
@@ -34,7 +39,7 @@ async function fetchRecentEvents(username, headers) {
     const activityByDate = new Map();
     for (const event of events) {
       if (!event.created_at) continue;
-      const date = kolkataDate(event.created_at);
+      const date = toActivityDate(event.created_at, timezone);
       if (!date) continue;
 
       let commits = 0;
@@ -66,46 +71,80 @@ async function fetchRecentEvents(username, headers) {
       activityByDate.set(date, existing);
     }
 
-    return [...activityByDate.values()];
+    const result = [...activityByDate.values()];
+    Object.defineProperty(result, "rateLimited", { value: false, enumerable: false, writable: true });
+    return result;
   } catch {
     return [];
   }
 }
 
-async function getGithubActivity(username, years) {
+async function getGithubActivity(username, years, options = {}) {
+  const timezone = options.timezone || "Asia/Kolkata";
   const headers = { Accept: "application/vnd.github+json", "User-Agent": "Newbert", ...(process.env.GITHUB_TOKEN && { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }) };
   const userResponse = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}`, { headers });
   if (userResponse.status === 404) throw new Error("GitHub profile not found. Check the username and try again.");
+  if (userResponse.status === 403) {
+    return {
+      username,
+      rateLimited: true,
+      activity: [],
+      activityError: "GitHub API rate limit reached. Retaining existing stored activity.",
+      commitActivityAvailable: false,
+      contributionActivityAvailable: false,
+      lastSyncedAt: new Date().toISOString(),
+    };
+  }
   if (!userResponse.ok) throw new Error(`GitHub profile sync failed (${userResponse.status}).`);
   const user = await userResponse.json();
 
-  const reposResponse = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?per_page=100&sort=updated`, { headers });
-  if (!reposResponse.ok) throw new Error(`GitHub repository sync failed (${reposResponse.status}).`);
-  const repos = await reposResponse.json();
-  const languageCounts = repos.reduce((counts, repo) => {
-    if (repo.language && !repo.fork) counts[repo.language] = (counts[repo.language] || 0) + 1;
-    return counts;
-  }, {});
-  const languages = Object.keys(languageCounts).sort((a, b) => languageCounts[b] - languageCounts[a]).slice(0, 12);
-  const scans = await Promise.allSettled(repos.filter((repo) => !repo.fork && !repo.archived).slice(0, SCAN_LIMITS.repositories).map((repo) => scanRepository(repo, headers)));
-  const repositories = scans.filter((result) => result.status === "fulfilled").map((result) => result.value);
+  let languages = [];
+  let languageCounts = {};
+  let repositories = options.existingRepositories || [];
+  let repositoryEvidenceError = null;
+
+  if (!options.skipRepoScan) {
+    try {
+      const reposResponse = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?per_page=100&sort=updated`, { headers });
+      if (reposResponse.ok) {
+        const repos = await reposResponse.json();
+        languageCounts = repos.reduce((counts, repo) => {
+          if (repo.language && !repo.fork) counts[repo.language] = (counts[repo.language] || 0) + 1;
+          return counts;
+        }, {});
+        languages = Object.keys(languageCounts).sort((a, b) => languageCounts[b] - languageCounts[a]).slice(0, 12);
+        const scans = await Promise.allSettled(repos.filter((repo) => !repo.fork && !repo.archived).slice(0, SCAN_LIMITS.repositories).map((repo) => scanRepository(repo, headers)));
+        repositories = scans.filter((result) => result.status === "fulfilled").map((result) => result.value);
+        if (scans.some((result) => result.status === "rejected")) {
+          repositoryEvidenceError = "Some repositories could not be inspected; available evidence was retained.";
+        }
+      }
+    } catch {
+      // Retain existing repositories if repository scan failed
+    }
+  }
 
   let activityMap = new Map();
   let activityError = null;
   let commitActivityAvailable = false;
+  let rateLimited = false;
 
   // 1. Fetch real-time REST events (normalized to Asia/Kolkata date)
-  const recentEvents = await fetchRecentEvents(user.login, headers);
+  const recentEvents = await fetchRecentEvents(user.login, headers, timezone);
+  if (recentEvents.rateLimited) {
+    rateLimited = true;
+    activityError = "GitHub API rate limit reached. Retaining existing stored activity.";
+  }
   if (recentEvents.length > 0) {
     commitActivityAvailable = true;
     for (const ev of recentEvents) {
-        activityMap.set(ev.date, { ...ev });
+      activityMap.set(ev.date, { ...ev });
     }
   }
 
   // 2. Fetch GraphQL contribution calendar if token available
   if (process.env.GITHUB_TOKEN) {
-    const calendarResults = await Promise.allSettled(years.map((year) => fetchContributionYear(user.login, year)));
+    const calendarResults = await Promise.allSettled(years.map((year) => fetchContributionYear(user.login, year, timezone)));
     const calendarDays = calendarResults.filter((result) => result.status === "fulfilled").flatMap((result) => result.value);
     if (calendarDays.length > 0) {
       commitActivityAvailable = true;
@@ -125,7 +164,7 @@ async function getGithubActivity(username, years) {
     }
     const failure = calendarResults.find((result) => result.status === "rejected");
     if (failure && !calendarDays.length && !recentEvents.length) activityError = failure.reason.message;
-  } else if (!recentEvents.length) {
+  } else if (!recentEvents.length && !rateLimited) {
     activityError = "GitHub activity is unavailable until GITHUB_TOKEN is configured in Render.";
   }
 
@@ -140,18 +179,19 @@ async function getGithubActivity(username, years) {
     languages,
     languageCounts,
     repositories,
-    repositoryEvidenceError: scans.some((result) => result.status === "rejected") ? "Some repositories could not be inspected; available evidence was retained." : null,
+    repositoryEvidenceError,
     scanLimits: SCAN_LIMITS,
     activity,
     activityError,
     commitActivityAvailable,
     contributionActivityAvailable: commitActivityAvailable,
+    rateLimited,
     lastSyncedAt: new Date().toISOString(),
   };
 }
 
-async function fetchContributionYear(username, year) {
-  const currentYear = Number(getKolkataToday().slice(0, 4));
+async function fetchContributionYear(username, year, timezone = "Asia/Kolkata") {
+  const currentYear = Number(getKolkataToday(timezone).slice(0, 4));
   const toDate = year === currentYear
     ? new Date(Date.now() + 86400000 * 2).toISOString()
     : `${year}-12-31T23:59:59Z`;
@@ -170,18 +210,17 @@ async function fetchContributionYear(username, year) {
   const commitsByDate = new Map();
   for (const repository of collection.commitContributionsByRepository || []) {
     for (const contribution of repository.contributions?.nodes || []) {
-      const date = contribution.occurredAt ? kolkataDate(contribution.occurredAt) : "";
+      const date = contribution.occurredAt ? toActivityDate(contribution.occurredAt, timezone) : "";
       if (date) commitsByDate.set(date, (commitsByDate.get(date) || 0) + (Number(contribution.commitCount) || 0));
     }
   }
   return collection.contributionCalendar.weeks
     .flatMap((week) => week.contributionDays)
     .map((day) => {
-      // GitHub's contribution calendar already supplies a calendar date, not a timestamp.
-      const istDate = day.date;
+      const istDate = toActivityDate(day.date, timezone) || day.date;
       const count = Number(day.contributionCount) || 0;
       const commits = commitsByDate.get(istDate) || 0;
-      return { date: istDate, count: Math.max(count, commits), commits };
+      return { date: istDate, count: Math.max(count, commits), commits: commits > 0 ? commits : count };
     });
 }
 

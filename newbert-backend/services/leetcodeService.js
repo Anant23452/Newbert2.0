@@ -1,3 +1,4 @@
+const { toActivityDate } = require("../utils/dateNormalization");
 const LEETCODE_GRAPHQL_URL = "https://leetcode.com/graphql";
 
 async function requestLeetcode(query, variables) {
@@ -12,7 +13,8 @@ async function requestLeetcode(query, variables) {
   return payload.data;
 }
 
-async function getLeetcodeStats(username, years) {
+async function getLeetcodeStats(username, years, options = {}) {
+  const timezone = options.timezone || "Asia/Kolkata";
   let data;
   try {
     data = await requestLeetcode(
@@ -28,12 +30,15 @@ async function getLeetcodeStats(username, years) {
 
   const accepted = Object.fromEntries((user.submitStats?.acSubmissionNum || []).map((item) => [item.difficulty.toLowerCase(), Number(item.count) || 0]));
   const languageCounts = Object.fromEntries((user.languageProblemCount || []).filter((item) => item.problemsSolved > 0).map((item) => [item.languageName, Number(item.problemsSolved)]));
-  const calendarResults = await Promise.allSettled(years.map((year) => fetchSubmissionYear(user.username, year)));
+  const calendarResults = await Promise.allSettled(years.map((year) => fetchSubmissionYear(user.username, year, timezone)));
   const activityByDate = new Map(calendarResults.filter((result) => result.status === "fulfilled").flatMap((result) => result.value).map((item) => [item.date, item]));
   for (const submission of data.recentAcSubmissionList || []) {
-    const date = kolkataDate(Number(submission.timestamp) * 1000);
+    const date = toActivityDate(Number(submission.timestamp) * 1000, timezone);
     const item = activityByDate.get(date) || { date, count: 0, acceptedProblems: [] };
     item.acceptedProblems = [...new Set([...(item.acceptedProblems || []), submission.titleSlug].filter(Boolean))];
+    if (item.count < item.acceptedProblems.length) {
+      item.count = item.acceptedProblems.length;
+    }
     activityByDate.set(date, item);
   }
   const activity = [...activityByDate.values()];
@@ -70,13 +75,7 @@ async function fetchProblemTopics(slugs) {
   return Object.values(data || {}).filter(Boolean).map((item) => ({ id: item.frontendQuestionId || item.questionId, questionId: item.questionId, title: item.title, titleSlug: item.titleSlug, topics: (item.topicTags || []).flatMap((topic) => [topic.slug, topic.name]).filter(Boolean) }));
 }
 
-function kolkataDate(timestamp) {
-  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(timestamp));
-  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${value.year}-${value.month}-${value.day}`;
-}
-
-async function fetchSubmissionYear(username, year) {
+async function fetchSubmissionYear(username, year, timezone = "Asia/Kolkata") {
   const data = await requestLeetcode(
     "query calendar($username:String!,$year:Int){matchedUser(username:$username){userCalendar(year:$year){submissionCalendar}}}",
     { username, year },
@@ -87,7 +86,11 @@ async function fetchSubmissionYear(username, year) {
   let calendar;
   try { calendar = JSON.parse(raw); }
   catch { throw new Error("LeetCode returned an invalid activity calendar."); }
-  return Object.entries(calendar).map(([timestamp, count]) => ({ date: new Date(Number(timestamp) * 1000).toISOString().slice(0, 10), count: Number(count) || 0 }));
+  return Object.entries(calendar).map(([timestamp, count]) => ({
+    date: toActivityDate(Number(timestamp) * 1000, timezone),
+    count: Number(count) || 0,
+    acceptedProblems: [],
+  }));
 }
 
 module.exports = { LEETCODE_GRAPHQL_URL, fetchProblemTopics, getLeetcodeStats };

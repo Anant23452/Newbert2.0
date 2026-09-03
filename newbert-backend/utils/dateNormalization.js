@@ -5,30 +5,49 @@
 const KOLKATA_TIMEZONE = "Asia/Kolkata";
 
 /**
+ * Canonical helper to normalize any timestamp, Date object, or ISO string
+ * to YYYY-MM-DD in the given timezone (defaults to Asia/Kolkata / IST).
+ */
+function toActivityDate(value = new Date(), timezone = KOLKATA_TIMEZONE) {
+  if (!value) return "";
+  const tz = timezone || KOLKATA_TIMEZONE;
+  const d = typeof value === "string" || typeof value === "number" ? new Date(value) : value;
+  if (Number.isNaN(d.getTime())) return "";
+
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(d);
+    const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+    return `${map.year}-${map.month}-${map.day}`;
+  } catch {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: KOLKATA_TIMEZONE,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(d);
+    const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+    return `${map.year}-${map.month}-${map.day}`;
+  }
+}
+
+/**
  * Normalizes any valid timestamp, Date object, or ISO string to YYYY-MM-DD in Asia/Kolkata time.
  * If input is invalid or falsy, returns empty string.
  */
 function kolkataDate(value = new Date()) {
-  if (!value) return "";
-  const d = typeof value === "string" || typeof value === "number" ? new Date(value) : value;
-  if (Number.isNaN(d.getTime())) return "";
-
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: KOLKATA_TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(d);
-
-  const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
-  return `${map.year}-${map.month}-${map.day}`;
+  return toActivityDate(value, KOLKATA_TIMEZONE);
 }
 
 /**
  * Returns current calendar day in Asia/Kolkata (YYYY-MM-DD).
  */
-function getKolkataToday() {
-  return kolkataDate(new Date());
+function getKolkataToday(timezone = KOLKATA_TIMEZONE) {
+  return toActivityDate(new Date(), timezone);
 }
 
 /**
@@ -129,6 +148,7 @@ function getCurrentStreak(activity = []) {
 
 module.exports = {
   KOLKATA_TIMEZONE,
+  toActivityDate,
   kolkataDate,
   getKolkataToday,
   getKolkataDayOffset,

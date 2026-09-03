@@ -3,6 +3,7 @@ const User = require("../Models/User");
 const { resolveProfileCollege } = require("./collegeService");
 const { normalizePrivacy } = require("./publicProfileService");
 const { getDatesForRange, kolkataDate, getKolkataToday, getCurrentStreak } = require("../utils/dateNormalization");
+const { normalizeDailyItem } = require("./activityAggregationService");
 
 const VALID_RANGES = new Set(["today", "7d", "30d", "overall"]);
 
@@ -11,7 +12,8 @@ function rangeLabel(range) {
 }
 
 function activityMetrics(profile) {
-  const days = Array.isArray(profile.activityCalendar) ? profile.activityCalendar : [];
+  const rawDays = Array.isArray(profile.activityCalendar) ? profile.activityCalendar : [];
+  const days = rawDays.map((d) => normalizeDailyItem(d));
 
   const computeForRange = (range) => {
     const dates = getDatesForRange(range);
@@ -20,33 +22,43 @@ function activityMetrics(profile) {
     let githubActiveDays = 0;
     let leetcodeSubmissions = 0;
     let leetcodeActiveDays = 0;
+    let fallbackSolvedSum = 0;
 
     for (const day of days) {
       if (dates && !dates.has(day.date)) continue;
 
-      const commits = Number(day.githubCommits) || Number(day.github) || 0;
+      const commits = Number(day.githubCommits != null ? day.githubCommits : day.breakdown?.github?.commits != null ? day.breakdown.github.commits : day.github || 0);
       if (commits > 0) {
         githubCommits += commits;
         githubActiveDays += 1;
       }
 
-      for (const slug of day.leetcodeAcceptedProblems || []) {
+      const slugs = Array.isArray(day.leetcodeAcceptedProblems)
+        ? day.leetcodeAcceptedProblems
+        : Array.isArray(day.breakdown?.leetcode?.acceptedProblems)
+        ? day.breakdown.leetcode.acceptedProblems
+        : [];
+      for (const slug of slugs) {
         if (slug) acceptedProblems.add(slug);
       }
 
-      const subs = Number(day.leetcode) || 0;
-      if (subs > 0 || (day.leetcodeAcceptedProblems && day.leetcodeAcceptedProblems.length > 0)) {
+      const daySolved = Number(day.leetcodeAccepted != null ? day.leetcodeAccepted : day.breakdown?.leetcode?.solved != null ? day.breakdown.leetcode.solved : slugs.length);
+      fallbackSolvedSum += daySolved;
+      const subs = Math.max(Number(day.leetcode || 0), daySolved);
+      if (subs > 0 || daySolved > 0) {
         leetcodeSubmissions += subs;
         leetcodeActiveDays += 1;
       }
     }
 
+    const leetcodeSolvedCount = Math.max(acceptedProblems.size, fallbackSolvedSum);
+
     return {
       github: githubCommits,
       githubCommits,
       githubActiveDays,
-      leetcode: acceptedProblems.size,
-      leetcodeSolved: acceptedProblems.size,
+      leetcode: leetcodeSolvedCount,
+      leetcodeSolved: leetcodeSolvedCount,
       leetcodeSubmissions,
       leetcodeActiveDays,
     };

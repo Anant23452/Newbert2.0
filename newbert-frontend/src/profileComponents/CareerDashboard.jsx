@@ -209,7 +209,70 @@ export default function CareerDashboard({ profile, onEdit, onLogout }) {
     return () => controller.abort();
   }, [privacy.profileVisibility, privacy.sections.leaderboardRank, privacy.sections.streakStats, profile.lastSyncedAt]);
 
-  return <CareerDashboardView profile={profile} seniorMatch={seniorMatch} streakSnapshot={streakSnapshot} privacy={privacy} privacyState={privacyState} onPrivacyChange={updatePrivacy} onProfileUpdated={refreshProfile} onEdit={onEdit} onLogout={onLogout} />;
+  const [syncedActivity, setSyncedActivity] = useState({
+    calendar: profile?.activityCalendar || [],
+    currentStreak: profile?.currentStreak || 0,
+    longestStreak: profile?.longestStreak || 0,
+    lastSyncedAt: profile?.lastSyncedAt || null,
+  });
+  const [refreshingActivity, setRefreshingActivity] = useState(false);
+
+  useEffect(() => {
+    setSyncedActivity({
+      calendar: profile?.activityCalendar || [],
+      currentStreak: profile?.currentStreak || 0,
+      longestStreak: profile?.longestStreak || 0,
+      lastSyncedAt: profile?.lastSyncedAt || null,
+    });
+  }, [profile?.activityCalendar, profile?.currentStreak, profile?.longestStreak, profile?.lastSyncedAt]);
+
+  const handleRefreshStats = async () => {
+    if (refreshingActivity) return;
+    setRefreshingActivity(true);
+    try {
+      const { data } = await API.post("/profiles/sync", {});
+      const p = data.profile;
+      if (p) {
+        setSyncedActivity({
+          calendar: p.activityCalendar || [],
+          currentStreak: p.currentStreak || 0,
+          longestStreak: p.longestStreak || 0,
+          lastSyncedAt: p.lastSyncedAt || new Date().toISOString(),
+        });
+      }
+      const syncErrors = data.syncErrors || {};
+      if (syncErrors.github && !syncErrors.leetcode) {
+        setPrivacyState((prev) => ({ ...prev, status: "GitHub sync unavailable; LeetCode updated" }));
+      } else if (!syncErrors.github && syncErrors.leetcode) {
+        setPrivacyState((prev) => ({ ...prev, status: "LeetCode sync unavailable; GitHub updated" }));
+      } else if (syncErrors.github && syncErrors.leetcode) {
+        setPrivacyState((prev) => ({ ...prev, status: "Sync unavailable. Please try again later." }));
+      } else {
+        setPrivacyState((prev) => ({ ...prev, status: "Activity updated" }));
+      }
+    } catch (err) {
+      setPrivacyState((prev) => ({ ...prev, status: err.response?.data?.message || "Could not refresh activity" }));
+    } finally {
+      setRefreshingActivity(false);
+    }
+  };
+
+  return (
+    <CareerDashboardView
+      profile={profile}
+      seniorMatch={seniorMatch}
+      streakSnapshot={streakSnapshot}
+      privacy={privacy}
+      privacyState={privacyState}
+      onPrivacyChange={updatePrivacy}
+      onProfileUpdated={refreshProfile}
+      onEdit={onEdit}
+      onLogout={onLogout}
+      syncedActivity={syncedActivity}
+      refreshingActivity={refreshingActivity}
+      onRefreshStats={handleRefreshStats}
+    />
+  );
 }
 
 function CareerDashboardView({
@@ -222,10 +285,14 @@ function CareerDashboardView({
   onProfileUpdated,
   onEdit,
   onLogout,
+  syncedActivity,
+  refreshingActivity,
+  onRefreshStats,
 }) {
+  const currentCalendar = syncedActivity?.calendar || profile.activityCalendar || [];
   const activityTotal = useMemo(
-    () => (profile.activityCalendar || []).reduce((sum, day) => sum + (Number(day.total) || Number(day.github) + Number(day.leetcode) || 0), 0),
-    [profile.activityCalendar],
+    () => currentCalendar.reduce((sum, day) => sum + (Number(day.totalVerifiedActivity) || Number(day.total) || (Number(day.githubCommits || day.github || 0) + Number(day.leetcodeAccepted || day.leetcode || 0)) || 0), 0),
+    [currentCalendar],
   );
   const verifiedSkills = (profile.skills || []).filter((skill) => Number(skill?.score) > 0).length;
   const initials = profile.name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
@@ -320,10 +387,10 @@ function CareerDashboardView({
 
         <section id="activity" className="scroll-mt-32 mt-6">
           <MomentumSection
-            activityCalendar={profile.activityCalendar || []}
-            lastSyncedAt={profile.lastSyncedAt}
-            currentStreak={profile.currentStreak}
-            longestStreak={profile.longestStreak}
+            activityCalendar={syncedActivity?.calendar || profile.activityCalendar || []}
+            lastSyncedAt={syncedActivity?.lastSyncedAt || profile.lastSyncedAt}
+            currentStreak={syncedActivity?.currentStreak ?? profile.currentStreak}
+            longestStreak={syncedActivity?.longestStreak ?? profile.longestStreak}
             ownerName={profile.name}
             isOwn
             compact
@@ -331,6 +398,8 @@ function CareerDashboardView({
             loadingRank={streakSnapshot.loading}
             heatmapVisible={privacy.sections.activityHeatmap}
             streakStatsVisible={privacy.sections.streakStats}
+            onRefreshStats={onRefreshStats}
+            refreshing={refreshingActivity}
           />
           <div className="mt-3 flex flex-wrap justify-end gap-3">
             <PrivacySelect label="Heatmap" value={privacy.sections.activityHeatmap ? "public" : "private"} onChange={(value) => onPrivacyChange("activityHeatmap", value)} loading={privacyState.saving === "activityHeatmap"} disabled={privacyState.saving === "activityHeatmap"} dark />
