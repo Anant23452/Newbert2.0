@@ -269,7 +269,7 @@ function SkillInput({ skills, branch, targetRole, onChange }) {
   );
 }
 
-const DEFAULT_PROFILE_PRIVACY = { profileVisibility: "public", sections: { about: true, skills: true, projects: true, github: true, leetcode: true, linkedin: false, achievements: true, education: true, careerGoal: true, courses: true, activityHeatmap: true, streakStats: true, leaderboardRank: true } };
+const DEFAULT_PROFILE_PRIVACY = { profileVisibility: "public", sections: { about: true, skills: true, projects: true, github: true, leetcode: true, linkedin: true, achievements: true, education: true, careerGoal: true, courses: true, activityHeatmap: true, streakStats: true, leaderboardRank: true } };
 
 function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
   const skills = (profile.skills || []).map((skill) => skill.name || skill);

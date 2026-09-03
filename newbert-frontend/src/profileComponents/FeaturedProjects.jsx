@@ -84,9 +84,12 @@ export default function FeaturedProjects({ profile, onEdit, onProfileUpdated }) 
     try {
       const result = await updateProjectVisibility(projectId, visibility);
       if (visibilityRequests.current[projectId] !== requestId) return;
-      setProjects(result.projects || []);
-      if (onProfileUpdated) onProfileUpdated(result.projects);
-      setMessage(result.message);
+      if (Array.isArray(result.projects)) {
+        setProjects(result.projects);
+      } else if (result.project) {
+        setProjects((current) => current.map((p) => (p.id === projectId || p._id === projectId ? { ...p, ...result.project } : p)));
+      }
+      setMessage(result.message || "Project visibility updated.");
     } catch (err) {
       if (visibilityRequests.current[projectId] !== requestId) return;
       setProjects(previous);
@@ -272,7 +275,7 @@ function ProjectCard({ project, onDetails, onToggleFeatured, onRefresh, onVisibi
             <span className={`flex items-center gap-1 text-[10px] font-bold ${project.isFeatured ? "text-orange-400" : "text-slate-500"}`}>
               <Pin size={11} className={project.isFeatured ? "fill-orange-400" : ""} /> {project.isFeatured ? "Featured" : "Not featured"}
             </span>
-            <PrivacySelector compact value={project.visibility === "private" ? "private" : "public"} onChange={onVisibility} disabled={busy} />
+            <PrivacySelector compact value={project.visibility === "private" ? "private" : "public"} onChange={onVisibility} loading={busy} disabled={busy} />
           </div>
         </div>
 
@@ -401,7 +404,7 @@ function AllProjectsModal({ isOpen, onClose, projects, onToggleFeatured, onDelet
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <PrivacySelector compact value={p.visibility === "private" ? "private" : "public"} onChange={(visibility) => onVisibility(p.id, visibility)} disabled={busyId === p.id} />
+                  <PrivacySelector compact value={p.visibility === "private" ? "private" : "public"} onChange={(visibility) => onVisibility(p.id, visibility)} loading={busyId === p.id} disabled={busyId === p.id} />
                   <button
                     type="button"
                     onClick={() => onToggleFeatured(p.id)}

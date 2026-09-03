@@ -4,7 +4,7 @@ const DEFAULT_SECTIONS = Object.freeze({
   projects: true,
   github: true,
   leetcode: true,
-  linkedin: false,
+  linkedin: true,
   achievements: true,
   education: true,
   careerGoal: true,
@@ -18,10 +18,22 @@ function normalizePrivacy(privacy, legacyVisibility) {
   const vis = legacyVisibility === "private"
     ? "private"
     : privacy?.profileVisibility || privacy?.visibility;
-  return {
-    profileVisibility: vis === "private" ? "private" : "public",
-    sections: { ...DEFAULT_SECTIONS, ...(privacy?.sections || {}) },
+  const profileVisibility = vis === "private" ? "private" : "public";
+  const rawSections = privacy?.sections || {};
+  const sections = {};
+  for (const [key, defaultVal] of Object.entries(DEFAULT_SECTIONS)) {
+    sections[key] = typeof rawSections[key] === "boolean" ? rawSections[key] : defaultVal;
+  }
+
+  const result = {
+    profileVisibility,
+    sections,
   };
+  for (const [key, isPublic] of Object.entries(sections)) {
+    result[key] = isPublic ? "public" : "private";
+  }
+  result.bio = result.about;
+  return result;
 }
 
 function identity(profile, user) {

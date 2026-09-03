@@ -33,18 +33,23 @@ test("private public profile does not expose streak, links, or daily activity", 
   assert.equal(result.streakLeaderboard, undefined);
 });
 
-test("old profiles receive safe privacy defaults without exposing LinkedIn", () => {
+test("old profiles receive privacy defaults with all sections defaulting to public", () => {
   const privacy = normalizePrivacy(undefined);
   assert.equal(privacy.profileVisibility, "public");
+  assert.equal(privacy.github, "public");
+  assert.equal(privacy.leetcode, "public");
+  assert.equal(privacy.linkedin, "public");
+  assert.equal(privacy.bio, "public");
+  assert.equal(privacy.projects, "public");
   assert.equal(privacy.sections.github, true);
-  assert.equal(privacy.sections.linkedin, false);
+  assert.equal(privacy.sections.linkedin, true);
 
   const result = serializePublicProfile(profile({ privacy: undefined }), user);
-  assert.equal(result.linkedin, undefined);
-  assert.ok(!result.visibleSections.includes("linkedin"));
+  assert.equal(result.linkedin.url, "https://linkedin.com/in/student");
+  assert.ok(result.visibleSections.includes("linkedin"));
 });
 
-test("LinkedIn appears only when its section is explicitly public", () => {
+test("LinkedIn appears when public and is hidden when its section is private", () => {
   const hidden = serializePublicProfile(profile({ privacy: { profileVisibility: "public", sections: { linkedin: false } } }), user);
   const visible = serializePublicProfile(profile({ privacy: { profileVisibility: "public", sections: { linkedin: true } } }), user);
   assert.equal(hidden.linkedin, undefined);

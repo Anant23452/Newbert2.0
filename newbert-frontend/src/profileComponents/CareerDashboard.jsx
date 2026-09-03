@@ -41,16 +41,58 @@ const normalize = (value) => String(value || "").trim().toLowerCase();
 const numeric = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
 const skillName = (skill) => typeof skill === "string" ? skill : skill?.name;
 
-const DEFAULT_PROFILE_PRIVACY = { profileVisibility: "public", sections: { about: true, skills: true, projects: true, github: true, leetcode: true, linkedin: false, achievements: true, education: true, careerGoal: true, courses: true, activityHeatmap: true, streakStats: true, leaderboardRank: true } };
-const normalizeProfilePrivacy = (value) => ({
-  profileVisibility: value?.profileVisibility === "private" ? "private" : "public",
-  sections: { ...DEFAULT_PROFILE_PRIVACY.sections, ...(value?.sections || {}) },
-});
+const DEFAULT_PROFILE_PRIVACY = {
+  profileVisibility: "public",
+  sections: {
+    about: true,
+    skills: true,
+    projects: true,
+    github: true,
+    leetcode: true,
+    linkedin: true,
+    achievements: true,
+    education: true,
+    careerGoal: true,
+    courses: true,
+    activityHeatmap: true,
+    streakStats: true,
+    leaderboardRank: true,
+  },
+};
+
+const normalizeProfilePrivacy = (value) => {
+  const profileVisibility = value?.profileVisibility === "private" ? "private" : "public";
+  const rawSections = value?.sections || {};
+  const sections = { ...DEFAULT_PROFILE_PRIVACY.sections };
+  for (const [key, defaultVal] of Object.entries(DEFAULT_PROFILE_PRIVACY.sections)) {
+    if (typeof rawSections[key] === "boolean") {
+      sections[key] = rawSections[key];
+    } else if (value?.[key] === "private") {
+      sections[key] = false;
+    } else if (value?.[key] === "public") {
+      sections[key] = true;
+    } else {
+      sections[key] = defaultVal;
+    }
+  }
+  if (value?.bio === "private") sections.about = false;
+  if (value?.bio === "public") sections.about = true;
+
+  const result = {
+    profileVisibility,
+    sections,
+  };
+  for (const [key, isPublic] of Object.entries(sections)) {
+    result[key] = isPublic ? "public" : "private";
+  }
+  result.bio = result.about;
+  return result;
+};
 
 export default function CareerDashboard({ profile, onEdit, onLogout }) {
   const { refreshProfile } = useAuth();
   const [seniorMatch, setSeniorMatch] = useState({ loading: true, match: null, closest: [], benchmark: null, goal: "", reason: "", error: "" });
-  const [privacy, setPrivacy] = useState(() => normalizeProfilePrivacy(profile.privacy));
+  const [privacy, setPrivacy] = useState(() => normalizeProfilePrivacy(profile?.privacy));
   const [privacyState, setPrivacyState] = useState({ saving: "", status: "" });
   const [streakSnapshot, setStreakSnapshot] = useState({ loading: true, data: null });
   const privacyRequests = useRef({});
@@ -69,29 +111,56 @@ export default function CareerDashboard({ profile, onEdit, onLogout }) {
     const sectionKey = key === "bio" ? "about" : key;
     const requestId = (privacyRequests.current[key] || 0) + 1;
     privacyRequests.current[key] = requestId;
+    const fieldLabel = key === "profileVisibility"
+      ? "Profile"
+      : key === "bio"
+      ? "About"
+      : (key.charAt(0).toUpperCase() + key.slice(1));
+
     let previousValue;
     setPrivacy((current) => {
-      previousValue = key === "profileVisibility" ? current.profileVisibility : current.sections[sectionKey];
-      return key === "profileVisibility"
-        ? { ...current, profileVisibility: value }
-        : { ...current, sections: { ...current.sections, [sectionKey]: value === "public" } };
+      previousValue = key === "profileVisibility"
+        ? current.profileVisibility
+        : (current.sections[sectionKey] ? "public" : "private");
+      const nextSections = {
+        ...current.sections,
+        [sectionKey]: value === "public",
+      };
+      return {
+        ...current,
+        [key]: value,
+        profileVisibility: key === "profileVisibility" ? value : current.profileVisibility,
+        sections: nextSections,
+      };
     });
     setPrivacyState({ saving: key, status: "" });
+
     try {
       const { data } = await API.patch("/profiles/privacy", { field: key, visibility: value });
       if (privacyRequests.current[key] !== requestId) return;
       const confirmed = normalizeProfilePrivacy(data.privacy);
-      setPrivacy((current) => key === "profileVisibility"
-        ? { ...current, profileVisibility: confirmed.profileVisibility }
-        : { ...current, sections: { ...current.sections, [sectionKey]: confirmed.sections[sectionKey] } });
-      if (refreshProfile) await refreshProfile();
-      setPrivacyState({ saving: "", status: "Privacy saved" });
+      setPrivacy(confirmed);
+      // No refreshProfile() call - update only the local privacy state!
+      setPrivacyState({ saving: "", status: `${fieldLabel} visibility updated` });
     } catch (error) {
       if (privacyRequests.current[key] !== requestId) return;
-      setPrivacy((current) => key === "profileVisibility"
-        ? { ...current, profileVisibility: previousValue }
-        : { ...current, sections: { ...current.sections, [sectionKey]: previousValue } });
-      setPrivacyState({ saving: "", status: error.response?.data?.message || "Could not save privacy" });
+      setPrivacy((current) => {
+        const revertedSections = {
+          ...current.sections,
+          [sectionKey]: previousValue === "public",
+        };
+        return {
+          ...current,
+          [key]: previousValue,
+          profileVisibility: key === "profileVisibility" ? previousValue : current.profileVisibility,
+          sections: revertedSections,
+        };
+      });
+      setPrivacyState({ saving: "", status: error.response?.data?.message || `Could not update ${fieldLabel} visibility` });
+    } finally {
+      if (privacyRequests.current[key] === requestId) {
+        setPrivacyState((prev) => ({ ...prev, saving: "" }));
+      }
     }
   };
 
@@ -228,15 +297,15 @@ function CareerDashboardView({
             </div>
 
             <div className="mt-5 grid gap-2 md:grid-cols-3">
-              <ConnectionCard platform="GitHub" icon={Github} connection={profile.connections?.github} username={profile.githubUsername} detail={profile.githubStats ? `${profile.githubStats.publicRepos} public repositories` : "Your code story is missing. Connect GitHub to verify projects and development activity."} onEdit={onEdit} visibility={privacy.sections.github} onVisibilityChange={(value) => onPrivacyChange("github", value)} disabled={Boolean(privacyState.saving)} />
-              <ConnectionCard platform="LeetCode" icon={Code2} connection={profile.connections?.leetcode} username={profile.leetcodeUsername} detail={profile.leetcodeStats ? `${profile.leetcodeStats.totalSolved} problems solved` : "Unlock your DSA graph by adding your LeetCode username."} onEdit={onEdit} visibility={privacy.sections.leetcode} onVisibilityChange={(value) => onPrivacyChange("leetcode", value)} disabled={Boolean(privacyState.saving)} />
-              <ConnectionCard platform="LinkedIn" icon={Linkedin} connection={profile.connections?.linkedin} detail={profile.linkedin ? "Career profile linked" : "Add LinkedIn so seniors can understand your career direction."} onEdit={onEdit} visibility={privacy.sections.linkedin} onVisibilityChange={(value) => onPrivacyChange("linkedin", value)} disabled={privacyState.saving === "linkedin"} />
+              <ConnectionCard platform="GitHub" icon={Github} connection={profile.connections?.github} username={profile.githubUsername} detail={profile.githubStats ? `${profile.githubStats.publicRepos} public repositories` : "Your code story is missing. Connect GitHub to verify projects and development activity."} onEdit={onEdit} visibility={privacy.sections.github ? "public" : "private"} onVisibilityChange={(value) => onPrivacyChange("github", value)} loading={privacyState.saving === "github"} disabled={privacyState.saving === "github"} />
+              <ConnectionCard platform="LeetCode" icon={Code2} connection={profile.connections?.leetcode} username={profile.leetcodeUsername} detail={profile.leetcodeStats ? `${profile.leetcodeStats.totalSolved} problems solved` : "Unlock your DSA graph by adding your LeetCode username."} onEdit={onEdit} visibility={privacy.sections.leetcode ? "public" : "private"} onVisibilityChange={(value) => onPrivacyChange("leetcode", value)} loading={privacyState.saving === "leetcode"} disabled={privacyState.saving === "leetcode"} />
+              <ConnectionCard platform="LinkedIn" icon={Linkedin} connection={profile.connections?.linkedin} detail={profile.linkedin ? "Career profile linked" : "Add LinkedIn so seniors can understand your career direction."} onEdit={onEdit} visibility={privacy.sections.linkedin ? "public" : "private"} onVisibilityChange={(value) => onPrivacyChange("linkedin", value)} loading={privacyState.saving === "linkedin"} disabled={privacyState.saving === "linkedin"} />
             </div>
 
             {profile.bio ? (
               <div className="mt-5 flex items-start justify-between gap-4 border-t border-white/10 pt-4">
                 <p className="max-w-3xl text-sm leading-6 text-slate-300">{profile.bio}</p>
-                <PrivacySelect value={privacy.sections.about ? "public" : "private"} onChange={(value) => onPrivacyChange("bio", value)} disabled={privacyState.saving === "bio"} dark />
+                <PrivacySelect label="About" value={privacy.sections.about ? "public" : "private"} onChange={(value) => onPrivacyChange("bio", value)} loading={privacyState.saving === "bio"} disabled={privacyState.saving === "bio"} dark />
               </div>
             ) : null}
           </div>
@@ -264,15 +333,15 @@ function CareerDashboardView({
             streakStatsVisible={privacy.sections.streakStats}
           />
           <div className="mt-3 flex flex-wrap justify-end gap-3">
-            <PrivacySelect label="Heatmap" value={privacy.sections.activityHeatmap ? "public" : "private"} onChange={(value) => onPrivacyChange("activityHeatmap", value)} disabled={Boolean(privacyState.saving)} dark />
-            <PrivacySelect label="Streak" value={privacy.sections.streakStats ? "public" : "private"} onChange={(value) => onPrivacyChange("streakStats", value)} disabled={Boolean(privacyState.saving)} dark />
-            <PrivacySelect label="Rank" value={privacy.sections.leaderboardRank ? "public" : "private"} onChange={(value) => onPrivacyChange("leaderboardRank", value)} disabled={Boolean(privacyState.saving)} dark />
+            <PrivacySelect label="Heatmap" value={privacy.sections.activityHeatmap ? "public" : "private"} onChange={(value) => onPrivacyChange("activityHeatmap", value)} loading={privacyState.saving === "activityHeatmap"} disabled={privacyState.saving === "activityHeatmap"} dark />
+            <PrivacySelect label="Streak" value={privacy.sections.streakStats ? "public" : "private"} onChange={(value) => onPrivacyChange("streakStats", value)} loading={privacyState.saving === "streakStats"} disabled={privacyState.saving === "streakStats"} dark />
+            <PrivacySelect label="Rank" value={privacy.sections.leaderboardRank ? "public" : "private"} onChange={(value) => onPrivacyChange("leaderboardRank", value)} loading={privacyState.saving === "leaderboardRank"} disabled={privacyState.saving === "leaderboardRank"} dark />
           </div>
         </section>
 
         <JourneyTimeline profile={profile} />
-        <SkillsNewbertUnderstands profile={profile} onProfileUpdated={() => { window.location.reload(); }} onEdit={onEdit} />
-        <FeaturedProjects profile={profile} onEdit={onEdit} onProfileUpdated={onProfileUpdated} />
+        <SkillsNewbertUnderstands profile={profile} onEdit={onEdit} />
+        <FeaturedProjects profile={profile} onEdit={onEdit} />
 
         <AnimatePresence>
           {privacyState.status ? (
@@ -318,7 +387,7 @@ function CountUp({ value }) {
 
 const PrivacySelect = PrivacySelector;
 
-function ConnectionCard({ platform, icon, connection, username, detail, onEdit, visibility, onVisibilityChange, disabled }) {
+function ConnectionCard({ platform, icon, connection, username, detail, onEdit, visibility, onVisibilityChange, loading, disabled }) {
   const connected = Boolean(connection?.connected);
   return (
     <div className="rounded-lg bg-white/[.045] p-3">
@@ -327,7 +396,7 @@ function ConnectionCard({ platform, icon, connection, username, detail, onEdit, 
           <span className={`grid h-8 w-8 place-items-center rounded-full ${connected ? "bg-emerald-400/15 text-emerald-300" : "bg-white/5 text-slate-400"}`}>{createElement(icon, { size: 16 })}</span>
           <div><p className="text-xs font-extrabold text-white">{platform}</p><p className={`mt-0.5 text-[10px] font-bold uppercase ${connected ? "text-emerald-300" : "text-slate-500"}`}>{connected ? "Connected" : "Setup needed"}</p></div>
         </div>
-        <PrivacySelect value={visibility ? "public" : "private"} onChange={onVisibilityChange} disabled={disabled} dark />
+        <PrivacySelect value={visibility ? "public" : "private"} onChange={onVisibilityChange} loading={loading} disabled={disabled} dark />
       </div>
       <p className="mt-3 text-xs leading-5 text-slate-400">{connection?.error || (username ? `@${username} · ${detail}` : detail)}</p>
       {!connected || connection?.error ? <button type="button" onClick={onEdit} className="mt-2 inline-flex items-center gap-1 text-xs font-extrabold text-orange-300 hover:text-orange-200">{connected ? "Fix connection" : `Connect ${platform}`} <ArrowUpRight size={13} /></button> : null}

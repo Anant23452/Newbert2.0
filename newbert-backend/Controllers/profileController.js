@@ -251,7 +251,7 @@ exports.updatePrivacy = async (req, res, next) => {
       const profile = await Profile.findOneAndUpdate(
         { userId: req.auth.id },
         { $set: { [path]: value }, $unset: { visibility: "" } },
-        { new: true, runValidators: true, strict: false },
+        { new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true, strict: false },
       );
       if (!profile) return res.status(404).json({ message: "Profile not found." });
       return res.json({ success: true, message: "Privacy updated.", privacy: normalizePrivacy(profile.privacy) });

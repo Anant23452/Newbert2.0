@@ -12,7 +12,7 @@ const privacySectionsSchema = new mongoose.Schema({
   projects: { type: Boolean, default: true },
   github: { type: Boolean, default: true },
   leetcode: { type: Boolean, default: true },
-  linkedin: { type: Boolean, default: false },
+  linkedin: { type: Boolean, default: true },
   achievements: { type: Boolean, default: true },
   education: { type: Boolean, default: true },
   careerGoal: { type: Boolean, default: true },
