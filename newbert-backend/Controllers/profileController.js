@@ -30,14 +30,14 @@ function normalizeLeetcodeStats(stats) {
 exports.getPublicProfile = async (req, res, next) => {
   try {
     const isOwner = Boolean(req.auth?.id && String(req.auth.id) === String(req.params.userId));
-    const [profile, user] = await Promise.all([Profile.findOne({ userId: req.params.userId }).lean(), User.findById(req.params.userId).select("name avatarUrl").lean()]);
+    const [profile, user] = await Promise.all([Profile.findOne({ userId: req.params.userId }).lean(), User.findById(req.params.userId).select("name email avatarUrl").lean()]);
     if (!profile || !user) return res.status(404).json({ message: "Profile not found." });
 
     const today = (profile.activityCalendar || []).find((day) => day.date === getKolkataToday());
     const streakLeaderboard = await getPublicStreakSnapshot(req.params.userId);
     const serialized = serializePublicProfile(profile, user, today, streakLeaderboard);
     if (isOwner) {
-      serialized.isOwner = true;
+      return res.json({ ...serialized, isOwner: true, ownerProfile: response(profile, user) });
     }
     return res.json(serialized);
   } catch (error) { return next(error); }
@@ -137,8 +137,7 @@ function response(profile, user) {
       leetcode: { connected: Boolean(profile.leetcodeUsername || profile.leetcodeUrl), synced: Boolean(leetcodeStats), error: profile.syncErrors?.leetcode || null },
       linkedin: { connected: Boolean(profile.linkedinUrl), synced: Boolean(profile.linkedinUrl), error: null },
     },
-    privacy: normalizePrivacy(profile.privacy),
-    visibility: profile.visibility || profile.privacy?.profileVisibility || "public",
+    privacy: normalizePrivacy(profile.privacy, profile.visibility || profile._doc?.visibility),
     ...streaks,
   };
 }
@@ -259,8 +258,28 @@ exports.updateMyProfile = async (req, res, next) => {
 
 exports.updatePrivacy = async (req, res, next) => {
   try {
+    const fieldAliases = { bio: "about" };
+    if (req.body.field != null) {
+      const requestedField = String(req.body.field);
+      const field = fieldAliases[requestedField] || requestedField;
+      const visibility = req.body.visibility;
+      const allowed = new Set(["profileVisibility", ...Object.keys(DEFAULT_SECTIONS)]);
+      if (!allowed.has(field)) return res.status(400).json({ message: "Choose a valid privacy field." });
+      if (!["public", "private"].includes(visibility)) return res.status(400).json({ message: "Choose public or private visibility." });
+
+      const path = field === "profileVisibility" ? "privacy.profileVisibility" : `privacy.sections.${field}`;
+      const value = field === "profileVisibility" ? visibility : visibility === "public";
+      const profile = await Profile.findOneAndUpdate(
+        { userId: req.auth.id },
+        { $set: { [path]: value }, $unset: { visibility: "" } },
+        { new: true, runValidators: true, strict: false },
+      );
+      if (!profile) return res.status(404).json({ message: "Profile not found." });
+      return res.json({ success: true, message: "Privacy updated.", privacy: normalizePrivacy(profile.privacy) });
+    }
+
     const visibility = req.body.profileVisibility;
-    if (!['public', 'private'].includes(visibility)) return res.status(400).json({ message: "Choose public or private profile visibility." });
+    if (!["public", "private"].includes(visibility)) return res.status(400).json({ message: "Choose public or private profile visibility." });
     const requestedSections = req.body.sections && typeof req.body.sections === "object" ? req.body.sections : {};
     const invalidKey = Object.keys(requestedSections).find((key) => !Object.hasOwn(DEFAULT_SECTIONS, key));
     if (invalidKey) return res.status(400).json({ message: `Privacy section '${invalidKey}' cannot be changed.` });
@@ -271,12 +290,13 @@ exports.updatePrivacy = async (req, res, next) => {
       if (typeof value !== "boolean") return res.status(400).json({ message: `Privacy section '${key}' must be true or false.` });
       sections[key] = value;
     }
-    await Profile.findOneAndUpdate(
+    const updated = await Profile.findOneAndUpdate(
       { userId: req.auth.id },
-      { $set: { visibility, "privacy.profileVisibility": visibility, "privacy.sections": sections } },
-      { upsert: true, runValidators: true, setDefaultsOnInsert: true },
+      { $set: { "privacy.profileVisibility": visibility, "privacy.sections": sections }, $unset: { visibility: "" } },
+      { new: true, runValidators: true, strict: false },
     );
-    return res.json({ message: "Privacy settings updated.", visibility, privacy: { profileVisibility: visibility, sections } });
+    if (!updated) return res.status(404).json({ message: "Profile not found." });
+    return res.json({ success: true, message: "Privacy settings updated.", privacy: normalizePrivacy(updated.privacy) });
   } catch (error) { return next(error); }
 };
 

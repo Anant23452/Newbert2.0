@@ -1,11 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion as Motion } from "framer-motion";
 import {
   CheckCircle2,
   Code2,
   ExternalLink,
-  Eye,
-  EyeOff,
   FolderGit2,
   Github,
   Globe,
@@ -19,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import GithubProjectModal from "./GithubProjectModal";
+import PrivacySelector from "./PrivacySelector";
 import {
   deleteProject,
   refreshProjectAnalysis,
@@ -37,8 +36,12 @@ export default function FeaturedProjects({ profile, onEdit, onProfileUpdated }) 
   const [selectedProject, setSelectedProject] = useState(null);
   const [busyId, setBusyId] = useState("");
   const [message, setMessage] = useState("");
+  const [projects, setProjects] = useState(profile.projectDetails || []);
+  const visibilityRequests = useRef({});
 
-  const allProjects = profile.projectDetails || [];
+  useEffect(() => setProjects(profile.projectDetails || []), [profile.projectDetails]);
+
+  const allProjects = projects;
   const featuredProjects = allProjects.filter((p) => p.isFeatured).slice(0, 3);
   const displayProjects = featuredProjects.length ? featuredProjects : allProjects.slice(0, 3);
   const hasGithub = Boolean(profile.githubUsername || profile.github);
@@ -72,13 +75,21 @@ export default function FeaturedProjects({ profile, onEdit, onProfileUpdated }) 
   };
 
   const handleVisibility = async (projectId, visibility) => {
+    const requestId = (visibilityRequests.current[projectId] || 0) + 1;
+    visibilityRequests.current[projectId] = requestId;
+    const previous = projects;
+    setProjects((current) => current.map((project) => project.id === projectId ? { ...project, visibility } : project));
     setBusyId(projectId);
     setMessage("");
     try {
       const result = await updateProjectVisibility(projectId, visibility);
+      if (visibilityRequests.current[projectId] !== requestId) return;
+      setProjects(result.projects || []);
       if (onProfileUpdated) onProfileUpdated(result.projects);
       setMessage(result.message);
     } catch (err) {
+      if (visibilityRequests.current[projectId] !== requestId) return;
+      setProjects(previous);
       setMessage(err.response?.data?.message || "Could not update project visibility.");
     } finally {
       setBusyId("");
@@ -261,10 +272,7 @@ function ProjectCard({ project, onDetails, onToggleFeatured, onRefresh, onVisibi
             <span className={`flex items-center gap-1 text-[10px] font-bold ${project.isFeatured ? "text-orange-400" : "text-slate-500"}`}>
               <Pin size={11} className={project.isFeatured ? "fill-orange-400" : ""} /> {project.isFeatured ? "Featured" : "Not featured"}
             </span>
-            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
-              {project.visibility === "private" ? <EyeOff size={11} /> : <Eye size={11} />}
-              {project.visibility === "private" ? "Private" : "Public"}
-            </span>
+            <PrivacySelector compact value={project.visibility === "private" ? "private" : "public"} onChange={onVisibility} disabled={busy} />
           </div>
         </div>
 
@@ -344,15 +352,6 @@ function ProjectCard({ project, onDetails, onToggleFeatured, onRefresh, onVisibi
           >
             <Pin size={12} className={project.isFeatured ? "fill-orange-400 text-orange-400" : ""} />
           </button>
-          <button
-            type="button"
-            onClick={() => onVisibility(project.visibility === "private" ? "public" : "private")}
-            disabled={busy}
-            title={project.visibility === "private" ? "Make project public" : "Make project private"}
-            className="grid h-7 w-7 place-items-center rounded-md text-slate-400 hover:bg-white/10 hover:text-white disabled:opacity-40"
-          >
-            {project.visibility === "private" ? <EyeOff size={12} /> : <Eye size={12} />}
-          </button>
         </div>
       </div>
     </div>
@@ -394,7 +393,6 @@ function AllProjectsModal({ isOpen, onClose, projects, onToggleFeatured, onDelet
                       <span className="rounded bg-orange-400/20 px-1.5 py-0.5 text-[10px] font-black text-orange-300">Featured</span>
                     )}
                     <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] font-bold text-slate-400">{p.evidenceLevel || "moderate"}</span>
-                    <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] font-bold text-slate-300">{p.visibility === "private" ? "Private" : "Public"}</span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {(p.confirmedTechnologies || p.technologies || []).map((tech) => (
@@ -403,15 +401,7 @@ function AllProjectsModal({ isOpen, onClose, projects, onToggleFeatured, onDelet
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onVisibility(p.id, p.visibility === "private" ? "public" : "private")}
-                    disabled={busyId === p.id}
-                    className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-white/10"
-                  >
-                    {p.visibility === "private" ? <EyeOff size={12} /> : <Eye size={12} />}
-                    {p.visibility === "private" ? "Make public" : "Make private"}
-                  </button>
+                  <PrivacySelector compact value={p.visibility === "private" ? "private" : "public"} onChange={(visibility) => onVisibility(p.id, visibility)} disabled={busyId === p.id} />
                   <button
                     type="button"
                     onClick={() => onToggleFeatured(p.id)}

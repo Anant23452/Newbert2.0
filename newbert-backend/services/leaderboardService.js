@@ -36,7 +36,7 @@ function activityMetrics(profile) {
 
 function buildLeaderboardEntry(profile, user) {
   const activity = activityMetrics(profile);
-  const privacy = normalizePrivacy(profile.privacy);
+  const privacy = normalizePrivacy(profile.privacy, profile.visibility);
   const leetcodeConnected = Boolean(privacy.sections.leetcode && (profile.leetcodeUsername || profile.leetcodeStats?.username));
   const githubConnected = Boolean(privacy.sections.github && (profile.githubUsername || profile.githubStats?.username));
   const streakVisible = Boolean(privacy.sections.leaderboardRank && privacy.sections.streakStats);
@@ -62,7 +62,7 @@ function buildLeaderboardEntry(profile, user) {
 }
 
 function canJoinPublicLeaderboard(profile) {
-  const privacy = normalizePrivacy(profile.privacy);
+  const privacy = normalizePrivacy(profile.privacy, profile.visibility);
   return privacy.profileVisibility === "public" && privacy.sections.leaderboardRank;
 }
 
@@ -149,7 +149,7 @@ function publicStreakEntry(entry) {
 
 async function getPublicStreakSnapshot(userId) {
   const owner = await Profile.findOne({ userId }).lean();
-  const ownerPrivacy = owner ? normalizePrivacy(owner.privacy) : null;
+  const ownerPrivacy = owner ? normalizePrivacy(owner.privacy, owner.visibility) : null;
   if (!owner || !canJoinPublicLeaderboard(owner) || !ownerPrivacy.sections.streakStats) return { visible: false };
   const globalEntries = (await loadPublicEntries()).filter(hasVerifiedStreakActivity);
   const global = rankEntries(globalEntries, (entry) => entry.streak.current, userId);

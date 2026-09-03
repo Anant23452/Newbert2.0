@@ -7,6 +7,7 @@ import CollegeAutocomplete from "../Components/CollegeAutocomplete";
 import CareerDashboard from "../profileComponents/CareerDashboard";
 import MomentumSection from "../profileComponents/MomentumSection";
 import StreakLeaderboardPreview from "../profileComponents/StreakLeaderboardPreview";
+import PrivacySelector from "../profileComponents/PrivacySelector";
 
 export default function Profile() {
   const { profile, loading: profileLoading, error: profileError, saveProfile, logout } = useAuth();
@@ -268,7 +269,7 @@ function SkillInput({ skills, branch, targetRole, onChange }) {
   );
 }
 
-const DEFAULT_PROFILE_PRIVACY = { profileVisibility: "public", sections: { about: true, skills: true, projects: true, github: true, leetcode: true, achievements: true, education: true, careerGoal: true, courses: true, activityHeatmap: true, streakStats: true, leaderboardRank: true } };
+const DEFAULT_PROFILE_PRIVACY = { profileVisibility: "public", sections: { about: true, skills: true, projects: true, github: true, leetcode: true, linkedin: false, achievements: true, education: true, careerGoal: true, courses: true, activityHeatmap: true, streakStats: true, leaderboardRank: true } };
 
 function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
   const skills = (profile.skills || []).map((skill) => skill.name || skill);
@@ -284,9 +285,8 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
     setPrivacy(next);
     setPrivacyState({ saving: key, status: "" });
     try {
-      const { data } = await API.patch("/profiles/privacy", next);
-      const confirmation = await API.get("/profiles/me");
-      setPrivacy(confirmation.data.privacy || data.privacy);
+      const { data } = await API.patch("/profiles/privacy", { field: key, visibility: value });
+      setPrivacy(data.privacy || next);
       setPrivacyState({ saving: "", status: "Saved" });
     } catch {
       setPrivacy(previous);
@@ -375,9 +375,8 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               <ConnectionCard platform="GitHub" connection={profile.connections?.github} username={profile.githubUsername} stats={profile.githubStats ? `${profile.githubStats.publicRepos} public repos` : ""} onEdit={onEdit} visibility={privacy.sections.github} onVisibilityChange={(value) => updatePrivacy("github", value)} disabled={Boolean(privacyState.saving)} />
               <ConnectionCard platform="LeetCode" connection={profile.connections?.leetcode} username={profile.leetcodeUsername} stats={profile.leetcodeStats ? `${profile.leetcodeStats.totalSolved} solved` : ""} onEdit={onEdit} visibility={privacy.sections.leetcode} onVisibilityChange={(value) => updatePrivacy("leetcode", value)} disabled={Boolean(privacyState.saving)} />
-              <ConnectionCard platform="LinkedIn" connection={profile.connections?.linkedin} username="" stats={profile.linkedin ? "Profile added" : ""} onEdit={onEdit} alwaysPrivate />
+              <ConnectionCard platform="LinkedIn" connection={profile.connections?.linkedin} username="" stats={profile.linkedin ? "Profile added" : ""} onEdit={onEdit} visibility={privacy.sections.linkedin} onVisibilityChange={(value) => updatePrivacy("linkedin", value)} disabled={Boolean(privacyState.saving)} />
             </div>
-            {privacyState.status && <p className="mt-3 text-xs font-bold text-slate-500">Privacy: {privacyState.status}</p>}
             <p className="mt-4 text-xs font-bold text-slate-500">Profile strength: <span className="text-orange-700">{profile.profileStrength ?? 0}%</span> · Optional accounts improve strength but never block access.</p>
           </div>
         </section>
@@ -440,13 +439,13 @@ function ProfileDashboard({ profile, savedJobs, onEdit, onLogout }) {
   );
 }
 
-function PrivacySelect({ label, value, onChange, disabled }) { return <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-500">{label && <span>{label}</span>}<select aria-label={label || "Section visibility"} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-extrabold capitalize text-slate-700 outline-none focus:border-orange-500 disabled:opacity-50"><option value="public">Public</option><option value="private">Private</option></select></label>; }
+function PrivacySelect(props) { return <PrivacySelector {...props} dark={false} />; }
 function PrivateBadge() { return <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Always Private</span>; }
 function OwnerDetail({ title, value, visibility, onChange, disabled }) { return <div className="border-b border-slate-100 p-5 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0"><div className="flex items-center justify-between gap-3"><h2 className="text-sm font-extrabold text-slate-950">{title}</h2><PrivacySelect value={visibility ? "public" : "private"} onChange={onChange} disabled={disabled}/></div><p className="mt-3 text-sm font-semibold text-slate-600">{value}</p></div>; }
 function PrivacyRow({ label, value, onChange, disabled }) { return <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4 last:border-0 last:pb-0"><p className="text-sm font-extrabold text-slate-800">{label}</p><PrivacySelect value={value ? "public" : "private"} onChange={onChange} disabled={disabled}/></div>; }
 
-function ConnectionCard({ platform, connection, username, stats, onEdit, visibility, onVisibilityChange, disabled, alwaysPrivate }) {
-  const control = alwaysPrivate ? <PrivateBadge/> : <PrivacySelect value={visibility ? "public" : "private"} onChange={onVisibilityChange} disabled={disabled}/>;
+function ConnectionCard({ platform, connection, username, stats, onEdit, visibility, onVisibilityChange, disabled }) {
+  const control = <PrivacySelect value={visibility ? "public" : "private"} onChange={onVisibilityChange} disabled={disabled}/>;
   if (!connection?.connected) return <div className="rounded-lg border border-slate-200 bg-slate-50 p-3"><div className="flex items-center justify-between gap-2"><p className="text-xs font-extrabold uppercase tracking-wider text-slate-500">{platform}</p>{control}</div><p className="mt-1 text-sm font-extrabold text-slate-900">Not connected</p><button onClick={onEdit} className="mt-2 text-xs font-extrabold text-orange-700">Add profile →</button></div>;
   return <div className={`rounded-lg border p-3 ${connection.error ? "border-amber-200 bg-amber-50" : "border-emerald-200 bg-emerald-50"}`}><div className="flex items-center justify-between gap-2"><p className="text-xs font-extrabold uppercase tracking-wider text-slate-600">{platform}</p>{control}</div><p className="mt-1 text-sm font-extrabold text-slate-950">{username ? `@${username}` : "Connected"}</p><p className="mt-1 text-xs font-semibold text-slate-600">{connection.error || stats || (connection.synced ? "Connected" : "Saved · sync optional")}</p>{connection.error && <button onClick={onEdit} className="mt-2 text-xs font-extrabold text-orange-700">Check profile →</button>}</div>;
 }

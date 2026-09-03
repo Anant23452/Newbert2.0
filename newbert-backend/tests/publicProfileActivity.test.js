@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { serializePublicProfile } = require("../services/publicProfileService");
+const { normalizePrivacy, serializePublicProfile } = require("../services/publicProfileService");
 const { buildLeaderboardEntry } = require("../services/leaderboardService");
 const { calculateStreaks } = require("../Controllers/profileController");
 
@@ -31,6 +31,30 @@ test("private public profile does not expose streak, links, or daily activity", 
   assert.equal(result.activityCalendar, undefined);
   assert.equal(result.linkedin, undefined);
   assert.equal(result.streakLeaderboard, undefined);
+});
+
+test("old profiles receive safe privacy defaults without exposing LinkedIn", () => {
+  const privacy = normalizePrivacy(undefined);
+  assert.equal(privacy.profileVisibility, "public");
+  assert.equal(privacy.sections.github, true);
+  assert.equal(privacy.sections.linkedin, false);
+
+  const result = serializePublicProfile(profile({ privacy: undefined }), user);
+  assert.equal(result.linkedin, undefined);
+  assert.ok(!result.visibleSections.includes("linkedin"));
+});
+
+test("LinkedIn appears only when its section is explicitly public", () => {
+  const hidden = serializePublicProfile(profile({ privacy: { profileVisibility: "public", sections: { linkedin: false } } }), user);
+  const visible = serializePublicProfile(profile({ privacy: { profileVisibility: "public", sections: { linkedin: true } } }), user);
+  assert.equal(hidden.linkedin, undefined);
+  assert.equal(visible.linkedin.url, "https://linkedin.com/in/student");
+  assert.ok(visible.visibleSections.includes("linkedin"));
+});
+
+test("legacy private visibility remains private during migration", () => {
+  const normalized = normalizePrivacy({ profileVisibility: "public", sections: {} }, "private");
+  assert.equal(normalized.profileVisibility, "private");
 });
 
 test("public profile returns at most three featured public projects with safe links", () => {
@@ -123,4 +147,3 @@ test("canJoinPublicLeaderboard strictly blocks private profiles from public lead
   assert.equal(canJoinPublicLeaderboard({ privacy: { profileVisibility: "public", sections: { leaderboardRank: false } } }), false);
   assert.equal(canJoinPublicLeaderboard({ privacy: { profileVisibility: "public", sections: { leaderboardRank: true } } }), true);
 });
-

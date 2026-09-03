@@ -1,4 +1,4 @@
-import { createElement, useEffect, useMemo, useState } from "react";
+import { createElement, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { animate, AnimatePresence, motion as Motion } from "framer-motion";
 import {
@@ -29,6 +29,8 @@ import API from "../Services/api";
 import MomentumSection from "./MomentumSection";
 import FeaturedProjects from "./FeaturedProjects";
 import SkillsNewbertUnderstands from "./SkillsNewbertUnderstands";
+import PrivacySelector from "./PrivacySelector";
+import useAuth from "../hook/useAuth";
 
 const reveal = {
   hidden: { opacity: 0, y: 8 },
@@ -39,37 +41,57 @@ const normalize = (value) => String(value || "").trim().toLowerCase();
 const numeric = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
 const skillName = (skill) => typeof skill === "string" ? skill : skill?.name;
 
-import useAuth from "../hook/useAuth";
-
-const DEFAULT_PROFILE_PRIVACY = { profileVisibility: "public", sections: { about: true, skills: true, projects: true, github: true, leetcode: true, achievements: true, education: true, careerGoal: true, courses: true, activityHeatmap: true, streakStats: true, leaderboardRank: true } };
+const DEFAULT_PROFILE_PRIVACY = { profileVisibility: "public", sections: { about: true, skills: true, projects: true, github: true, leetcode: true, linkedin: false, achievements: true, education: true, careerGoal: true, courses: true, activityHeatmap: true, streakStats: true, leaderboardRank: true } };
+const normalizeProfilePrivacy = (value) => ({
+  profileVisibility: value?.profileVisibility === "private" ? "private" : "public",
+  sections: { ...DEFAULT_PROFILE_PRIVACY.sections, ...(value?.sections || {}) },
+});
 
 export default function CareerDashboard({ profile, onEdit, onLogout }) {
   const { refreshProfile } = useAuth();
   const [seniorMatch, setSeniorMatch] = useState({ loading: true, match: null, closest: [], benchmark: null, goal: "", reason: "", error: "" });
-  const [privacy, setPrivacy] = useState(profile.privacy || DEFAULT_PROFILE_PRIVACY);
+  const [privacy, setPrivacy] = useState(() => normalizeProfilePrivacy(profile.privacy));
   const [privacyState, setPrivacyState] = useState({ saving: "", status: "" });
   const [streakSnapshot, setStreakSnapshot] = useState({ loading: true, data: null });
+  const privacyRequests = useRef({});
 
   useEffect(() => {
-    if (profile?.privacy) {
-      setPrivacy(profile.privacy);
-    }
+    setPrivacy(normalizeProfilePrivacy(profile?.privacy));
   }, [profile?.privacy]);
 
+  useEffect(() => {
+    if (!privacyState.status) return undefined;
+    const timer = window.setTimeout(() => setPrivacyState((current) => ({ ...current, status: "" })), 2600);
+    return () => window.clearTimeout(timer);
+  }, [privacyState.status]);
+
   const updatePrivacy = async (key, value) => {
-    const previous = privacy;
-    const next = key === "profileVisibility" ? { ...privacy, profileVisibility: value } : { ...privacy, sections: { ...privacy.sections, [key]: value === "public" } };
-    setPrivacy(next);
+    const sectionKey = key === "bio" ? "about" : key;
+    const requestId = (privacyRequests.current[key] || 0) + 1;
+    privacyRequests.current[key] = requestId;
+    let previousValue;
+    setPrivacy((current) => {
+      previousValue = key === "profileVisibility" ? current.profileVisibility : current.sections[sectionKey];
+      return key === "profileVisibility"
+        ? { ...current, profileVisibility: value }
+        : { ...current, sections: { ...current.sections, [sectionKey]: value === "public" } };
+    });
     setPrivacyState({ saving: key, status: "" });
     try {
-      const { data } = await API.patch("/profiles/privacy", next);
-      const confirmation = await API.get("/profiles/me");
-      setPrivacy(confirmation.data.privacy || data.privacy);
+      const { data } = await API.patch("/profiles/privacy", { field: key, visibility: value });
+      if (privacyRequests.current[key] !== requestId) return;
+      const confirmed = normalizeProfilePrivacy(data.privacy);
+      setPrivacy((current) => key === "profileVisibility"
+        ? { ...current, profileVisibility: confirmed.profileVisibility }
+        : { ...current, sections: { ...current.sections, [sectionKey]: confirmed.sections[sectionKey] } });
       if (refreshProfile) await refreshProfile();
-      setPrivacyState({ saving: "", status: "Saved" });
-    } catch {
-      setPrivacy(previous);
-      setPrivacyState({ saving: "", status: "Could not save" });
+      setPrivacyState({ saving: "", status: "Privacy saved" });
+    } catch (error) {
+      if (privacyRequests.current[key] !== requestId) return;
+      setPrivacy((current) => key === "profileVisibility"
+        ? { ...current, profileVisibility: previousValue }
+        : { ...current, sections: { ...current.sections, [sectionKey]: previousValue } });
+      setPrivacyState({ saving: "", status: error.response?.data?.message || "Could not save privacy" });
     }
   };
 
@@ -118,7 +140,7 @@ export default function CareerDashboard({ profile, onEdit, onLogout }) {
     return () => controller.abort();
   }, [privacy.profileVisibility, privacy.sections.leaderboardRank, privacy.sections.streakStats, profile.lastSyncedAt]);
 
-  return <CareerDashboardView profile={profile} seniorMatch={seniorMatch} streakSnapshot={streakSnapshot} privacy={privacy} privacyState={privacyState} onPrivacyChange={updatePrivacy} onEdit={onEdit} onLogout={onLogout} />;
+  return <CareerDashboardView profile={profile} seniorMatch={seniorMatch} streakSnapshot={streakSnapshot} privacy={privacy} privacyState={privacyState} onPrivacyChange={updatePrivacy} onProfileUpdated={refreshProfile} onEdit={onEdit} onLogout={onLogout} />;
 }
 
 function CareerDashboardView({
@@ -128,6 +150,7 @@ function CareerDashboardView({
   privacy,
   privacyState,
   onPrivacyChange,
+  onProfileUpdated,
   onEdit,
   onLogout,
 }) {
@@ -207,16 +230,15 @@ function CareerDashboardView({
             <div className="mt-5 grid gap-2 md:grid-cols-3">
               <ConnectionCard platform="GitHub" icon={Github} connection={profile.connections?.github} username={profile.githubUsername} detail={profile.githubStats ? `${profile.githubStats.publicRepos} public repositories` : "Your code story is missing. Connect GitHub to verify projects and development activity."} onEdit={onEdit} visibility={privacy.sections.github} onVisibilityChange={(value) => onPrivacyChange("github", value)} disabled={Boolean(privacyState.saving)} />
               <ConnectionCard platform="LeetCode" icon={Code2} connection={profile.connections?.leetcode} username={profile.leetcodeUsername} detail={profile.leetcodeStats ? `${profile.leetcodeStats.totalSolved} problems solved` : "Unlock your DSA graph by adding your LeetCode username."} onEdit={onEdit} visibility={privacy.sections.leetcode} onVisibilityChange={(value) => onPrivacyChange("leetcode", value)} disabled={Boolean(privacyState.saving)} />
-              <ConnectionCard platform="LinkedIn" icon={Linkedin} connection={profile.connections?.linkedin} detail={profile.linkedin ? "Career profile linked" : "Add LinkedIn so seniors can understand your career direction."} onEdit={onEdit} alwaysPrivate />
+              <ConnectionCard platform="LinkedIn" icon={Linkedin} connection={profile.connections?.linkedin} detail={profile.linkedin ? "Career profile linked" : "Add LinkedIn so seniors can understand your career direction."} onEdit={onEdit} visibility={privacy.sections.linkedin} onVisibilityChange={(value) => onPrivacyChange("linkedin", value)} disabled={privacyState.saving === "linkedin"} />
             </div>
 
             {profile.bio ? (
               <div className="mt-5 flex items-start justify-between gap-4 border-t border-white/10 pt-4">
                 <p className="max-w-3xl text-sm leading-6 text-slate-300">{profile.bio}</p>
-                <PrivacySelect value={privacy.sections.about ? "public" : "private"} onChange={(value) => onPrivacyChange("about", value)} disabled={Boolean(privacyState.saving)} dark />
+                <PrivacySelect value={privacy.sections.about ? "public" : "private"} onChange={(value) => onPrivacyChange("bio", value)} disabled={privacyState.saving === "bio"} dark />
               </div>
             ) : null}
-            {privacyState.status ? <p className="mt-3 text-xs font-bold text-slate-400">Privacy: {privacyState.status}</p> : null}
           </div>
         </Motion.section>
 
@@ -250,7 +272,15 @@ function CareerDashboardView({
 
         <JourneyTimeline profile={profile} />
         <SkillsNewbertUnderstands profile={profile} onProfileUpdated={() => { window.location.reload(); }} onEdit={onEdit} />
-        <FeaturedProjects profile={profile} onEdit={onEdit} onProfileUpdated={() => { window.location.reload(); }} />
+        <FeaturedProjects profile={profile} onEdit={onEdit} onProfileUpdated={onProfileUpdated} />
+
+        <AnimatePresence>
+          {privacyState.status ? (
+            <Motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} role="status" className="fixed bottom-5 right-5 z-[120] rounded-md border border-orange-400/30 bg-[#111c2e] px-4 py-3 text-xs font-bold text-white shadow-2xl">
+              {privacyState.status}
+            </Motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
     </main>
   );
@@ -286,19 +316,9 @@ function CountUp({ value }) {
   return display.toLocaleString();
 }
 
-function PrivacySelect({ label, value, onChange, disabled, dark = false }) {
-  return (
-    <label className={`inline-flex items-center gap-2 text-[11px] font-bold ${dark ? "text-slate-400" : "text-slate-500"}`}>
-      {label ? <span>{label}</span> : null}
-      <select aria-label={label || "Section visibility"} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} className={`rounded-md border px-2 py-1.5 text-[11px] font-extrabold capitalize outline-none disabled:opacity-50 ${dark ? "border-white/15 bg-[#0b1220] text-slate-200 focus:border-orange-400" : "border-slate-300 bg-white text-slate-700 focus:border-orange-500"}`}>
-        <option value="public">Public</option>
-        <option value="private">Private</option>
-      </select>
-    </label>
-  );
-}
+const PrivacySelect = PrivacySelector;
 
-function ConnectionCard({ platform, icon, connection, username, detail, onEdit, visibility, onVisibilityChange, disabled, alwaysPrivate }) {
+function ConnectionCard({ platform, icon, connection, username, detail, onEdit, visibility, onVisibilityChange, disabled }) {
   const connected = Boolean(connection?.connected);
   return (
     <div className="rounded-lg bg-white/[.045] p-3">
@@ -307,7 +327,7 @@ function ConnectionCard({ platform, icon, connection, username, detail, onEdit, 
           <span className={`grid h-8 w-8 place-items-center rounded-full ${connected ? "bg-emerald-400/15 text-emerald-300" : "bg-white/5 text-slate-400"}`}>{createElement(icon, { size: 16 })}</span>
           <div><p className="text-xs font-extrabold text-white">{platform}</p><p className={`mt-0.5 text-[10px] font-bold uppercase ${connected ? "text-emerald-300" : "text-slate-500"}`}>{connected ? "Connected" : "Setup needed"}</p></div>
         </div>
-        {alwaysPrivate ? <span className="text-[10px] font-bold text-slate-500">Private</span> : <PrivacySelect value={visibility ? "public" : "private"} onChange={onVisibilityChange} disabled={disabled} dark />}
+        <PrivacySelect value={visibility ? "public" : "private"} onChange={onVisibilityChange} disabled={disabled} dark />
       </div>
       <p className="mt-3 text-xs leading-5 text-slate-400">{connection?.error || (username ? `@${username} · ${detail}` : detail)}</p>
       {!connected || connection?.error ? <button type="button" onClick={onEdit} className="mt-2 inline-flex items-center gap-1 text-xs font-extrabold text-orange-300 hover:text-orange-200">{connected ? "Fix connection" : `Connect ${platform}`} <ArrowUpRight size={13} /></button> : null}

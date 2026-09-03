@@ -10,7 +10,11 @@ const { exceedsFeaturedLimit, normalizeProject, scoreProject } = require("../ser
  */
 async function getAuthenticatedProfile(userId) {
   const profile = await Profile.findOne({ userId });
-  if (!profile) throw new Error("Profile not found.");
+  if (!profile) {
+    const error = new Error("Profile not found.");
+    error.status = 404;
+    throw error;
+  }
   return profile;
 }
 
@@ -190,6 +194,7 @@ exports.addGithubProject = async (req, res, next) => {
       skillEvidence: skillEvidence.skills.slice(0, 8),
     });
   } catch (error) {
+    if (error.status === 404) return res.status(404).json({ message: error.message });
     return next(error);
   }
 };
@@ -209,7 +214,14 @@ exports.updateProjectVisibility = async (req, res, next) => {
     const target = (profile.projectDetails || []).find(
       (project) => String(project.id) === projectId || String(project._id) === projectId,
     );
-    if (!target) return res.status(404).json({ message: "Project not found in profile." });
+    if (!target) {
+      const belongsToAnotherUser = await Profile.exists({
+        userId: { $ne: req.auth.id },
+        $or: [{ "projectDetails.id": projectId }, { "projectDetails._id": projectId }],
+      });
+      if (belongsToAnotherUser) return res.status(403).json({ message: "You cannot change another user's project." });
+      return res.status(404).json({ message: "Project not found in profile." });
+    }
 
     profile.projectDetails = profile.projectDetails.map((project) => (
       String(project.id) === projectId || String(project._id) === projectId
@@ -217,11 +229,16 @@ exports.updateProjectVisibility = async (req, res, next) => {
         : project
     ));
     await profile.save();
+    const updatedProject = profile.projectDetails.find(
+      (project) => String(project.id) === projectId || String(project._id) === projectId,
+    );
     return res.json({
       message: `Project is now ${visibility}.`,
+      project: updatedProject,
       projects: profile.projectDetails,
     });
   } catch (error) {
+    if (error.status === 404) return res.status(404).json({ message: error.message });
     return next(error);
   }
 };

@@ -4,6 +4,7 @@ const DEFAULT_SECTIONS = Object.freeze({
   projects: true,
   github: true,
   leetcode: true,
+  linkedin: false,
   achievements: true,
   education: true,
   careerGoal: true,
@@ -13,8 +14,10 @@ const DEFAULT_SECTIONS = Object.freeze({
   leaderboardRank: true,
 });
 
-function normalizePrivacy(privacy) {
-  const vis = privacy?.profileVisibility || privacy?.visibility;
+function normalizePrivacy(privacy, legacyVisibility) {
+  const vis = legacyVisibility === "private"
+    ? "private"
+    : privacy?.profileVisibility || privacy?.visibility;
   return {
     profileVisibility: vis === "private" ? "private" : "public",
     sections: { ...DEFAULT_SECTIONS, ...(privacy?.sections || {}) },
@@ -101,7 +104,7 @@ function publicActivityCalendar(profile, visible) {
 }
 
 function serializePublicProfile(profile, user, today, streakLeaderboard = null) {
-  const privacy = normalizePrivacy(profile.privacy);
+  const privacy = normalizePrivacy(profile.privacy, profile.visibility);
   const visible = privacy.sections;
   const result = {
     ...identity(profile, user),
@@ -182,10 +185,11 @@ function serializePublicProfile(profile, user, today, streakLeaderboard = null) 
     result.careerGoal = { role: profile.targetRole || "" };
   }
 
-  // LinkedIn is intentionally guarded: only visible on public profiles.
-  // There is no dedicated linkedin section toggle; it is controlled by overall profile visibility.
   const linkedinUrl = safeLinkedinUrl(profile.linkedinUrl);
-  if (linkedinUrl) result.linkedin = { url: linkedinUrl };
+  if (visible.linkedin && linkedinUrl) {
+    result.visibleSections.push("linkedin");
+    result.linkedin = { url: linkedinUrl };
+  }
 
   result.activitySources = {
     github: Boolean(visible.github && (profile.githubUsername || profile.githubStats?.username)),
