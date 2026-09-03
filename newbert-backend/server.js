@@ -42,6 +42,7 @@ app.use("/api/alumni", require("./routes/alumniRoutes"));
 app.use("/api/mentorship", require("./routes/mentorshipRoutes"));
 app.use("/api/plans", require("./routes/planRoutes"));
 app.use("/api/projects", require("./routes/projectRoutes"));
+app.use("/api/improvement-plans", require("./routes/improvementPlanRoutes"));
 app.use("/api/leaderboard", require("./routes/leaderboardRoutes"));
 app.use("/api/intelligence", require("./routes/intelligenceRoutes"));
 app.use("/api/ai", require("./routes/aiRoutes"));

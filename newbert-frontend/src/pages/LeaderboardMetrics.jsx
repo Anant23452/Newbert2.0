@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import useAuth from "../hook/useAuth";
 import { getLeaderboard } from "../Services/jobService";
 import API from "../Services/api";
-import PodiumTopThree from "../components/LeaderBoard/PodiumTopThree";
-import LeaderBoardCard from "../components/LeaderBoard/LeaderBoardCard";
+import LeaderboardPodium from "../Components/Leaderboard/LeaderboardPodium";
+import LeaderboardCard from "../Components/Leaderboard/LeaderboardCard";
 
 const BOARDS = [
   { id: "streak", label: "Streak", icon: "🔥" },
@@ -322,7 +322,7 @@ export default function LeaderboardMetrics() {
           <div className="space-y-10">
             {/* 1. Animated 2-1-3 Podium Section */}
             {activeTopThree.length > 0 ? (
-              <PodiumTopThree
+          <LeaderboardPodium
                 users={activeTopThree}
                 mineId={profile?.userId}
                 scope={scope}
@@ -366,7 +366,7 @@ export default function LeaderboardMetrics() {
                 </div>
                 <div className="grid gap-2.5 sm:grid-cols-2">
                   {activeRanksFourToTen.map((entry) => (
-                    <LeaderBoardCard
+                    <LeaderboardCard
                       key={entry.userId}
                       entry={entry}
                       mineId={profile?.userId}
@@ -400,7 +400,7 @@ export default function LeaderboardMetrics() {
 
                 <div className="grid gap-2.5 sm:grid-cols-2">
                   {topStreakMaintainers.map((entry) => (
-                    <LeaderBoardCard
+                    <LeaderboardCard
                       key={`streak-${entry.userId}`}
                       entry={entry}
                       mineId={profile?.userId}

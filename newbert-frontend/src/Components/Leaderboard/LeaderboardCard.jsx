@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 /**
  * Compact, uniform-height leaderboard card/row component.
  */
-export default function LeaderBoardCard({ entry, mineId, scope, value }) {
+export default function LeaderboardCard({ entry, mineId, scope, value }) {
   if (!entry) return null;
 
   const isMine = entry.userId === mineId;

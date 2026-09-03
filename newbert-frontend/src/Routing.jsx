@@ -10,7 +10,7 @@ const Roadmap = lazy(() => import('./pages/Roadmap'));
 const Jobs = lazy(() => import('./pages/Jobs'));
 const AdminJobs = lazy(() => import('./pages/AdminJobs'));
 const AdminCourses = lazy(() => import('./pages/AdminCourses'));
-const LeaderBoard = lazy(() => import('./pages/LeaderboardMetrics'));
+const Leaderboard = lazy(() => import('./pages/LeaderboardMetrics'));
 const Mentorship = lazy(() => import('./pages/Mentorship'));
 const ResumeAi = lazy(() => import('./pages/ResumeAi'));
 const Courses = lazy(() => import('./pages/Courses'));
@@ -32,7 +32,7 @@ function Routing() {
         < Route path="/jobs" element={<Jobs/> }/>
         <Route path="/admin/jobs" element={<AdminJobs/> }/>
         <Route path="/admin/courses" element={<AdminCourses/>}/>
-        < Route path="/leaderboard" element={<LeaderBoard/> }/>
+        < Route path="/leaderboard" element={<Leaderboard/> }/>
         <Route path="/mentorship" element={<Mentorship/>}/>
         < Route path="/resume-ai" element={<ResumeAi/> }/>
         < Route path="/courses" element={<Courses/> }/>

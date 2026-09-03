@@ -7,7 +7,7 @@ import { motion as Motion } from "framer-motion";
  * Built strictly with React, Tailwind CSS, and Framer Motion. Zero external image assets.
  * Physical height animation from 0 -> final height (#1: 240px, #2: 185px, #3: 155px).
  */
-export default function PodiumTopThree({ users = [], mineId, scope, metricType = "streak", metricLabel }) {
+export default function LeaderboardPodium({ users = [], mineId, scope, metricType = "streak", metricLabel }) {
   if (!users || users.length === 0) return null;
 
   // Reorder top 3 users into [2nd, 1st, 3rd] layout
