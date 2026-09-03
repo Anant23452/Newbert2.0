@@ -3,50 +3,46 @@ import { Link } from "react-router-dom";
 import useAuth from "../hook/useAuth";
 import { getLeaderboard } from "../Services/jobService";
 import API from "../Services/api";
-import LeaderboardPodium from "../Components/Leaderboard/LeaderboardPodium";
-import LeaderboardCard from "../Components/Leaderboard/LeaderboardCard";
-
-const BOARDS = [
-  { id: "streak", label: "Streak", icon: "🔥" },
-  { id: "github", label: "GitHub", icon: "💻" },
-  { id: "dsa", label: "DSA (LeetCode)", icon: "⚡" },
-  { id: "overall", label: "Overall", icon: "⭐" },
-];
+import LeaderboardPodium from "../components/Leaderboard/LeaderboardPodium";
+import LeaderboardCard from "../components/Leaderboard/LeaderboardCard";
 
 const TIME_RANGES = [
   ["today", "Today"],
   ["7d", "7 Days"],
   ["30d", "30 Days"],
-  ["overall", "All Time"],
+  ["overall", "Overall"],
 ];
 
-const STREAK_RANGES = [
-  ["current", "Current Streak"],
-  ["longest", "Longest Streak"],
-];
+function rangePeriodLabel(range) {
+  if (range === "today") return "today";
+  if (range === "7d") return "past 7 days";
+  if (range === "30d") return "past 30 days";
+  return "overall";
+}
 
 export default function LeaderboardMetrics() {
   const { profile, isAuthenticated, refreshProfile } = useAuth();
-  const [activeBoard, setActiveBoard] = useState("streak");
   const [scope, setScope] = useState("global");
   const [search, setSearch] = useState("");
-  const [leetcodeRange, setLeetcodeRange] = useState("7d");
   const [githubRange, setGithubRange] = useState("7d");
-  const [streakRange, setStreakRange] = useState("current");
+  const [leetcodeRange, setLeetcodeRange] = useState("7d");
+
   const [data, setData] = useState({
-    overall: { users: [], top: [] },
-    streak: { users: [], top: [] },
-    leetcode: { users: [], top: [] },
-    github: { users: [], top: [] },
+    streak: { users: [], top: [], rows: [], currentUser: null },
+    github: { users: [], top: [], rows: [], currentUser: null },
+    leetcode: { users: [], top: [], rows: [], currentUser: null },
   });
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshSuccess, setRefreshSuccess] = useState(false);
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const loadedRef = useRef(false);
 
   const hasCollege = Boolean(profile?.collegeId || data.resolvedCollege?.id);
 
+  // Fetch leaderboard data whenever scope, search, or time ranges change
   useEffect(() => {
     let active = true;
     if (!isAuthenticated) {
@@ -59,9 +55,8 @@ export default function LeaderboardMetrics() {
       getLeaderboard({
         scope,
         search: search || undefined,
-        leetcodeRange,
         githubRange,
-        streakRange,
+        leetcodeRange,
       })
         .then((result) => {
           if (!active) return;
@@ -81,21 +76,26 @@ export default function LeaderboardMetrics() {
         .finally(() => {
           if (active) setLoading(false);
         });
-    }, 200);
+    }, 150);
 
     return () => {
       active = false;
       clearTimeout(timer);
     };
-  }, [isAuthenticated, scope, search, leetcodeRange, githubRange, streakRange, refreshKey]);
+  }, [isAuthenticated, scope, search, githubRange, leetcodeRange, refreshKey]);
 
+  // Refresh stats handler
   const refreshStats = async () => {
+    if (refreshing) return;
     setRefreshing(true);
     setError("");
+    setRefreshSuccess(false);
     try {
       await API.post("/profiles/sync", {});
       await refreshProfile();
       setRefreshKey((k) => k + 1);
+      setRefreshSuccess(true);
+      setTimeout(() => setRefreshSuccess(false), 2500);
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to refresh your stats.");
     } finally {
@@ -103,45 +103,39 @@ export default function LeaderboardMetrics() {
     }
   };
 
-  // Derive board data based on active tab
-  const currentBoardData = useMemo(() => {
-    if (activeBoard === "streak") return data.streak || { users: [], top: [] };
-    if (activeBoard === "github") return data.github || { users: [], top: [] };
-    if (activeBoard === "dsa") return data.leetcode || { users: [], top: [] };
-    return data.overall || { users: [], top: [] };
-  }, [activeBoard, data]);
-
-  const activeTopThree = useMemo(() => {
-    return (currentBoardData.users || []).slice(0, 3);
-  }, [currentBoardData]);
-
-  const activeRanksFourToTen = useMemo(() => {
-    return (currentBoardData.users || []).slice(3, 10);
-  }, [currentBoardData]);
-
-  const topStreakMaintainers = useMemo(() => {
-    return (data.streak?.users || []).slice(0, 10);
+  // Section 1: Streak data
+  const streakTopThree = useMemo(() => {
+    return (data.streak?.users || []).slice(0, 3);
   }, [data.streak]);
 
-  const currentUserInActiveBoard = currentBoardData.currentUser;
-  const isCurrentUserOutsideTopTen = currentUserInActiveBoard &&
-    !(currentBoardData.users || []).slice(0, 10).some((u) => u.userId === currentUserInActiveBoard.userId);
+  const streakRanksFourToTen = useMemo(() => {
+    return (data.streak?.users || []).slice(3, 10);
+  }, [data.streak]);
 
-  const getMetricLabel = (entry) => {
-    if (activeBoard === "streak") {
-      const days = streakRange === "longest" ? entry.streak?.longest : entry.streak?.current;
-      return `🔥 ${days || 0} days`;
-    }
-    if (activeBoard === "github") {
-      const count = githubRange === "overall" ? entry.github?.totalContributions : entry.github?.[githubRange];
-      return `💻 ${count || 0} verified activities`;
-    }
-    if (activeBoard === "dsa") {
-      const count = leetcodeRange === "overall" ? entry.leetcode?.totalSolved : entry.leetcode?.[leetcodeRange];
-      return `⚡ ${count || 0} solved`;
-    }
-    return `⭐ ${entry.overallScore || 0} pts`;
-  };
+  const streakCurrentUser = data.streak?.currentUser;
+  const isStreakUserOutsideTopTen = streakCurrentUser &&
+    !(data.streak?.users || []).slice(0, 10).some((u) => u.userId === streakCurrentUser.userId);
+
+  // Section 2: GitHub data
+  const githubUsers = useMemo(() => {
+    return (data.github?.users || []).slice(0, 10);
+  }, [data.github]);
+
+  const githubCurrentUser = data.github?.currentUser;
+  const isGithubConnected = Boolean(profile?.githubUsername || profile?.githubStats?.username);
+  const githubUserCommits = githubCurrentUser?.github?.commits?.[githubRange] ?? githubCurrentUser?.github?.[githubRange] ?? 0;
+
+  // Section 3: LeetCode data
+  const leetcodeUsers = useMemo(() => {
+    return (data.leetcode?.users || []).slice(0, 10);
+  }, [data.leetcode]);
+
+  const leetcodeCurrentUser = data.leetcode?.currentUser;
+  const isLeetcodeConnected = Boolean(profile?.leetcodeUsername || profile?.leetcodeStats?.username);
+  const leetcodeUserSolved = leetcodeRange === "overall"
+    ? (leetcodeCurrentUser?.leetcode?.totalSolved ?? 0)
+    : (leetcodeCurrentUser?.leetcode?.solved?.[leetcodeRange] ?? leetcodeCurrentUser?.leetcode?.[leetcodeRange] ?? 0);
+  const leetcodeUserSubmissions = leetcodeCurrentUser?.leetcode?.submissions?.[leetcodeRange] ?? 0;
 
   if (!isAuthenticated) {
     return (
@@ -163,24 +157,26 @@ export default function LeaderboardMetrics() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0b1220] px-4 py-10 text-white sm:px-6 md:py-16">
-      <div className="mx-auto max-w-6xl space-y-8">
-        {/* Header Section */}
+    <main className="min-h-screen bg-[#0b1220] px-4 py-10 text-white sm:px-6 md:py-14">
+      <div className="mx-auto max-w-5xl space-y-12">
+        {/* ─────────────────────────────────────────────────────────────
+            1. HERO / LEADERBOARD HEADER
+        ─────────────────────────────────────────────────────────────── */}
         <header className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b border-white/10 pb-8">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-400">
               Rankings & Consistency
             </p>
-            <h1 className="mt-2 text-3xl font-black sm:text-4xl md:text-5xl text-white">
+            <h1 className="mt-2 text-3xl font-black sm:text-4xl text-white">
               Real activity. Transparent rankings.
             </h1>
-            <p className="mt-2 text-sm text-slate-400">
-              Ranked from verified GitHub activity, LeetCode solutions, and consecutive coding streaks.
+            <p className="mt-2 text-sm text-slate-400 max-w-xl">
+              Ranked from verified coding activity — not arbitrary points.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {/* Scope Switcher */}
+            {/* Page-level My College | Global Scope */}
             <div className="flex rounded-xl border border-white/15 bg-[#141d2e] p-1">
               <button
                 disabled={!hasCollege && !loading}
@@ -210,8 +206,10 @@ export default function LeaderboardMetrics() {
               {refreshing ? (
                 <>
                   <span className="h-3 w-3 animate-spin rounded-full border-2 border-orange-400 border-t-transparent" />
-                  Refreshing...
+                  Refreshing activity...
                 </>
+              ) : refreshSuccess ? (
+                <span className="text-emerald-400">✓ Activity updated</span>
               ) : (
                 <>🔄 Refresh stats</>
               )}
@@ -220,34 +218,15 @@ export default function LeaderboardMetrics() {
         </header>
 
         {scope === "college" && data.college?.name && (
-          <div className="flex items-center gap-2 text-xs font-extrabold text-orange-300 bg-orange-500/10 border border-orange-500/20 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-xs font-extrabold text-orange-300 bg-orange-500/10 border border-orange-500/20 rounded-lg px-3.5 py-2">
             <span>🏛️ Showing rankings for:</span>
             <strong className="text-white">{data.college.name}</strong>
           </div>
         )}
 
-        {/* Board Selection & Time Filter Bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Main Board Tabs */}
-          <div className="flex flex-wrap gap-2">
-            {BOARDS.map((board) => (
-              <button
-                key={board.id}
-                onClick={() => setActiveBoard(board.id)}
-                className={`flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-black transition ${
-                  activeBoard === board.id
-                    ? "bg-orange-500 text-slate-950 shadow-md shadow-orange-500/20"
-                    : "border border-white/15 bg-[#141d2e] text-slate-300 hover:border-white/30 hover:text-white"
-                }`}
-              >
-                <span>{board.icon}</span>
-                <span>{board.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Search bar */}
-          <div className="w-full sm:w-64">
+        {/* Global Search within active scope */}
+        <div className="flex justify-end">
+          <div className="w-full sm:w-72">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -257,56 +236,6 @@ export default function LeaderboardMetrics() {
           </div>
         </div>
 
-        {/* Sub-Filters / Time Range Selector */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-4">
-          <span className="text-xs font-bold text-slate-400 mr-1">Time Range:</span>
-          {activeBoard === "streak" ? (
-            STREAK_RANGES.map(([value, label]) => (
-              <button
-                key={value}
-                onClick={() => setStreakRange(value)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-extrabold transition ${
-                  streakRange === value
-                    ? "bg-white/15 text-orange-400 border border-orange-400/40"
-                    : "border border-white/10 text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                {label}
-              </button>
-            ))
-          ) : activeBoard === "github" ? (
-            TIME_RANGES.map(([value, label]) => (
-              <button
-                key={value}
-                onClick={() => setGithubRange(value)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-extrabold transition ${
-                  githubRange === value
-                    ? "bg-white/15 text-orange-400 border border-orange-400/40"
-                    : "border border-white/10 text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                {label}
-              </button>
-            ))
-          ) : activeBoard === "dsa" ? (
-            TIME_RANGES.map(([value, label]) => (
-              <button
-                key={value}
-                onClick={() => setLeetcodeRange(value)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-extrabold transition ${
-                  leetcodeRange === value
-                    ? "bg-white/15 text-orange-400 border border-orange-400/40"
-                    : "border border-white/10 text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                {label}
-              </button>
-            ))
-          ) : (
-            <span className="text-xs font-bold text-slate-300">All-time overall score</span>
-          )}
-        </div>
-
         {error && (
           <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-4 text-xs font-bold text-red-200">
             {error}
@@ -314,129 +243,321 @@ export default function LeaderboardMetrics() {
         )}
 
         {loading ? (
-          <div className="space-y-6">
-            <div className="h-80 animate-pulse rounded-2xl bg-white/5" />
-            <div className="h-44 animate-pulse rounded-2xl bg-white/5" />
+          <div className="space-y-8">
+            <div className="h-72 animate-pulse rounded-2xl bg-white/5" />
+            <div className="h-56 animate-pulse rounded-2xl bg-white/5" />
+            <div className="h-56 animate-pulse rounded-2xl bg-white/5" />
           </div>
         ) : (
-          <div className="space-y-10">
-            {/* 1. Animated 2-1-3 Podium Section */}
-            {activeTopThree.length > 0 ? (
-          <LeaderboardPodium
-                users={activeTopThree}
-                mineId={profile?.userId}
-                scope={scope}
-                metricType={activeBoard}
-                metricLabel={getMetricLabel}
-              />
-            ) : (
-              <div className="rounded-2xl border border-white/10 bg-[#111927] p-8 text-center text-slate-400">
-                <p className="text-sm font-bold">
-                  {scope === "college"
-                    ? "No activity recorded for your college in this period yet."
-                    : "No activity recorded for this period yet."}
+          <div className="space-y-16">
+            {/* ─────────────────────────────────────────────────────────────
+                SECTION 1 — CURRENT STREAK LEADERBOARD
+                (No time filters. Strictly Current Streak.)
+            ─────────────────────────────────────────────────────────────── */}
+            <section className="space-y-6">
+              <div className="border-b border-white/10 pb-4">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-400">
+                  🔥 Consistency
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
-                  {scope === "college"
-                    ? "Switch to the global leaderboard to see leading performers across all colleges."
-                    : "Sync your GitHub or LeetCode profile to claim a top rank."}
+                <h2 className="mt-1 text-2xl font-black text-white">
+                  Top Streak Maintainers
+                </h2>
+                <p className="mt-1 text-xs text-slate-400">
+                  Students maintaining the strongest current coding consistency.
                 </p>
-                {scope === "college" && (
-                  <button
-                    type="button"
-                    onClick={() => setScope("global")}
-                    className="mt-3.5 inline-block rounded-lg bg-orange-500 px-4 py-1.5 text-xs font-black text-slate-950 hover:bg-orange-400 transition shadow-md"
-                  >
-                    View Global Leaderboard
-                  </button>
-                )}
               </div>
-            )}
 
-            {/* 2. Ranks 4-10 for Active Board */}
-            {activeRanksFourToTen.length > 0 && (
-              <section className="space-y-3">
-                <div className="flex items-center justify-between">
+              {/* 1. Animated 2-1-3 Podium for Top 3 */}
+              {streakTopThree.length > 0 ? (
+                <LeaderboardPodium
+                  users={streakTopThree}
+                  mineId={profile?.userId}
+                  scope={scope}
+                  metricType="streak"
+                />
+              ) : (
+                <div className="rounded-2xl border border-white/10 bg-[#111927] p-8 text-center text-slate-400">
+                  <p className="text-sm font-bold">No verified streak activity yet.</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Sync your GitHub or LeetCode account to record continuous daily activity.
+                  </p>
+                </div>
+              )}
+
+              {/* Top 10 List (Ranks 4–10) */}
+              {streakRanksFourToTen.length > 0 && (
+                <div className="space-y-3 pt-2">
                   <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">
-                    Leaderboard · Ranks #4 – #10
+                    Top 10 Streak Maintainers · Ranks #4 – #10
                   </h3>
-                  <span className="text-[11px] font-bold text-slate-500">
-                    {currentBoardData.users?.length} ranked students
-                  </span>
-                </div>
-                <div className="grid gap-2.5 sm:grid-cols-2">
-                  {activeRanksFourToTen.map((entry) => (
-                    <LeaderboardCard
-                      key={entry.userId}
-                      entry={entry}
-                      mineId={profile?.userId}
-                      scope={scope}
-                      value={getMetricLabel}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* 3. Top Streak Maintainers Section (Ranks 1–10) */}
-            {activeBoard !== "streak" && topStreakMaintainers.length > 0 && (
-              <section className="rounded-2xl border border-white/10 bg-[#0e1626] p-5 sm:p-7 shadow-xl space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-widest text-orange-400">
-                      🔥 TOP STREAK MAINTAINERS
-                    </p>
-                    <h2 className="mt-1 text-lg font-black text-white">
-                      Consistency Champions (Ranks 1–10)
-                    </h2>
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    {streakRanksFourToTen.map((entry) => (
+                      <LeaderboardCard
+                        key={entry.userId}
+                        entry={entry}
+                        mineId={profile?.userId}
+                        scope={scope}
+                        value={(u) => `🔥 ${u.streak?.current || 0} days`}
+                      />
+                    ))}
                   </div>
-                  <button
-                    onClick={() => setActiveBoard("streak")}
-                    className="text-xs font-extrabold text-orange-400 hover:text-orange-300 transition"
-                  >
-                    View full streak board →
-                  </button>
                 </div>
+              )}
 
-                <div className="grid gap-2.5 sm:grid-cols-2">
-                  {topStreakMaintainers.map((entry) => (
-                    <LeaderboardCard
-                      key={`streak-${entry.userId}`}
-                      entry={entry}
-                      mineId={profile?.userId}
-                      scope={scope}
-                      value={(u) => `🔥 ${u.streak?.current || 0} days`}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* 4. Current User Sticky Position (when outside top 10) */}
-            {isCurrentUserOutsideTopTen && (
-              <div className="sticky bottom-4 z-30 rounded-2xl border-2 border-orange-400 bg-[#162136]/95 backdrop-blur-md p-4 shadow-2xl">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500 font-black text-slate-950">
-                      #{currentUserInActiveBoard.rank}
-                    </span>
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-wider text-orange-300">
-                        Your Current Rank
-                      </p>
-                      <p className="text-sm font-extrabold text-white">
-                        {currentUserInActiveBoard.name} · You
-                      </p>
-                    </div>
+              {/* Sticky / Dedicated rank card if current user is outside top 10 */}
+              {isStreakUserOutsideTopTen && (
+                <div className="rounded-xl border border-orange-500/40 bg-orange-500/10 p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] font-black uppercase tracking-wider text-orange-300">
+                      Your Streak Rank
+                    </p>
+                    <p className="text-lg font-black text-white">
+                      #{streakCurrentUser.rank} · {streakCurrentUser.name}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-black text-orange-200">
-                      {getMetricLabel(currentUserInActiveBoard)}
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-orange-500/20 px-3 py-1 text-xs font-black text-orange-300">
+                      🔥 {streakCurrentUser.streak?.current || 0} day streak
                     </span>
                   </div>
                 </div>
+              )}
+            </section>
+
+            {/* ─────────────────────────────────────────────────────────────
+                SECTION 2 — GITHUB CONTRIBUTORS LEADERBOARD
+                (Filters: Today | 7 Days | 30 Days | Overall)
+            ─────────────────────────────────────────────────────────────── */}
+            <section className="space-y-6 pt-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between border-b border-white/10 pb-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-400">
+                    💻 GitHub
+                  </p>
+                  <h2 className="mt-1 text-2xl font-black text-white">
+                    Top Git Contributors
+                  </h2>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Ranked by verified GitHub commit activity.
+                  </p>
+                </div>
+
+                {/* Independent Time Filters for GitHub */}
+                <div className="flex rounded-xl border border-white/15 bg-[#141d2e] p-1 self-start sm:self-auto">
+                  {TIME_RANGES.map(([rangeKey, label]) => (
+                    <button
+                      key={rangeKey}
+                      onClick={() => setGithubRange(rangeKey)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-black transition ${
+                        githubRange === rangeKey
+                          ? "bg-orange-500 text-slate-950 shadow"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            )}
+
+              {/* GitHub Your Rank Card */}
+              <div className="rounded-xl border border-white/10 bg-[#111927] p-4">
+                {isGithubConnected ? (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-wider text-orange-400">
+                        Your Rank
+                      </p>
+                      <p className="text-2xl font-black text-white">
+                        {githubCurrentUser?.rank ? `#${githubCurrentUser.rank}` : "Unranked"}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-black text-orange-300">
+                        💻 {githubUserCommits} commits {rangePeriodLabel(githubRange)}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-extrabold text-white">
+                        Connect GitHub to get your rank.
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Sync your GitHub account to showcase verified commits on the leaderboard.
+                      </p>
+                    </div>
+                    <Link
+                      to="/profile"
+                      className="inline-flex items-center justify-center rounded-lg bg-orange-500/20 border border-orange-500/40 px-3.5 py-1.5 text-xs font-black text-orange-300 hover:bg-orange-500/30 transition"
+                    >
+                      Connect GitHub →
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* GitHub Top 10 List */}
+              {githubUsers.length > 0 ? (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">
+                    Top Contributors · Ranks #1 – #10
+                  </h3>
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    {githubUsers.map((entry) => {
+                      const commits = entry.github?.commits?.[githubRange] ?? entry.github?.[githubRange] ?? 0;
+                      return (
+                        <LeaderboardCard
+                          key={entry.userId}
+                          entry={entry}
+                          mineId={profile?.userId}
+                          scope={scope}
+                          value={() => `💻 ${commits} commits`}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-white/10 bg-[#111927] p-8 text-center text-slate-400">
+                  <p className="text-sm font-bold">No verified GitHub activity for this period.</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Push commits to your public repositories and click Refresh stats.
+                  </p>
+                </div>
+              )}
+            </section>
+
+            {/* ─────────────────────────────────────────────────────────────
+                SECTION 3 — LEETCODE SOLVERS LEADERBOARD
+                (Filters: Today | 7 Days | 30 Days | Overall)
+            ─────────────────────────────────────────────────────────────── */}
+            <section className="space-y-6 pt-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between border-b border-white/10 pb-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-400">
+                    ⚡ LeetCode
+                  </p>
+                  <h2 className="mt-1 text-2xl font-black text-white">
+                    Top LeetCode Solvers
+                  </h2>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Ranked by verified LeetCode problem-solving activity.
+                  </p>
+                </div>
+
+                {/* Independent Time Filters for LeetCode */}
+                <div className="flex rounded-xl border border-white/15 bg-[#141d2e] p-1 self-start sm:self-auto">
+                  {TIME_RANGES.map(([rangeKey, label]) => (
+                    <button
+                      key={rangeKey}
+                      onClick={() => setLeetcodeRange(rangeKey)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-black transition ${
+                        leetcodeRange === rangeKey
+                          ? "bg-orange-500 text-slate-950 shadow"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* LeetCode Your Rank Card */}
+              <div className="rounded-xl border border-white/10 bg-[#111927] p-4">
+                {isLeetcodeConnected ? (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-wider text-orange-400">
+                        Your Rank
+                      </p>
+                      <p className="text-2xl font-black text-white">
+                        {leetcodeCurrentUser?.rank ? `#${leetcodeCurrentUser.rank}` : "Unranked"}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-black text-orange-300">
+                        ⚡{" "}
+                        {leetcodeRange === "overall" ? (
+                          `${leetcodeUserSolved} problems solved`
+                        ) : (
+                          <>
+                            <span>{leetcodeUserSolved} solved</span>
+                            {leetcodeUserSubmissions > 0 && (
+                              <span className="opacity-75 font-normal">
+                                · {leetcodeUserSubmissions} submissions
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-extrabold text-white">
+                        Connect LeetCode to get your rank.
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Sync your LeetCode profile to rank among top DSA solvers.
+                      </p>
+                    </div>
+                    <Link
+                      to="/profile"
+                      className="inline-flex items-center justify-center rounded-lg bg-orange-500/20 border border-orange-500/40 px-3.5 py-1.5 text-xs font-black text-orange-300 hover:bg-orange-500/30 transition"
+                    >
+                      Connect LeetCode →
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* LeetCode Top 10 List */}
+              {leetcodeUsers.length > 0 ? (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">
+                    Top Solvers · Ranks #1 – #10
+                  </h3>
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    {leetcodeUsers.map((entry) => {
+                      const solved = leetcodeRange === "overall"
+                        ? (entry.leetcode?.totalSolved ?? 0)
+                        : (entry.leetcode?.solved?.[leetcodeRange] ?? entry.leetcode?.[leetcodeRange] ?? 0);
+                      const submissions = entry.leetcode?.submissions?.[leetcodeRange] ?? 0;
+
+                      return (
+                        <LeaderboardCard
+                          key={entry.userId}
+                          entry={entry}
+                          mineId={profile?.userId}
+                          scope={scope}
+                          value={() => (
+                            <span className="inline-flex items-center gap-1">
+                              <span>⚡ {solved} solved</span>
+                              {leetcodeRange !== "overall" && submissions > 0 && (
+                                <span className="opacity-60 text-[10px]">
+                                  ({submissions} subs)
+                                </span>
+                              )}
+                            </span>
+                          )}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-white/10 bg-[#111927] p-8 text-center text-slate-400">
+                  <p className="text-sm font-bold">No verified LeetCode activity for this period.</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Solve problems on LeetCode and click Refresh stats.
+                  </p>
+                </div>
+              )}
+            </section>
           </div>
         )}
       </div>

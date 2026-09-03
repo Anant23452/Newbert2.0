@@ -79,6 +79,54 @@ function previousKolkataDay(dateString) {
   return d.toISOString().slice(0, 10);
 }
 
+/**
+ * Canonical streak calculation for Newbert.
+ * Calculates both current and longest consecutive active calendar days (in IST).
+ * Active day = verified GitHub activity/commits or LeetCode activity/accepted problems.
+ */
+function calculateStreaks(activity = []) {
+  const activeDays = (Array.isArray(activity) ? activity : []).filter((day) => {
+    const total = Number(day.total) || 0;
+    const github = Number(day.github) || 0;
+    const githubCommits = Number(day.githubCommits) || 0;
+    const leetcode = Number(day.leetcode) || 0;
+    const leetcodeAccepted = Number(day.leetcodeAccepted) || (Array.isArray(day.leetcodeAcceptedProblems) ? day.leetcodeAcceptedProblems.length : 0);
+    return total > 0 || github > 0 || githubCommits > 0 || leetcode > 0 || leetcodeAccepted > 0;
+  });
+
+  const activeDates = new Set(activeDays.map((day) => kolkataDate(day.date) || day.date).filter(Boolean));
+
+  let longestStreak = 0;
+  let running = 0;
+  let previous = null;
+  for (const date of [...activeDates].sort()) {
+    const current = new Date(`${date}T00:00:00Z`);
+    running = previous && current - previous === 86400000 ? running + 1 : 1;
+    longestStreak = Math.max(longestStreak, running);
+    previous = current;
+  }
+
+  let cursor = getKolkataToday();
+  if (!activeDates.has(cursor)) {
+    cursor = previousKolkataDay(cursor);
+  }
+
+  let currentStreak = 0;
+  while (cursor && activeDates.has(cursor)) {
+    currentStreak += 1;
+    cursor = previousKolkataDay(cursor);
+  }
+
+  return { currentStreak, longestStreak };
+}
+
+/**
+ * Returns current streak for an activity calendar.
+ */
+function getCurrentStreak(activity = []) {
+  return calculateStreaks(activity).currentStreak;
+}
+
 module.exports = {
   KOLKATA_TIMEZONE,
   kolkataDate,
@@ -87,4 +135,6 @@ module.exports = {
   getDatesForRange,
   isSameDayIST,
   previousKolkataDay,
+  calculateStreaks,
+  getCurrentStreak,
 };

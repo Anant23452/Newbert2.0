@@ -82,8 +82,8 @@ function PodiumColumn({ slot, mineId, scope, metricType, metricLabel }) {
 
   // Target numeric value for count-up animation
   const numericValue = getNumericMetric(user, metricType);
-  const metricPrefix = metricType === "streak" || metricType === "longest_streak" ? "🔥" : metricType === "leetcode" ? "⚡" : metricType === "github" ? "💻" : "⭐";
-  const metricSuffix = metricType === "streak" || metricType === "longest_streak" ? "days" : metricType === "leetcode" ? "solved" : metricType === "github" ? "acts" : "pts";
+  const metricPrefix = metricType === "streak" ? "🔥" : metricType === "leetcode" ? "⚡" : "💻";
+  const metricSuffix = metricType === "streak" ? "day streak" : metricType === "leetcode" ? "solved" : "commits";
 
   // If slot has no user (e.g. only 1 or 2 students on leaderboard)
   if (!user) {
@@ -237,14 +237,11 @@ function getNumericMetric(user, metricType) {
   if (metricType === "streak") {
     return user.streak?.current ?? 0;
   }
-  if (metricType === "longest_streak") {
-    return user.streak?.longest ?? 0;
-  }
   if (metricType === "leetcode") {
-    return user.leetcode?.totalSolved || user.leetcode?.today || 0;
+    return user.leetcode?.totalSolved || user.leetcode?.solved?.overall || user.leetcode?.today || 0;
   }
   if (metricType === "github") {
-    return user.github?.totalContributions || user.github?.today || 0;
+    return user.github?.totalContributions || user.github?.commits?.overall || user.github?.today || 0;
   }
-  return user.overallScore ?? 0;
+  return user.streak?.current ?? 0;
 }

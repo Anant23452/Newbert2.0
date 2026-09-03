@@ -11,7 +11,7 @@ const { DEFAULT_SECTIONS, normalizePrivacy, serializePublicProfile } = require("
 const { getPublicStreakSnapshot } = require("../services/leaderboardService");
 const { buildSkillEvidence, buildEffectiveSkillInventory } = require("../services/skillEvidenceService");
 const { normalizeSkill } = require("../services/skillNormalizationService");
-const { kolkataDate, getKolkataToday, previousKolkataDay } = require("../utils/dateNormalization");
+const { kolkataDate, getKolkataToday, previousKolkataDay, calculateStreaks, getCurrentStreak } = require("../utils/dateNormalization");
 
 const INVALID_LEETCODE_USERNAMES = new Set(["u", "profile"]);
 const activeProfileSyncs = new Set();
@@ -59,27 +59,6 @@ function mergeActivity(githubActivity = [], leetcodeActivity = []) {
     days.set(date, day);
   }
   return [...days.values()].map((day) => ({ ...day, leetcodeAccepted: day.leetcodeAcceptedProblems.length, total: day.github + day.leetcode })).filter((day) => day.total > 0).sort((a, b) => a.date.localeCompare(b.date));
-}
-
-function calculateStreaks(activity) {
-  const activeDates = new Set(activity.filter((day) => day.total > 0).map((day) => day.date));
-  let longestStreak = 0;
-  let running = 0;
-  let previous = null;
-  for (const date of [...activeDates].sort()) {
-    const current = new Date(`${date}T00:00:00Z`);
-    running = previous && current - previous === 86400000 ? running + 1 : 1;
-    longestStreak = Math.max(longestStreak, running);
-    previous = current;
-  }
-  let cursor = getKolkataToday();
-  if (!activeDates.has(cursor)) cursor = previousKolkataDay(cursor);
-  let currentStreak = 0;
-  while (activeDates.has(cursor)) {
-    currentStreak += 1;
-    cursor = previousKolkataDay(cursor);
-  }
-  return { currentStreak, longestStreak };
 }
 
 function sanitizedActivity(profile, leetcodeStats) {

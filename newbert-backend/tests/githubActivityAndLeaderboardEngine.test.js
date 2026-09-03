@@ -229,3 +229,62 @@ test("activityMetrics computes exact counts for Today, 7D, 30D, and Overall", ()
   assert.equal(metrics["30d"].github, 14, "30 Days should have 1 + 9 + 4 = 14 commits");
   assert.equal(metrics.githubContributions, 34, "Overall should have all 34 commits/contributions");
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. SIMPLIFIED LEADERBOARD ARCHITECTURE TESTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+test("Simplified Leaderboard: streak has no time filter, matches heatmap calculation, and has zero points", () => {
+  const profile = {
+    userId: "test-user-1",
+    activityCalendar: [
+      { date: getKolkataToday(), github: 1, githubCommits: 1, total: 1 },
+      { date: getKolkataDayOffset(-1), github: 3, githubCommits: 3, total: 3 },
+      { date: getKolkataDayOffset(-2), github: 2, githubCommits: 2, total: 2 },
+    ],
+    privacy: { profileVisibility: "public", sections: { streakStats: true, leaderboardRank: true } },
+  };
+  const user = { _id: "test-user-1", name: "Streak Hero" };
+
+  const entry = buildLeaderboardEntry(profile, user);
+  assert.strictEqual(entry.overallScore, undefined, "overallScore must be removed");
+  assert.strictEqual(entry.streak.current, 3, "Current streak must match consecutive days in calendar");
+  assert.strictEqual(entry.streak.private, false);
+});
+
+test("GitHub and LeetCode rank by real commits and solved problems without points", () => {
+  const p1 = {
+    userId: "u1",
+    activityCalendar: [
+      { date: getKolkataToday(), githubCommits: 10, leetcodeAcceptedProblems: ["a", "b"], leetcode: 3, total: 12 },
+    ],
+    leetcodeStats: { totalSolved: 50, acceptedActivityAvailable: true },
+    privacy: { profileVisibility: "public", sections: { github: true, leetcode: true, leaderboardRank: true } },
+  };
+  const p2 = {
+    userId: "u2",
+    activityCalendar: [
+      { date: getKolkataToday(), githubCommits: 5, leetcodeAcceptedProblems: ["a", "b", "c"], leetcode: 5, total: 8 },
+    ],
+    leetcodeStats: { totalSolved: 120, acceptedActivityAvailable: true },
+    privacy: { profileVisibility: "public", sections: { github: true, leetcode: true, leaderboardRank: true } },
+  };
+
+  const e1 = buildLeaderboardEntry(p1, { _id: "u1", name: "Coder 1" });
+  const e2 = buildLeaderboardEntry(p2, { _id: "u2", name: "Coder 2" });
+
+  // GitHub ranking by today's commits: Coder 1 has 10, Coder 2 has 5 -> Coder 1 ranks #1
+  const ghRank = rankEntries([e1, e2], (e) => e.github.commits.today, "u1");
+  assert.strictEqual(ghRank.users[0].userId, "u1");
+  assert.strictEqual(ghRank.users[0].github.commits.today, 10);
+
+  // LeetCode ranking by today's solved problems: Coder 2 has 3, Coder 1 has 2 -> Coder 2 ranks #1
+  const lcRankToday = rankEntries([e1, e2], (e) => e.leetcode.solved.today, "u2");
+  assert.strictEqual(lcRankToday.users[0].userId, "u2");
+  assert.strictEqual(lcRankToday.users[0].leetcode.solved.today, 3);
+
+  // LeetCode ranking by overall solved: Coder 2 has 120, Coder 1 has 50 -> Coder 2 ranks #1
+  const lcRankOverall = rankEntries([e1, e2], (e) => e.leetcode.solved.overall, "u2");
+  assert.strictEqual(lcRankOverall.users[0].userId, "u2");
+  assert.strictEqual(lcRankOverall.users[0].leetcode.solved.overall, 120);
+});
