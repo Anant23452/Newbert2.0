@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import AlumniCard from "../Components/AlumniCard";
+import AlumniCard from "../components/AlumniCard";
 import useAuth from "../hook/useAuth";
 import { compareWithAlumni, getPublicAlumni, getRecommendedAlumni } from "../Services/alumniService";
 

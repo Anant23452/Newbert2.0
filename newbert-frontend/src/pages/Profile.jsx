@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import API from "../Services/api";
 import useAuth from "../hook/useAuth";
 import { BRANCH_OPTIONS, TARGET_ROLE_OPTIONS, getSkillSuggestions, normalizeSkillName } from "../data/profileOptions";
-import CollegeAutocomplete from "../Components/CollegeAutocomplete";
+import CollegeAutocomplete from "../components/CollegeAutocomplete";
 import CareerDashboard from "../profileComponents/CareerDashboard";
 import MomentumSection from "../profileComponents/MomentumSection";
 import StreakLeaderboardPreview from "../profileComponents/StreakLeaderboardPreview";
