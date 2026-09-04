@@ -21,20 +21,23 @@ const ALIASES = new Map([
   ["java", "java"],
   ["c", "c"], ["cpp", "c++"], ["c++", "c++"], ["cplusplus", "c++"],
   ["sql", "sql"],
-  ["html", "html"], ["css", "css"], ["html/css", "html-css"], ["html css", "html-css"],
+  ["html", "html"], ["css", "css"],
+  ["html/css", "html_css"], ["html css", "html_css"], ["html-css", "html_css"], ["html_css", "html_css"],
   ["sklearn", "scikit-learn"], ["scikit learn", "scikit-learn"], ["scikit-learn", "scikit-learn"],
   ["tensorflow", "tensorflow"], ["pytorch", "pytorch"],
   ["flask", "flask"], ["fastapi", "fastapi"], ["fast-api", "fastapi"], ["django", "django"],
   ["jwt", "jwt"], ["oauth", "oauth"], ["oauth2", "oauth"],
-  ["rest", "rest-api"], ["rest api", "rest-api"], ["rest apis", "rest-api"], ["restful api", "rest-api"], ["restful apis", "rest-api"],
+  ["rest", "rest_api"], ["rest api", "rest_api"], ["rest apis", "rest_api"], ["restful api", "rest_api"], ["restful apis", "rest_api"], ["rest-api", "rest_api"], ["rest_api", "rest_api"],
   ["git", "git"], ["github", "github"],
   ["cicd", "cicd"], ["ci-cd", "cicd"], ["github actions", "cicd"], ["github-actions", "cicd"],
   ["data structures and algorithms", "dsa"], ["data structure and algorithms", "dsa"], ["algorithms", "dsa"], ["dsa", "dsa"],
-  ["object oriented programming", "oop"], ["object-oriented programming", "oop"], ["oop", "oop"],
-  ["database management systems", "dbms"], ["dbms", "dbms"],
-  ["operating system", "operating-systems"], ["operating systems", "operating-systems"], ["os", "operating-systems"],
-  ["computer network", "computer-networks"], ["computer networks", "computer-networks"], ["networking", "computer-networks"],
-  ["system design", "system-design"],
+  ["object oriented programming", "oop"], ["object-oriented programming", "oop"], ["oop", "oop"], ["oops", "oop"],
+  ["database management systems", "dbms"], ["database management system", "dbms"], ["dbms", "dbms"],
+  ["operating system", "operating_systems"], ["operating systems", "operating_systems"], ["os", "operating_systems"], ["operating-systems", "operating_systems"], ["operating_systems", "operating_systems"],
+  ["computer network", "computer_networks"], ["computer networks", "computer_networks"], ["networking", "computer_networks"], ["cn", "computer_networks"], ["computer-networks", "computer_networks"], ["computer_networks", "computer_networks"],
+  ["system design", "system_design"], ["system-design", "system_design"], ["system_design", "system_design"],
+  ["aptitude", "aptitude"], ["reasoning", "aptitude"], ["quantitative aptitude", "aptitude"],
+  ["communication", "communication"], ["behavioral", "communication"], ["hr", "communication"],
   ["cse", "computer-science-engineering"], ["computer science", "computer-science-engineering"], ["computer science engineering", "computer-science-engineering"], ["computer science and engineering", "computer-science-engineering"],
   ["it", "information-technology"], ["information technology", "information-technology"],
   ["ece", "electronics-communication-engineering"], ["electronics and communication engineering", "electronics-communication-engineering"],
@@ -47,12 +50,17 @@ const LABELS = {
   javascript: "JavaScript", typescript: "TypeScript", nodejs: "Node.js", react: "React", nextjs: "Next.js", express: "Express.js",
   mongodb: "MongoDB", mongoose: "Mongoose", postgresql: "PostgreSQL", mysql: "MySQL", redis: "Redis", prisma: "Prisma",
   tailwind: "Tailwind CSS", docker: "Docker", vite: "Vite", redux: "Redux", zustand: "Zustand", socketio: "Socket.io",
-  python: "Python", java: "Java", "c++": "C++", c: "C", sql: "SQL", "html-css": "HTML / CSS", html: "HTML", css: "CSS",
+  python: "Python", java: "Java", "c++": "C++", c: "C", sql: "SQL", html_css: "HTML / CSS", "html-css": "HTML / CSS", html: "HTML", css: "CSS",
   "scikit-learn": "scikit-learn", tensorflow: "TensorFlow", pytorch: "PyTorch",
   flask: "Flask", fastapi: "FastAPI", django: "Django",
   jwt: "JWT", oauth: "OAuth",
-  "rest-api": "REST APIs", git: "Git", github: "GitHub", cicd: "CI/CD (GitHub Actions)",
-  dsa: "DSA", oop: "OOP", dbms: "DBMS", "operating-systems": "Operating Systems", "computer-networks": "Computer Networks", "system-design": "System Design",
+  rest_api: "REST APIs", "rest-api": "REST APIs", git: "Git", github: "GitHub", cicd: "CI/CD (GitHub Actions)",
+  dsa: "DSA", oop: "OOP", dbms: "DBMS",
+  operating_systems: "Operating Systems", "operating-systems": "Operating Systems",
+  computer_networks: "Computer Networks", "computer-networks": "Computer Networks",
+  system_design: "System Design", "system-design": "System Design",
+  aptitude: "Aptitude & Reasoning",
+  communication: "Communication & Behavioral",
   "computer-science-engineering": "Computer Science and Engineering", "information-technology": "Information Technology", "electronics-communication-engineering": "Electronics and Communication Engineering", "electrical-engineering": "Electrical Engineering", "mechanical-engineering": "Mechanical Engineering", "civil-engineering": "Civil Engineering",
 };
 
@@ -61,9 +69,15 @@ const CATEGORIES = {
   react: "frameworks", nextjs: "frameworks", express: "frameworks", nodejs: "frameworks", zustand: "frameworks", redux: "frameworks",
   flask: "frameworks", fastapi: "frameworks", django: "frameworks", tensorflow: "frameworks", pytorch: "frameworks", "scikit-learn": "frameworks",
   mongodb: "databases", mongoose: "databases", postgresql: "databases", mysql: "databases", redis: "databases", prisma: "databases",
-  tailwind: "ui_tooling", html: "ui_tooling", css: "ui_tooling", "html-css": "ui_tooling",
+  tailwind: "ui_tooling", html: "ui_tooling", css: "ui_tooling", html_css: "ui_tooling", "html-css": "ui_tooling",
   docker: "tools", cicd: "tools", vite: "tools", git: "tools", github: "tools", socketio: "tools",
-  dsa: "fundamentals", oop: "fundamentals", dbms: "fundamentals", "operating-systems": "fundamentals", "computer-networks": "fundamentals", "rest-api": "fundamentals", "system-design": "fundamentals", jwt: "fundamentals", oauth: "fundamentals",
+  dsa: "fundamentals", oop: "fundamentals", dbms: "fundamentals",
+  operating_systems: "fundamentals", "operating-systems": "fundamentals",
+  computer_networks: "fundamentals", "computer-networks": "fundamentals",
+  rest_api: "fundamentals", "rest-api": "fundamentals",
+  system_design: "fundamentals", "system-design": "fundamentals",
+  jwt: "fundamentals", oauth: "fundamentals",
+  aptitude: "fundamentals", communication: "fundamentals",
 };
 
 const NON_CAREER_PACKAGES = new Set([
@@ -83,6 +97,7 @@ const RELATED = new Map([
   ["nodejs", new Set(["express", "backend-framework"])],
   ["react", new Set(["frontend-framework", "javascript", "nextjs"])],
   ["nextjs", new Set(["react", "frontend-framework", "javascript"])],
+  ["rest_api", new Set(["api-development"])],
   ["rest-api", new Set(["api-development"])],
 ]);
 
@@ -94,7 +109,7 @@ function normalizeSkill(value) {
   const normalized = phrase(value);
   if (!normalized) return "";
   const compact = normalized.replace(/[.\s_-]/g, "");
-  return ALIASES.get(normalized) || ALIASES.get(compact) || normalized.replace(/[.\s_]/g, "-").replace(/-+/g, "-");
+  return ALIASES.get(normalized) || ALIASES.get(compact) || normalized.replace(/[.\s_]/g, "_").replace(/_+/g, "_");
 }
 
 function normalizeSkillList(values) {
@@ -123,21 +138,21 @@ function getSkillTargetRelevance(skill, targetRole = "software engineer") {
   const cat = getSkillCategory(norm);
 
   if (/frontend|ui|web developer|react/.test(role)) {
-    if (["react", "nextjs", "typescript", "javascript", "tailwind", "html-css"].includes(norm)) return "HIGH";
-    if (["nodejs", "rest-api", "git", "vite", "redux", "zustand"].includes(norm)) return "MEDIUM";
+    if (["react", "nextjs", "typescript", "javascript", "tailwind", "html_css", "html-css"].includes(norm)) return "HIGH";
+    if (["nodejs", "rest_api", "rest-api", "git", "vite", "redux", "zustand"].includes(norm)) return "MEDIUM";
     return "LOW";
   }
 
   if (/backend|node|api|server/.test(role)) {
-    if (["nodejs", "express", "mongodb", "postgresql", "mysql", "redis", "rest-api", "sql", "prisma", "mongoose", "docker"].includes(norm)) return "HIGH";
-    if (["typescript", "javascript", "python", "dsa", "dbms", "system-design", "oop"].includes(norm)) return "HIGH";
+    if (["nodejs", "express", "mongodb", "postgresql", "mysql", "redis", "rest_api", "rest-api", "sql", "prisma", "mongoose", "docker"].includes(norm)) return "HIGH";
+    if (["typescript", "javascript", "python", "dsa", "dbms", "system_design", "system-design", "oop"].includes(norm)) return "HIGH";
     if (["react", "nextjs", "tailwind"].includes(norm)) return "MEDIUM";
     return "LOW";
   }
 
   if (/full\s*stack|mern|software developer|software engineer|sde/.test(role)) {
-    if (["react", "nodejs", "javascript", "typescript", "mongodb", "postgresql", "express", "dsa", "dbms", "rest-api"].includes(norm)) return "HIGH";
-    if (["nextjs", "tailwind", "redis", "docker", "prisma", "sql", "oop", "system-design", "git"].includes(norm)) return "HIGH";
+    if (["react", "nodejs", "javascript", "typescript", "mongodb", "postgresql", "express", "dsa", "dbms", "rest_api", "rest-api"].includes(norm)) return "HIGH";
+    if (["nextjs", "tailwind", "redis", "docker", "prisma", "sql", "oop", "system_design", "system-design", "git", "operating_systems", "operating-systems", "computer_networks", "computer-networks"].includes(norm)) return "HIGH";
     if (["vite", "zustand", "redux", "cicd"].includes(norm)) return "MEDIUM";
     return "LOW";
   }
@@ -148,7 +163,7 @@ function getSkillTargetRelevance(skill, targetRole = "software engineer") {
     return "LOW";
   }
 
-  if (["dsa", "oop", "dbms", "operating-systems", "computer-networks", "problem-solving"].includes(norm)) return "HIGH";
+  if (["dsa", "oop", "dbms", "operating_systems", "operating-systems", "computer_networks", "computer-networks", "problem-solving"].includes(norm)) return "HIGH";
   if (cat === "languages" || cat === "frameworks" || cat === "databases") return "MEDIUM";
   return "OPTIONAL";
 }
@@ -164,8 +179,6 @@ module.exports = {
   ALIASES,
   CATEGORIES,
   LABELS,
-  NON_CAREER_PACKAGES,
-  RELATED,
   areRelatedSkills,
   getSkillCategory,
   getSkillTargetRelevance,

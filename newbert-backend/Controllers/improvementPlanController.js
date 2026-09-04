@@ -2,12 +2,17 @@ const Alumni = require("../Models/Alumni");
 const ImprovementPlan = require("../Models/ImprovementPlan");
 const Plan = require("../Models/Plan");
 const Profile = require("../Models/Profile");
+const Job = require("../Models/Job");
 const { publicAlumniQuery, serializePublicAlumni } = require("../services/alumniPublicService");
 const { activeGoal, buildBenchmark, findRelevantAlumni, pathsForGoal } = require("../services/alumniMatchingService");
-const { buildEffectiveSkillInventory } = require("../services/skillEvidenceService");
 const { normalizeSkill, skillLabel } = require("../services/skillNormalizationService");
 const { generateImprovementPlan, progress, studentEvidence } = require("../services/improvementPlanService");
 const { buildEvidenceReadiness } = require("../services/evidenceReadinessService");
+const {
+  checkProfileCompleteness,
+  calculateSkillGaps,
+  selectTopUnlocks,
+} = require("../services/nextUnlocksService");
 
 async function contextFor(userId) {
   const [profile, roadmap] = await Promise.all([Profile.findOne({ userId }).lean(), Plan.findOne({ userId }).lean()]);
@@ -18,21 +23,6 @@ async function contextFor(userId) {
   })).lean()).map(serializePublicAlumni);
   const ranked = findRelevantAlumni(profile, alumni, { profile, plan: roadmap, goal, target: roadmap?.target || { role: profile.targetRole || "" } });
   return { profile, roadmap, closest: ranked.slice(0, 5), benchmark: buildBenchmark(profile, ranked.slice(0, 5)) };
-}
-
-function candidateSkills(context) {
-  const candidates = new Map();
-  const add = (skill, importance, reason, cohortPercent = null) => {
-    const id = normalizeSkill(skill);
-    if (!id) return;
-    const current = candidates.get(id);
-    if (!current || importance === "critical") candidates.set(id, { skill: skillLabel(skill), skillId: id, importance, reason, cohortPercent });
-  };
-  for (const gap of context.roadmap?.prioritizedGaps || []) add(gap.item, gap.priority === "high" ? "critical" : "recommended", gap.reasons?.[0] || "This is an active target gap.");
-  for (const entry of context.closest[0]?.missingSkills || []) add(entry.skill || entry, entry.importance || "recommended", entry.reason || "This skill is missing from your current evidence compared with a similar senior.", entry.cohortPercent || null);
-  for (const item of context.benchmark?.commonSkills || []) add(item.skill, item.percent >= 60 ? "critical" : "recommended", `Found in ${item.percent}% of your closest senior preparation paths.`, item.percent);
-  const inventory = buildEffectiveSkillInventory(context.profile, { targetRole: context.profile.targetRole });
-  return [...candidates.values()].filter((candidate) => !studentEvidence(context.profile, candidate.skillId).verified).slice(0, 3);
 }
 
 async function synchronizeVerifiedPlans(userId, profile) {
@@ -63,34 +53,68 @@ async function currentOrGenerated(userId, skill) {
 exports.getNextUnlocks = async (req, res, next) => {
   try {
     const context = await contextFor(req.auth.id);
+    const completeness = checkProfileCompleteness(context.profile);
     const readiness = await synchronizeVerifiedPlans(req.auth.id, context.profile);
-    const candidates = candidateSkills(context);
-    const saved = candidates.length ? await ImprovementPlan.find({ userId: req.auth.id, skillId: { $in: candidates.map((item) => item.skillId) } }).lean() : [];
-    const bySkill = new Map(saved.map((item) => [item.skillId, item]));
-    return res.json({ readiness, unlocks: candidates.map((candidate) => {
-      const plan = bySkill.get(candidate.skillId);
-      const generated = generateImprovementPlan({ profile: context.profile, skill: candidate.skillName, alumni: context.closest.map((item) => item.alumni), existingPlan: plan });
-      return { ...candidate, plan: plan ? serialize({ ...plan, ...generated }) : null, evidenceStatus: generated.status, studentEvidence: generated.reason.studentEvidenceStatus, alumniMatch: generated.reason.alumniMatch, targetRequirement: generated.reason.targetRequirement };
-    }) });
+
+    if (!completeness.isComplete) {
+      return res.json({
+        status: "profile_incomplete",
+        missing: completeness.missing,
+        message: "Complete your profile to unlock personalized recommendations.",
+        readiness,
+        unlocks: [],
+      });
+    }
+
+    const jobs = await Job.find({ status: { $ne: "archived" } }).limit(50).lean();
+    const activePlans = await ImprovementPlan.find({ userId: req.auth.id }).lean();
+
+    const gaps = calculateSkillGaps({
+      profile: context.profile,
+      roadmap: context.roadmap,
+      closestAlumni: context.closest,
+      jobs,
+      activePlans,
+    });
+
+    const topUnlocks = selectTopUnlocks(gaps);
+
+    const serializedUnlocks = topUnlocks.map((candidate) => {
+      const plan = candidate.plan ? serialize(candidate.plan) : null;
+      return {
+        ...candidate,
+        plan,
+        skill: candidate.skillName, // Backward-compatibility
+      };
+    });
+
+    return res.json({
+      status: serializedUnlocks.length > 0 ? "ready" : "empty",
+      readiness,
+      unlocks: serializedUnlocks,
+    });
   } catch (error) { return next(error); }
 };
 
 exports.previewImprovementPlan = async (req, res, next) => {
   try {
-    const { existing, generated } = await currentOrGenerated(req.auth.id, req.body.skill);
+    const targetSkill = req.body.skillId || req.body.skill;
+    const { existing, generated } = await currentOrGenerated(req.auth.id, targetSkill);
     return res.json({ plan: existing ? serialize({ ...existing.toObject(), ...generated }) : generated, existing: Boolean(existing) });
   } catch (error) { return next(error); }
 };
 
 exports.createImprovementPlan = async (req, res, next) => {
   try {
-    const { context, existing, generated } = await currentOrGenerated(req.auth.id, req.body.skill);
+    const targetSkill = req.body.skillId || req.body.skill;
+    const { context, existing, generated } = await currentOrGenerated(req.auth.id, targetSkill);
     if (existing) return res.json({ plan: serialize({ ...existing.toObject(), ...generated }), existing: true, message: `${generated.skillName} is already in your roadmap.` });
     const created = await ImprovementPlan.create({ userId: req.auth.id, ...generated, roadmapPlanId: context.roadmap?._id || null, addedToRoadmapAt: new Date(), status: generated.status === "verified" ? "verified" : "in_progress" });
     return res.status(201).json({ plan: serialize(created), existing: false, message: `${generated.skillName} improvement plan added to your roadmap.` });
   } catch (error) {
     if (error?.code === 11000) {
-      const existing = await ImprovementPlan.findOne({ userId: req.auth.id, skillId: normalizeSkill(req.body.skill) });
+      const targetSkill = req.body.skillId || req.body.skill;
+      const existing = await ImprovementPlan.findOne({ userId: req.auth.id, skillId: normalizeSkill(targetSkill) });
       return res.json({ plan: serialize(existing), existing: true, message: `${existing.skillName} is already in your roadmap.` });
     }
     return next(error);

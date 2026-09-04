@@ -605,6 +605,7 @@ function DrawerBlock({ title, children }) {
 
 function NextUnlocks() {
   const [unlocks, setUnlocks] = useState([]);
+  const [status, setStatus] = useState("loading");
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -613,23 +614,31 @@ function NextUnlocks() {
 
   const load = async () => {
     setLoading(true);
-    try { setUnlocks(await getNextUnlocks()); setError(""); }
-    catch (requestError) { setError(requestError.response?.data?.message || "Couldn't load your next improvements."); }
-    finally { setLoading(false); }
+    try {
+      const res = await getNextUnlocks();
+      setUnlocks(res);
+      setStatus(res.status || (res.length ? "ready" : "empty"));
+      setError("");
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "Couldn't load your next improvements.");
+      setStatus("error");
+    } finally {
+      setLoading(false);
+    }
   };
   useEffect(() => { load(); }, []);
 
   const openImprove = async (unlock) => {
     setSelected(unlock);
     setPreview({ loading: true });
-    try { setPreview(await previewImprovementPlan(unlock.skill)); }
+    try { setPreview(await previewImprovementPlan(unlock.skillId || unlock.skill)); }
     catch (requestError) { setPreview({ error: requestError.response?.data?.message || "Couldn't create this plan. Try again." }); }
   };
   const add = async () => {
     if (!preview?.plan) return;
     setPreview((current) => ({ ...current, saving: true }));
     try {
-      const result = await addImprovementPlan(preview.plan.skillName);
+      const result = await addImprovementPlan(preview.plan.skillId || preview.plan.skillName);
       setPreview({ plan: result.plan, existing: result.existing });
       setMessage(result.message);
       await load();
@@ -652,7 +661,23 @@ function NextUnlocks() {
   };
   return <Motion.section id="skills" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={reveal} className="scroll-mt-32 mt-6 rounded-lg bg-[#111c2e] p-5 md:p-6">
     <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-extrabold uppercase text-orange-400">Next 3 unlocks</p><h2 className="mt-1 text-xl font-black text-white">The shortest useful moves</h2></div><Link to="/roadmap" className="inline-flex items-center gap-1 text-xs font-extrabold text-orange-300">Open roadmap <ArrowUpRight size={13} /></Link></div>
-    {loading ? <div className="mt-5 grid gap-3 md:grid-cols-3">{[0, 1, 2].map((item) => <div key={item} className="h-44 animate-pulse rounded-lg bg-white/5" />)}</div> : error ? <p className="mt-5 rounded-md border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{error}</p> : unlocks.length ? <div className="mt-5 grid gap-3 md:grid-cols-3">{unlocks.map((unlock) => <UnlockCard key={unlock.skillId} unlock={unlock} onWhy={() => setSelected({ why: unlock })} onImprove={() => openImprove(unlock)} />)}</div> : <div className="mt-5 rounded-lg bg-emerald-400/10 p-5"><p className="font-extrabold text-emerald-200">No unresolved high-priority skill gaps right now.</p><p className="mt-1 text-sm text-slate-400">Newbert will update this list when your target or verified evidence changes.</p></div>}
+    {loading ? (
+      <div className="mt-5 grid gap-3 md:grid-cols-3">{[0, 1, 2].map((item) => <div key={item} className="h-44 animate-pulse rounded-lg bg-white/5" />)}</div>
+    ) : error ? (
+      <p className="mt-5 rounded-md border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{error}</p>
+    ) : status === "profile_incomplete" ? (
+      <div className="mt-5 rounded-lg border border-orange-400/20 bg-orange-400/10 p-5">
+        <p className="font-extrabold text-orange-200">Complete your profile to unlock personalized recommendations.</p>
+        <p className="mt-1 text-sm text-slate-400">Add your target role, target company type, or verified skills to calculate your dynamic next 3 unlocks.</p>
+      </div>
+    ) : unlocks.length ? (
+      <div className="mt-5 grid gap-3 md:grid-cols-3">{unlocks.map((unlock) => <UnlockCard key={unlock.skillId || unlock.skill} unlock={unlock} onWhy={() => setSelected({ why: unlock })} onImprove={() => openImprove(unlock)} />)}</div>
+    ) : (
+      <div className="mt-5 rounded-lg bg-emerald-400/10 p-5">
+        <p className="font-extrabold text-emerald-200">You're caught up on your current priority skills.</p>
+        <p className="mt-1 text-sm text-slate-400">Newbert will update this list when your target or verified evidence changes.</p>
+      </div>
+    )}
     {message ? <div role="status" className="fixed bottom-5 right-5 z-[120] rounded-md border border-orange-400/30 bg-[#111c2e] px-4 py-3 text-xs font-bold text-white shadow-2xl">{message} <Link to="/roadmap" className="ml-2 text-orange-300 underline">View roadmap</Link></div> : null}
     <WhyUnlockDrawer unlock={selected?.why} onClose={() => setSelected(null)} />
     <ImproveSkillModal state={preview} onClose={() => setPreview(null)} onAdd={add} onToggleTask={toggleTask} onSubmitEvidence={submitEvidence} />
@@ -661,12 +686,22 @@ function NextUnlocks() {
 
 function UnlockCard({ unlock, onWhy, onImprove }) {
   const plan = unlock.plan;
-  const state = plan?.status === "verified" ? "VERIFIED" : plan?.status === "evidence_submitted" ? "EVIDENCE SUBMITTED" : plan ? "LEARNING" : "NO EVIDENCE";
-  const tone = state === "VERIFIED" ? "text-emerald-300 bg-emerald-400/10" : plan ? "text-orange-300 bg-orange-400/10" : "text-red-300 bg-red-400/10";
-  return <Motion.article variants={reveal} className="rounded-lg bg-[#0d1727] p-4"><div className="flex items-start justify-between gap-3"><span className={`rounded-md px-2 py-1 text-[10px] font-extrabold uppercase ${tone}`}>{unlock.importance}</span><span className={`text-[10px] font-black ${state === "VERIFIED" ? "text-emerald-300" : "text-slate-300"}`}>{state}</span></div><h3 className="mt-4 text-lg font-black text-white">{unlock.skill}</h3>{plan ? <><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[.07]"><div style={{ width: `${plan.progressPercent || 0}%` }} className="h-full bg-orange-400" /></div><p className="mt-3 text-xs text-slate-400">{plan.tasks.filter((task) => task.completed).length} of {plan.tasks.length} actions complete · {plan.progressPercent || 0}%</p></> : <p className="mt-3 text-xs leading-5 text-slate-400">{unlock.cohortPercent ? `Found in ${unlock.cohortPercent}% of similar senior preparation paths.` : unlock.reason}</p>}<div className="mt-4 flex gap-2"><button type="button" onClick={onWhy} className="inline-flex items-center gap-1 rounded-md border border-white/15 px-3 py-2 text-xs font-extrabold text-slate-200"><CircleHelp size={14} /> Why?</button><button type="button" onClick={onImprove} className="flex-1 rounded-md bg-orange-500 px-3 py-2 text-xs font-extrabold text-slate-950">{plan ? "Continue plan" : "Improve"} <ArrowUpRight className="inline" size={13} /></button></div></Motion.article>;
+  const state = plan?.status === "verified" ? "VERIFIED" : plan?.status === "evidence_submitted" ? "EVIDENCE SUBMITTED" : plan ? "IN PROGRESS" : unlock.evidenceStatus === "self_reported" ? "NEEDS VERIFICATION" : "NO EVIDENCE";
+  const tone = state === "VERIFIED" ? "text-emerald-300 bg-emerald-400/10" : plan ? "text-orange-300 bg-orange-400/10" : unlock.evidenceStatus === "self_reported" ? "text-amber-300 bg-amber-400/10" : "text-red-300 bg-red-400/10";
+  const label = unlock.skillName || unlock.skill;
+  const explanation = unlock.reason?.explanation || unlock.reason || (unlock.cohortPercent ? `Found in ${unlock.cohortPercent}% of similar senior preparation paths.` : "Recommended based on your target and profile.");
+
+  return <Motion.article variants={reveal} className="rounded-lg bg-[#0d1727] p-4"><div className="flex items-start justify-between gap-3"><span className={`rounded-md px-2 py-1 text-[10px] font-extrabold uppercase ${tone}`}>{unlock.importance || "RECOMMENDED"}</span><span className={`text-[10px] font-black ${state === "VERIFIED" ? "text-emerald-300" : state === "IN PROGRESS" ? "text-orange-300" : "text-slate-300"}`}>{state}</span></div><h3 className="mt-4 text-lg font-black text-white">{label}</h3>{plan ? <><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[.07]"><div style={{ width: `${plan.progressPercent || 0}%` }} className="h-full bg-orange-400" /></div><p className="mt-3 text-xs text-slate-400">{plan.tasks?.filter((task) => task.completed).length || 0} of {plan.tasks?.length || 0} actions complete · {plan.progressPercent || 0}%</p></> : <p className="mt-3 text-xs leading-5 text-slate-400">{explanation}</p>}<div className="mt-4 flex gap-2"><button type="button" onClick={onWhy} className="inline-flex items-center gap-1 rounded-md border border-white/15 px-3 py-2 text-xs font-extrabold text-slate-200"><CircleHelp size={14} /> Why?</button><button type="button" onClick={onImprove} className="flex-1 rounded-md bg-orange-500 px-3 py-2 text-xs font-extrabold text-slate-950">{plan ? "Continue plan" : "Improve"} <ArrowUpRight className="inline" size={13} /></button></div></Motion.article>;
 }
 
-function WhyUnlockDrawer({ unlock, onClose }) { return <AnimatePresence>{unlock ? <Motion.div className="fixed inset-0 z-[90] bg-black/60" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={onClose}><Motion.aside role="dialog" aria-modal="true" aria-label={`Why ${unlock.skill} matters`} initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 28, stiffness: 260 }} onMouseDown={(event) => event.stopPropagation()} className="ml-auto h-full w-full max-w-md overflow-y-auto bg-[#111c2e] p-6 text-white"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-extrabold uppercase text-orange-400">Why this unlock</p><h2 className="mt-1 text-2xl font-black">{unlock.skill}</h2></div><button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-md border border-white/15 text-slate-300"><X size={17} /></button></div><DrawerBlock title="Your profile"><p>{unlock.studentEvidence === "none" ? "No verified evidence currently supports this skill." : "Newbert has some evidence, but it is not yet sufficient for this target."}</p></DrawerBlock><DrawerBlock title="Alumni benchmark"><p>{unlock.alumniMatch?.total ? `${unlock.alumniMatch.matched} of ${unlock.alumniMatch.total} closest matching seniors recorded this skill. This influences recommendation priority only.` : "No comparable senior count is currently available."}</p></DrawerBlock><DrawerBlock title="Job / target requirement"><p>{unlock.targetRequirement ? "This skill is relevant to your selected role or target profile." : "This is suggested from your current benchmark context, not an asserted job requirement."}</p></DrawerBlock></Motion.aside></Motion.div> : null}</AnimatePresence>; }
+function WhyUnlockDrawer({ unlock, onClose }) {
+  const label = unlock?.skillName || unlock?.skill;
+  const explanation = unlock?.reason?.explanation || "This is suggested from your current benchmark context.";
+  const alumniTotal = unlock?.reason?.alumniTotal ?? unlock?.alumniMatch?.total ?? 0;
+  const alumniMatched = unlock?.reason?.alumniMatched ?? unlock?.alumniMatch?.matched ?? 0;
+
+  return <AnimatePresence>{unlock ? <Motion.div className="fixed inset-0 z-[90] bg-black/60" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={onClose}><Motion.aside role="dialog" aria-modal="true" aria-label={`Why ${label} matters`} initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 28, stiffness: 260 }} onMouseDown={(event) => event.stopPropagation()} className="ml-auto h-full w-full max-w-md overflow-y-auto bg-[#111c2e] p-6 text-white"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-extrabold uppercase text-orange-400">Why this unlock</p><h2 className="mt-1 text-2xl font-black">{label}</h2></div><button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-md border border-white/15 text-slate-300"><X size={17} /></button></div><DrawerBlock title="Recommendation reason"><p>{explanation}</p></DrawerBlock><DrawerBlock title="Your profile"><p>{unlock.studentEvidence === "none" || unlock.evidenceStatus === "none" ? "No verified evidence currently supports this skill." : unlock.evidenceStatus === "self_reported" ? "Listed in profile skills, but requires external project or assessment verification." : "Newbert has some evidence, but it is not yet sufficient for this target."}</p></DrawerBlock><DrawerBlock title="Alumni benchmark"><p>{alumniTotal ? `${alumniMatched} of ${alumniTotal} closest matching seniors recorded this skill. This influences recommendation priority only.` : "No comparable senior count is currently available."}</p></DrawerBlock><DrawerBlock title="Target requirement"><p>{unlock.reason?.targetRoleRequired || unlock.targetRequirement ? "This skill is directly relevant to your selected role or target profile." : "This is suggested from your current benchmark context, not an asserted job requirement."}</p></DrawerBlock></Motion.aside></Motion.div> : null}</AnimatePresence>;
+}
 
 function ImproveSkillModal({ state, onClose, onAdd, onToggleTask, onSubmitEvidence }) {
   const [evidenceType, setEvidenceType] = useState("manual_verification");
