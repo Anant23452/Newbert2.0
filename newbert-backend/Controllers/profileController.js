@@ -58,13 +58,17 @@ function sanitizedActivity(profile, leetcodeStats, timezone = "Asia/Kolkata") {
   return (profile.activityCalendar || []).map((day) => {
     const item = normalizeDailyItem(day, timezone);
     if (!leetcodeIsValid) {
-      item.leetcode.solved = 0;
-      item.leetcode.submissions = 0;
-      item.leetcode.acceptedProblems = [];
+      // normalizeDailyItem exposes canonical provider counts as numbers. Keep
+      // GitHub/project activity intact when LeetCode is unavailable.
+      const githubActivity = Number(item.github) || Number(item.githubCommits) || 0;
+      const projectActivity = Number(item.projectActivity) || 0;
+      item.leetcode = 0;
       item.leetcodeAccepted = 0;
       item.leetcodeAcceptedProblems = [];
-      item.total = item.github.total + (item.projectActivity || 0);
+      item.total = githubActivity + projectActivity;
       item.totalVerifiedActivity = item.total;
+      item.breakdown.leetcode = { solved: 0, acceptedProblems: [], submissions: 0 };
+      item.breakdown.github.total = githubActivity;
     }
     return item;
   }).filter((day) => day.totalVerifiedActivity > 0);
@@ -386,3 +390,4 @@ exports.getSkillEvidenceDetail = async (req, res, next) => {
 
 module.exports.calculateStreaks = calculateStreaks;
 module.exports.mergeActivity = mergeActivity;
+module.exports.sanitizedActivity = sanitizedActivity;

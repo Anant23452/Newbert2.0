@@ -121,10 +121,12 @@ test("recent GitHub events count supported verified work and do not label unrela
 // 3. STREAK CALCULATION FAIRNESS (COUNT DAYS, NOT NUMBER OF COMMITS)
 // ─────────────────────────────────────────────────────────────────────────────
 
-test("calculateStreaks: 9 commits on Sep 1 + 1 commit on Sep 2 equals 2 streak days, not 10", () => {
+test("calculateStreaks: consecutive activity days equal 2 streak days, not 10", () => {
+  const today = getKolkataToday();
+  const yesterday = getKolkataDayOffset(-1);
   const activity = [
-    { date: "2026-09-01", github: 9, githubCommits: 9, total: 9 },
-    { date: "2026-09-02", github: 1, githubCommits: 1, total: 1 },
+    { date: yesterday, github: 9, githubCommits: 9, total: 9 },
+    { date: today, github: 1, githubCommits: 1, total: 1 },
   ];
 
   const { currentStreak, longestStreak } = calculateStreaks(activity);
