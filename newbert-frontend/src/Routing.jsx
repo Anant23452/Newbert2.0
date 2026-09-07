@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from 'react'
-import { Link, Routes,Route } from 'react-router-dom';
+import { Link, Navigate, Routes, Route, useLocation } from 'react-router-dom';
+import useAuth from './hook/useAuth';
 import Home from './pages/Home';
 
 const AllumniWall = lazy(() => import('./pages/AlumniWall'));
@@ -10,6 +11,7 @@ const Roadmap = lazy(() => import('./pages/Roadmap'));
 const Jobs = lazy(() => import('./pages/Jobs'));
 const AdminJobs = lazy(() => import('./pages/AdminJobs'));
 const AdminCourses = lazy(() => import('./pages/AdminCourses'));
+const AdminNotes = lazy(() => import('./pages/AdminNotes'));
 const Leaderboard = lazy(() => import('./pages/LeaderboardMetrics'));
 const Mentorship = lazy(() => import('./pages/Mentorship'));
 const ResumeAi = lazy(() => import('./pages/ResumeAi'));
@@ -20,6 +22,12 @@ const BranchNotes = lazy(() => import('./pages/Notes').then((module) => ({ defau
 
 
 function Routing() {
+  const { profile, loading, isAuthenticated, error, refreshProfile, logout } = useAuth();
+  const location = useLocation();
+  const requiresSetup = isAuthenticated && location.pathname !== '/complete-profile' && !location.pathname.startsWith('/admin/');
+  if (loading && isAuthenticated) return <PageLoader/>;
+  if (requiresSetup && !profile && error) return <main className="mx-auto max-w-2xl px-5 py-16"><p role="alert">{error}</p><button onClick={() => refreshProfile().catch(() => {})} className="mt-4 mr-4 text-orange-500">Retry profile</button><button onClick={logout}>Sign out</button></main>;
+  if (requiresSetup && profile && !profile.onboardingCompleted) return <Navigate to="/complete-profile" replace state={{ returnTo: location.pathname + location.search }}/>;
   return (
     <Suspense fallback={<PageLoader/>}><Routes>
         <Route path="/" element={<Home/> }/>
@@ -32,6 +40,7 @@ function Routing() {
         < Route path="/jobs" element={<Jobs/> }/>
         <Route path="/admin/jobs" element={<AdminJobs/> }/>
         <Route path="/admin/courses" element={<AdminCourses/>}/>
+        <Route path="/admin/notes" element={<AdminNotes/>}/>
         < Route path="/leaderboard" element={<Leaderboard/> }/>
         <Route path="/mentorship" element={<Mentorship/>}/>
         < Route path="/resume-ai" element={<ResumeAi/> }/>

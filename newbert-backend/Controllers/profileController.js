@@ -5,7 +5,8 @@ const { parseProfileUsername } = require("../services/profileIdentityService");
 const { getGithubActivity } = require("../services/githubService");
 const { getLeetcodeStats } = require("../services/leetcodeService");
 const { findBestSeniorMatch } = require("../services/seniorMatchService");
-const { isProfileComplete, profileStrength } = require("../services/profileCompletionService");
+const { isProfileComplete, getMissingProfileFields, profileStrength } = require("../services/profileCompletionService");
+const { providersNeedingSync, manualSkills } = require("../services/profileSyncPolicy");
 const { findCollegeByIdentifier, resolveProfileCollege, sameCollegeQuery } = require("../services/collegeService");
 const { DEFAULT_SECTIONS, normalizePrivacy, serializePublicProfile } = require("../services/publicProfileService");
 const { getPublicStreakSnapshot } = require("../services/leaderboardService");
@@ -112,12 +113,14 @@ function response(profile, user) {
     activityCalendar,
     syncErrors: profile.syncErrors || null,
     lastSyncedAt: profile.lastSyncedAt || null,
+    syncNeeded: providersNeedingSync(profile),
+    missingProfileFields: getMissingProfileFields(profile),
     onboardingCompleted: isProfileComplete(profile),
     profileStrength: profileStrength(profile),
     connections: {
       github: { connected: Boolean(profile.githubUsername || profile.githubUrl), synced: Boolean(profile.githubStats), error: profile.syncErrors?.github || null },
       leetcode: { connected: Boolean(profile.leetcodeUsername || profile.leetcodeUrl), synced: Boolean(leetcodeStats), error: profile.syncErrors?.leetcode || null },
-      linkedin: { connected: Boolean(profile.linkedinUrl), synced: Boolean(profile.linkedinUrl), error: null },
+      linkedin: { connected: Boolean(profile.linkedinUrl), synced: false, linkOnly: true, error: null },
     },
     privacy: normalizePrivacy(profile.privacy, profile.visibility || profile._doc?.visibility),
     ...streaks,
@@ -174,11 +177,14 @@ exports.getMyProfile = async (req, res, next) => {
 
 exports.updateMyProfile = async (req, res, next) => {
   try {
+    if (activeProfileSyncs.has(String(req.auth.id))) return res.status(409).json({ message: "Your accounts are syncing. Please save your edits once that finishes." });
     const userUpdates = {};
     if (typeof req.body.name === "string" && req.body.name.trim()) userUpdates.name = req.body.name.trim();
-    if (typeof req.body.email === "string" && req.body.email.trim()) userUpdates.email = req.body.email.trim().toLowerCase();
-    if (Object.keys(userUpdates).length) await User.findByIdAndUpdate(req.auth.id, { $set: userUpdates }, { runValidators: true });
     const existing = await Profile.findOne({ userId: req.auth.id });
+    const supplied = new Set(Object.keys(req.body));
+    // Merge editable fields only. Partial edits must not disconnect accounts or erase education.
+    const previous = existing ? response(existing, { _id: req.auth.id }) : {};
+    req.body = { ...previous, ...req.body, collegeId: supplied.has("collegeId") ? req.body.collegeId : existing?.collegeRef || existing?.collegeId };
     const optionalText = (value) => typeof value === "string" && value.trim() ? value.trim() : null;
     const githubUsername = req.body.github ? safeUsername(req.body.github, "github") : null;
     const leetcodeUsername = req.body.leetcode ? safeUsername(req.body.leetcode, "leetcode") : null;
@@ -204,13 +210,16 @@ exports.updateMyProfile = async (req, res, next) => {
       bio: optionalText(req.body.bio), targetRole: optionalText(req.body.targetRole), targetCompany: optionalText(req.body.targetCompany),
       githubUrl: optionalText(req.body.github), githubUsername, leetcodeUrl: optionalText(req.body.leetcode), leetcodeUsername, linkedinUrl: optionalText(req.body.linkedin),
       avatarUrl: optionalText(req.body.avatar), coverUrl: optionalText(req.body.cover), projects: req.body.projects === "" || req.body.projects == null ? null : Number(req.body.projects), cgpa: req.body.cgpa === "" || req.body.cgpa == null ? null : Number(req.body.cgpa),
-      skills: normalizeSkills(req.body.skills),
+      skills: supplied.has("skills") ? manualSkills(normalizeSkills(req.body.skills), existing?.skills || []) : existing?.skills || [],
     };
-    const githubChanged = (existing?.githubUsername || null) !== githubUsername;
-    const leetcodeChanged = (existing?.leetcodeUsername || null) !== leetcodeUsername;
+    const githubChanged = String(existing?.githubUsername || "").toLowerCase() !== String(githubUsername || "").toLowerCase();
+    const leetcodeChanged = String(existing?.leetcodeUsername || "").toLowerCase() !== String(leetcodeUsername || "").toLowerCase();
     if (githubChanged) set.githubStats = null;
     if (leetcodeChanged) set.leetcodeStats = null;
     if (githubChanged || leetcodeChanged) {
+      set.syncErrors = { github: githubChanged ? null : existing?.syncErrors?.github, leetcode: leetcodeChanged ? null : existing?.syncErrors?.leetcode };
+      set.skills = set.skills.filter((skill) => !(githubChanged && skill.source === "github") && !(leetcodeChanged && skill.source === "leetcode"));
+      set.evidenceCache = { ...(existing?.evidenceCache || {}), ...(githubChanged && { github: null }), ...(leetcodeChanged && { leetcode: null }), readiness: null };
       const activityCalendar = (existing?.activityCalendar || []).map((day) => ({
         date: day.date,
         github: githubChanged ? 0 : Number(day.github) || 0,
@@ -233,7 +242,7 @@ exports.updateMyProfile = async (req, res, next) => {
       profile.onboardingCompleted = complete;
       await profile.save();
     }
-    const user = await User.findById(req.auth.id);
+    const user = Object.keys(userUpdates).length ? await User.findByIdAndUpdate(req.auth.id, { $set: userUpdates }, { new: true, runValidators: true }) : await User.findById(req.auth.id);
     return res.json(response(profile, user));
   } catch (error) { return next(error); }
 };
@@ -291,8 +300,8 @@ exports.syncPublicProfiles = async (req, res, next) => {
     const user = await User.findById(req.auth.id);
     const timezone = user?.timezone || existing.timezone || "Asia/Kolkata";
     const isRefreshOnly = !req.body.githubUsername && !req.body.github && !req.body.leetcodeUsername && !req.body.leetcode;
-    const COOLDOWN_MS = 10000;
-    if (isRefreshOnly && existing.lastSyncedAt && Date.now() - new Date(existing.lastSyncedAt).getTime() < COOLDOWN_MS) {
+    const COOLDOWN_MS = 30000;
+    if (existing.lastSyncAttemptAt && Date.now() - new Date(existing.lastSyncAttemptAt).getTime() < COOLDOWN_MS) {
       return res.status(429).json({ message: "Your stats were refreshed recently. Try again in a few seconds." });
     }
     const githubInput = req.body.githubUsername || req.body.github || existing.githubUsername || existing.githubUrl;
@@ -305,21 +314,32 @@ exports.syncPublicProfiles = async (req, res, next) => {
     catch (error) { return res.status(400).json({ message: error.message, source: "leetcode" }); }
     if (!githubUsername && !leetcodeUsername) return res.status(400).json({ message: "Add a GitHub or LeetCode profile first." });
 
+    const providers = req.body.providers || ["github", "leetcode"];
+    if (!Array.isArray(providers) || !providers.length || providers.some((p) => !["github", "leetcode"].includes(p))) return res.status(400).json({ message: "Choose GitHub or LeetCode to refresh." });
+    // Persist the cooldown so separate backend workers share the same limit.
+    const acquired = await Profile.findOneAndUpdate({ userId: req.auth.id, $or: [{ lastSyncAttemptAt: null }, { lastSyncAttemptAt: { $lt: new Date(Date.now() - COOLDOWN_MS) } }] }, { $set: { lastSyncAttemptAt: new Date() } }, { new: true });
+    if (!acquired) return res.status(429).json({ message: "A sync was started recently. Please try again in 30 seconds." });
+    const syncGithub = Boolean(githubUsername && providers.includes("github"));
+    const syncLeetcode = Boolean(leetcodeUsername && providers.includes("leetcode"));
+
     const currentYear = Number(getKolkataToday(timezone).slice(0, 4));
     const years = [currentYear - 2, currentYear - 1, currentYear];
     const [githubResult, leetcodeResult] = await Promise.allSettled([
-      githubUsername ? getGithubActivity(githubUsername, years, { timezone, skipRepoScan: isRefreshOnly, existingRepositories: existing.githubStats?.repositories }) : Promise.resolve(null),
-      leetcodeUsername ? getLeetcodeStats(leetcodeUsername, years, { timezone }) : Promise.resolve(null),
+      syncGithub ? getGithubActivity(githubUsername, years, { timezone, skipRepoScan: isRefreshOnly && Boolean(existing.githubStats?.repositories?.length), existingRepositories: existing.githubStats?.repositories }) : Promise.resolve(null),
+      syncLeetcode ? getLeetcodeStats(leetcodeUsername, years, { timezone }) : Promise.resolve(null),
     ]);
     const githubFresh = githubResult.status === "fulfilled" ? githubResult.value : null;
     const leetcodeFresh = leetcodeResult.status === "fulfilled" ? leetcodeResult.value : null;
     const syncErrors = {
-      github: githubResult.status === "rejected" ? githubResult.reason.message : githubFresh?.activityError || null,
-      leetcode: leetcodeResult.status === "rejected" ? leetcodeResult.reason.message : leetcodeFresh?.activityError || null,
+      github: !syncGithub ? existing.syncErrors?.github || null : githubResult.status === "rejected" ? githubResult.reason.message : githubFresh?.activityError || null,
+      leetcode: !syncLeetcode ? existing.syncErrors?.leetcode || null : leetcodeResult.status === "rejected" ? leetcodeResult.reason.message : leetcodeFresh?.activityError || null,
     };
 
     const hasMatchingCache = Boolean((existing.githubStats && existing.githubStats.username?.toLowerCase() === githubUsername.toLowerCase()) || (existing.leetcodeStats && normalizeLeetcodeStats(existing.leetcodeStats)?.username?.toLowerCase() === leetcodeUsername.toLowerCase()));
-    if (!githubFresh && !leetcodeFresh && !hasMatchingCache) return res.status(502).json({ message: [syncErrors.github, syncErrors.leetcode].filter(Boolean).join(" ") || "Neither profile could be synchronized.", syncErrors });
+    if (!githubFresh && !leetcodeFresh && !hasMatchingCache) {
+      const failed = await Profile.findOneAndUpdate({ userId: req.auth.id }, { $set: { syncErrors } }, { new: true });
+      return res.json({ profile: response(failed, user), syncErrors });
+    }
 
     const sameGithub = existing.githubStats?.username?.toLowerCase() === githubUsername.toLowerCase();
     const existingLeetcode = normalizeLeetcodeStats(existing.leetcodeStats);
@@ -346,7 +366,7 @@ exports.syncPublicProfiles = async (req, res, next) => {
     const evidenceInput = { ...existing.toObject(), githubStats: githubForStorage, leetcodeStats: leetcodeForStorage, activityCalendar };
     const normalizedEvidence = buildSkillEvidence(evidenceInput);
     const set = {
-      ...(githubFresh && { githubUsername: githubFresh.username, githubUrl: `https://github.com/${githubFresh.username}`, githubStats: githubForStorage, ...(githubFresh.avatar && { avatarUrl: githubFresh.avatar }) }),
+      ...(githubFresh && { githubUsername: githubFresh.username, githubUrl: `https://github.com/${githubFresh.username}`, githubStats: githubForStorage, ...(!existing.avatarUrl && githubFresh.avatar && { avatarUrl: githubFresh.avatar }) }),
       ...(leetcodeFresh && { leetcodeUsername: leetcodeFresh.username, leetcodeUrl: `https://leetcode.com/u/${leetcodeFresh.username}`, leetcodeStats: leetcodeForStorage }),
       activityCalendar,
       ...streaks,
@@ -357,9 +377,10 @@ exports.syncPublicProfiles = async (req, res, next) => {
         leetcode: leetcodeForStorage ? { updatedAt: leetcodeFresh ? new Date() : existing.evidenceCache?.leetcode?.updatedAt || existing.lastSyncedAt, stale: !leetcodeFresh, data: normalizedEvidence.leetcode } : null,
         readiness: { updatedAt: new Date(), data: normalizedEvidence },
       },
-      lastSyncedAt: new Date(),
+      lastSyncedAt: githubFresh || leetcodeFresh ? new Date() : existing.lastSyncedAt,
     };
-    const profile = await Profile.findOneAndUpdate({ userId: req.auth.id }, { $set: set }, { new: true, upsert: true, setDefaultsOnInsert: true });
+    const profile = await Profile.findOneAndUpdate({ userId: req.auth.id, updatedAt: acquired.updatedAt }, { $set: set }, { new: true });
+    if (!profile) return res.status(409).json({ message: "Your profile changed during sync. Refresh again to update the latest accounts." });
     return res.json({ profile: response(profile, user), syncErrors });
   } catch (error) { return next(error); }
   finally { activeProfileSyncs.delete(syncKey); }

@@ -13,10 +13,7 @@ function extractStudentEvidence(profile, canonicalSkillId) {
 
   // Check DSA via LeetCode stats
   if (canonicalSkillId === "dsa") {
-    const solved = Number(profile.leetcodeStats?.totalSolved || profile.dsaSolved || 0);
-    if (solved >= 100) {
-      return { status: "verified", summary: `${solved} LeetCode problems verified solved.` };
-    }
+    const solved = Number(profile.leetcodeStats?.totalSolved || 0);
     if (solved > 0) {
       return { status: "detected", summary: `${solved} LeetCode problems recorded.` };
     }

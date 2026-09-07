@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useAuth from "../hook/useAuth";
+import Today from "./Today";
 
-const proof = [["40+", "AKTU colleges"], ["500+", "alumni stories"], ["2,000+", "students guided"], ["6 LPA", "average package"]];
+const proof = [["Your college", "Relevant alumni journeys"], ["Your target", "Focused preparation"], ["Your evidence", "Skills and project activity"], ["Your next step", "A plan you can act on"]];
 const path = [["01", "Your current profile", "Skills, DSA, projects, college and target role."], ["02", "A senior who made it", "A real outcome from the same kind of starting point."], ["03", "The gap AI can explain", "What is missing, what matters first, and how to close it."]];
 
 export default function Home() {
   const navigate = useNavigate();
   const [storyStep, setStoryStep] = useState(0);
+  const { profile, isAuthenticated } = useAuth();
+  if (isAuthenticated && profile?.onboardingCompleted) return <Today/>;
   return <main className="home-page bg-[#171918] text-white">
     <section className="home-hero relative overflow-hidden border-b border-white/10 px-5 pb-16 pt-20 md:pb-24 md:pt-28">
       <div className="home-sky" aria-hidden="true"><span className="home-orb"/><span className="home-cloud home-cloud-one"/><span className="home-cloud home-cloud-two"/></div>

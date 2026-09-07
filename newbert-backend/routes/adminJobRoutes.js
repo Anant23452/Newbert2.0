@@ -7,6 +7,9 @@ const { listRequests, reviewRequest } = require("../Controllers/collegeControlle
 
 async function requireAdmin(req, res, next) { try { const user = await User.findById(req.auth.id).lean(); const allowed = (process.env.ADMIN_EMAILS || "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean); if (!user || !allowed.includes(String(user.email).toLowerCase())) return res.status(403).json({ message: "Admin access is required." }); next(); } catch (error) { next(error); } }
 router.use(requireAuth, requireAdmin);
+const noteResources = require("../Controllers/noteResourceController");
+router.get("/notes", noteResources.listAdmin);
+router.put("/notes", noteResources.save);
 router.get("/jobs", listAdminJobs);
 router.get("/courses", listAdminCourses);
 router.post("/courses/analyze", analyzeAdminCourse);

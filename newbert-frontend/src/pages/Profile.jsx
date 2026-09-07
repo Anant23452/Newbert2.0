@@ -29,9 +29,10 @@ export default function Profile() {
 
   const save = async (next) => {
     const saved = await saveProfile(next);
-    if (saved.onboardingCompleted) {
+    if (saved?.onboardingCompleted) {
       setEditing(false);
-      navigate("/profile", { replace: true });
+      const returnTo = location.state?.returnTo;
+      navigate(profile.onboardingCompleted ? "/profile" : returnTo?.startsWith("/") && !returnTo.startsWith("//") && returnTo !== "/complete-profile" ? returnTo : "/", { replace: true });
     }
   };
 
@@ -71,6 +72,7 @@ function GuestProfile({ error }) {
 }
 
 function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
+  const [saving, setSaving] = useState(false);
   const syncControllerRef = useRef(null);
   const [syncErrors, setSyncErrors] = useState(profile.syncErrors || {});
   const [saveError, setSaveError] = useState("");
@@ -115,6 +117,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
 
   const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
   const save = async () => {
+    if (saving || syncing) return;
     setSaveError("");
     if (!selectedCollege?._id) {
       setCollegeInvalid(true);
@@ -122,6 +125,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
       return;
     }
 
+    setSaving(true);
     try {
       await onSave({
         ...form,
@@ -131,6 +135,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
       });
     }
     catch (error) { setSaveError(error.response?.data?.message || "Unable to save your profile. Please try again."); }
+    finally { setSaving(false); }
   };
   const syncProfiles = async () => {
     syncControllerRef.current?.abort();
@@ -148,7 +153,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
       if (error.code !== "ERR_CANCELED") setSyncErrors({ [error.response?.data?.source || "general"]: error.response?.data?.message || "Could not sync your public profiles." });
     } finally { if (syncControllerRef.current === controller) setSyncing(false); }
   };
-  const canSave = Boolean(form.name.trim() && form.college.trim() && form.branch.trim());
+  const canSave = Boolean(!saving && !syncing && form.name.trim() && selectedCollege?._id && form.branch.trim() && form.targetRole.trim() && Number.isInteger(Number(form.graduationYear)) && Number(form.graduationYear) >= 2020 && Number(form.graduationYear) <= 2040);
 
   return (
     <main className="profile-page min-h-screen px-5 py-12 md:py-16">
@@ -162,7 +167,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
         <section className="surface mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="grid gap-5 md:grid-cols-2">
             <Field label="Full name" value={form.name} onChange={(v) => update("name", v)} />
-            <Field label="Email" value={form.email} onChange={(v) => update("email", v)} type="email" />
+            <div className="text-sm font-bold text-slate-800">Account email<p className="mt-2 break-all font-normal text-slate-600">{form.email}</p></div>
             <CollegeAutocomplete
               value={form.college}
               selectedCollege={selectedCollege}
@@ -190,10 +195,10 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
               </select>
             </label>
             {branchChoice === "Other" && <Field label="Your branch *" value={customBranch} onChange={(value) => { setCustomBranch(value); update("branch", value); }} placeholder="Type your branch" />}
-            <Field label="Graduation year (optional)" value={form.graduationYear} onChange={(v) => update("graduationYear", v)} placeholder="2027" type="number" />
+            <Field label="Graduation year *" value={form.graduationYear} onChange={(v) => update("graduationYear", v)} placeholder="2027" type="number" />
             <Field label="Completed projects" value={form.projects} onChange={(v) => update("projects", v)} placeholder="Example: 3" type="number" />
             <Field label="CGPA" value={form.cgpa} onChange={(v) => update("cgpa", v)} placeholder="Example: 8.2" type="number" />
-            <label className="text-sm font-bold text-slate-800">Career target (optional)
+            <label className="text-sm font-bold text-slate-800">Career target *
               <select value={targetChoice} onChange={(event) => { const value = event.target.value; setTargetChoice(value); update("targetRole", value === "Other" ? customTarget : value); }} className="control mt-2 w-full rounded-md border border-slate-300 p-2 text-sm text-slate-900 focus:border-orange-500 focus:outline-none">
                 <option value="">Choose a career target</option>
                 {TARGET_ROLE_OPTIONS.map((role) => <option key={role} value={role}>{role}</option>)}
@@ -211,7 +216,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
 
         <section className="surface mt-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm font-extrabold text-slate-950">Connect public profiles <span className="font-semibold text-slate-500">(optional)</span></p>
-          <p className="mt-1 text-sm text-slate-600">Skip this section if you do not use these platforms. Newbert only calls an external service after you provide its username and choose sync.</p>
+          <p className="mt-1 text-sm text-slate-600">Saving your profile starts fetching public GitHub and LeetCode data automatically. Connections are optional. LinkedIn is saved as a profile link; work history and skills are not imported from it.</p>
           <div className="mt-5 grid gap-5 md:grid-cols-2">
             <Field label="GitHub username or link (optional)" value={form.github} onChange={(v) => update("github", v)} placeholder="https://github.com/username" />
             <Field label="LeetCode username or link (optional)" value={form.leetcode} onChange={(v) => update("leetcode", v)} placeholder="https://leetcode.com/u/username" />
@@ -219,19 +224,19 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
             <Field label="Profile image URL" value={form.avatar} onChange={(v) => update("avatar", v)} placeholder="Optional image URL" />
             <Field label="Cover image URL" value={form.cover} onChange={(v) => update("cover", v)} placeholder="Optional cover image URL" />
           </div>
-          <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <details className="mt-6"><summary className="cursor-pointer text-xs font-semibold text-slate-500">Advanced: preview account data before saving</summary><div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
             <button onClick={syncProfiles} disabled={(!form.github && !form.leetcode) || syncing} className={`rounded-lg px-4 py-2.5 text-sm font-extrabold shadow-sm transition ${(form.github || form.leetcode) && !syncing ? "bg-orange-500 text-white hover:bg-orange-600" : "bg-slate-100 text-slate-400"}`}>
               {syncing ? "Syncing GitHub and LeetCode..." : "Sync public profiles"}
             </button>
             <span className="text-xs font-semibold text-slate-500">No account is required to finish your profile.</span>
-          </div>
+          </div></details>
           {syncing && <div className="mt-4 grid gap-2 text-xs font-semibold text-slate-600 sm:grid-cols-2">{form.github && <p className="rounded-lg bg-slate-100 px-3 py-2">Syncing GitHub activity...</p>}{form.leetcode && <p className="rounded-lg bg-slate-100 px-3 py-2">Syncing LeetCode profile...</p>}</div>}
           {(syncErrors.github || syncErrors.leetcode || syncErrors.general) && <div className="mt-4 space-y-2">{syncErrors.github && <SyncMessage label="GitHub" message={syncErrors.github}/>} {syncErrors.leetcode && <SyncMessage label="LeetCode" message={syncErrors.leetcode}/>} {syncErrors.general && <SyncMessage label="Sync" message={syncErrors.general}/>}</div>}
         </section>
 
         {saveError && <p className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{saveError}</p>}
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <button onClick={save} disabled={!canSave} className={`w-full rounded-lg px-5 py-3 text-sm font-extrabold text-white shadow-md transition sm:w-auto ${canSave ? "bg-orange-500 hover:bg-orange-600" : "bg-slate-300 text-slate-500 cursor-not-allowed"}`}>{profile.onboardingCompleted ? "Save profile" : "Open my placement dashboard"}</button>
+          <button onClick={save} disabled={!canSave} className={`w-full rounded-lg px-5 py-3 text-sm font-extrabold text-white shadow-md transition sm:w-auto ${canSave ? "bg-orange-500 hover:bg-orange-600" : "bg-slate-300 text-slate-500 cursor-not-allowed"}`}>{saving ? "Saving profile..." : profile.onboardingCompleted ? "Save and update my profile" : "Save and open my dashboard"}</button>
           {!form.github && !form.leetcode && !form.linkedin && <button onClick={save} disabled={!canSave} className="text-sm font-extrabold text-orange-700 disabled:text-slate-400">Skip account connections for now →</button>}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import API, { AUTH_TOKEN_KEY } from "../Services/api";
 import AuthContext from "./authContextValue";
 
@@ -17,6 +17,8 @@ export function AuthProvider({ children }) {
   });
   const [loading, setLoading] = useState(() => Boolean(localStorage.getItem(AUTH_TOKEN_KEY)));
   const [error, setError] = useState("");
+  const [syncState, setSyncState] = useState({ running: [], errors: {}, finished: false });
+  const syncRequest = useRef(null);
 
   const storeProfile = useCallback((nextProfile) => {
     setProfile(nextProfile);
@@ -25,6 +27,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
+    syncRequest.current?.abort();
+    syncRequest.current = null;
+    setSyncState({ running: [], errors: {}, finished: false });
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(PROFILE_KEY);
     setUser(null);
@@ -33,27 +38,52 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const refreshProfile = useCallback(async () => {
+  const refreshProfile = useCallback(async (options = {}) => {
     if (!localStorage.getItem(AUTH_TOKEN_KEY)) {
       logout();
       return null;
     }
-    setLoading(true);
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!options.silent) setLoading(true);
     setError("");
     try {
       const { data } = await API.get("/profiles/me");
+      if (token !== localStorage.getItem(AUTH_TOKEN_KEY)) return null;
       storeProfile(data);
       return data;
     } catch (requestError) {
       const message = requestError.response?.data?.message || "Unable to restore your profile.";
       setError(message);
-      setProfile(null);
+      if (!options.silent) setProfile(null);
       if (requestError.response?.status === 401) logout();
       throw requestError;
     } finally {
       setLoading(false);
     }
   }, [logout, storeProfile]);
+
+  const syncProfile = useCallback(async (providers = ["github", "leetcode"]) => {
+    if (syncRequest.current || !providers.length) return null;
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!token) return null;
+    const controller = new AbortController();
+    syncRequest.current = controller;
+    setSyncState({ running: providers, errors: {}, finished: false });
+    try {
+      const { data } = await API.post("/profiles/sync", { providers }, { signal: controller.signal, timeout: 120000 });
+      if (token !== localStorage.getItem(AUTH_TOKEN_KEY)) return null;
+      storeProfile(data.profile);
+      setSyncState({ running: [], errors: data.syncErrors || {}, finished: true });
+      return data.profile;
+    } catch (requestError) {
+      if (requestError.code !== "ERR_CANCELED" && token === localStorage.getItem(AUTH_TOKEN_KEY)) {
+        setSyncState({ running: [], errors: { general: requestError.response?.data?.message || "Your profile is saved. Account data could not be refreshed; please retry." }, finished: false });
+      }
+      return null;
+    } finally {
+      if (syncRequest.current === controller) syncRequest.current = null;
+    }
+  }, [storeProfile]);
 
   const completeAuthentication = useCallback(async ({ token, user: authenticatedUser }) => {
     localStorage.setItem(AUTH_TOKEN_KEY, token);
@@ -62,10 +92,14 @@ export function AuthProvider({ children }) {
   }, [refreshProfile]);
 
   const saveProfile = useCallback(async (updates) => {
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
     const { data } = await API.put("/profiles/me", updates);
+    if (token !== localStorage.getItem(AUTH_TOKEN_KEY)) return null;
     storeProfile(data);
+    // Saving is durable first; provider outages must never hold onboarding hostage.
+    if (data.syncNeeded?.length) void syncProfile(data.syncNeeded);
     return data;
-  }, [storeProfile]);
+  }, [storeProfile, syncProfile]);
 
   useEffect(() => {
     if (localStorage.getItem(AUTH_TOKEN_KEY)) refreshProfile().catch(() => {});
@@ -82,8 +116,10 @@ export function AuthProvider({ children }) {
     completeAuthentication,
     refreshProfile,
     saveProfile,
+    syncProfile,
+    syncState,
     logout,
-  }), [user, profile, loading, error, completeAuthentication, refreshProfile, saveProfile, logout]);
+  }), [user, profile, loading, error, completeAuthentication, refreshProfile, saveProfile, syncProfile, syncState, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

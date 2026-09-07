@@ -21,6 +21,7 @@ export const TARGET_ROLE_OPTIONS = [
   "GATE",
   "Government / PSU",
   "Higher Studies",
+  "Still exploring",
   "Other",
 ];
 

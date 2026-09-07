@@ -3,7 +3,17 @@ function hasText(value) {
 }
 
 function isProfileComplete(profile) {
-  return Boolean(profile && hasText(profile.college) && hasText(profile.branch));
+  return getMissingProfileFields(profile).length === 0;
+}
+
+function getMissingProfileFields(profile) {
+  const checks = {
+    college: Boolean(profile?.collegeId || profile?.collegeRef),
+    branch: hasText(profile?.branch),
+    graduationYear: Number.isInteger(Number(profile?.graduationYear)) && Number(profile?.graduationYear) >= 2020 && Number(profile?.graduationYear) <= 2040,
+    targetRole: hasText(profile?.targetRole),
+  };
+  return Object.keys(checks).filter((key) => !checks[key]);
 }
 
 function profileStrength(profile) {
@@ -18,4 +28,4 @@ function profileStrength(profile) {
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 }
 
-module.exports = { isProfileComplete, profileStrength };
+module.exports = { isProfileComplete, getMissingProfileFields, profileStrength };

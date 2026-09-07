@@ -12,9 +12,13 @@ const {
 } = require("../Controllers/profileController");
 
 const router = express.Router();
+const studentHome = require("../Controllers/studentHomeController");
 router.get("/:userId/public", optionalAuth, getPublicProfile);
 router.use(requireAuth);
 router.get("/me", getMyProfile);
+router.get("/today", studentHome.getToday);
+router.get("/learning-progress", studentHome.getStudyProgress);
+router.patch("/learning-progress", studentHome.updateStudyProgress);
 router.put("/me", updateMyProfile);
 router.patch("/privacy", updatePrivacy);
 router.post("/sync", syncPublicProfiles);
