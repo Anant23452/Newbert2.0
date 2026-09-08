@@ -32,7 +32,7 @@ export default function Profile() {
     if (saved?.onboardingCompleted) {
       setEditing(false);
       const returnTo = location.state?.returnTo;
-      navigate(profile.onboardingCompleted ? "/profile" : returnTo?.startsWith("/") && !returnTo.startsWith("//") && returnTo !== "/complete-profile" ? returnTo : "/", { replace: true });
+      navigate(profile.onboardingCompleted ? "/profile" : returnTo?.startsWith("/") && !returnTo.startsWith("//") && !returnTo.includes("\\") && returnTo !== "/complete-profile" ? returnTo : "/", { replace: true });
     }
   };
 
@@ -147,7 +147,7 @@ function ProfileSetup({ profile, onSave, syncing, setSyncing }) {
     setSyncing(true);
     try {
       const { data } = await API.post("/profiles/sync", { github: requestedGithub, leetcode: requestedLeetcode }, { signal: controller.signal });
-      setForm((current) => current.github === requestedGithub && current.leetcode === requestedLeetcode ? ({ ...current, ...data.profile, skills: data.profile.skills || current.skills }) : current);
+      setForm((current) => current.github === requestedGithub && current.leetcode === requestedLeetcode ? ({ ...current, skills: data.profile.skills || current.skills, avatar: current.avatar || data.profile.avatar }) : current);
       setSyncErrors(data.syncErrors || {});
     } catch (error) {
       if (error.code !== "ERR_CANCELED") setSyncErrors({ [error.response?.data?.source || "general"]: error.response?.data?.message || "Could not sync your public profiles." });

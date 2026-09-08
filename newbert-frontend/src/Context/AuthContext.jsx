@@ -88,8 +88,10 @@ export function AuthProvider({ children }) {
   const completeAuthentication = useCallback(async ({ token, user: authenticatedUser }) => {
     localStorage.setItem(AUTH_TOKEN_KEY, token);
     setUser(authenticatedUser);
-    return refreshProfile();
-  }, [refreshProfile]);
+    const restored = await refreshProfile();
+    if (restored?.onboardingCompleted && restored.syncNeeded?.length) void syncProfile(restored.syncNeeded);
+    return restored;
+  }, [refreshProfile, syncProfile]);
 
   const saveProfile = useCallback(async (updates) => {
     const token = localStorage.getItem(AUTH_TOKEN_KEY);
@@ -102,9 +104,11 @@ export function AuthProvider({ children }) {
   }, [storeProfile, syncProfile]);
 
   useEffect(() => {
-    if (localStorage.getItem(AUTH_TOKEN_KEY)) refreshProfile().catch(() => {});
+    if (localStorage.getItem(AUTH_TOKEN_KEY)) refreshProfile().then((restored) => {
+      if (restored?.onboardingCompleted && restored.syncNeeded?.length) void syncProfile(restored.syncNeeded);
+    }).catch(() => {});
     else setLoading(false);
-  }, [refreshProfile]);
+  }, [refreshProfile, syncProfile]);
 
   const value = useMemo(() => ({
     user,

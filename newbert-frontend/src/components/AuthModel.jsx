@@ -18,7 +18,7 @@ export default function AuthModal({ isOpen, onClose, onExplore }) {
   const complete = async ({ data }) => {
     const savedProfile = await completeAuthentication(data);
     onClose();
-    navigate(savedProfile?.onboardingCompleted ? "/profile" : "/complete-profile", { replace: true });
+    navigate(savedProfile?.onboardingCompleted ? "/" : "/complete-profile", { replace: true });
   };
   const emailAuth = async (event) => { event.preventDefault(); setError(""); setLoading(true); try { const { data } = await API.post(`/auth/${mode === "register" ? "register" : "login"}`, mode === "register" ? { name, email, password } : { email, password }); await complete({ data }); } catch (err) { setError(err.response?.data?.message || "Unable to sign in. Please try again."); } finally { setLoading(false); } };
   const googleAuth = async (credential) => { setError(""); if (!credential) return setError("Google did not return a credential. Please try again."); setLoading(true); try { await complete(await API.post("/auth/google", { credential })); } catch (err) { setError(err.response?.data?.message || "Google sign-in failed. Check the backend connection and try again."); } finally { setLoading(false); } };

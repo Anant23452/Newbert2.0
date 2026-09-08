@@ -202,7 +202,7 @@ exports.updateMyProfile = async (req, res, next) => {
       }
       return [...unique.values()];
     };
-    const requestedCollegeId = optionalText(req.body.collegeId);
+    const requestedCollegeId = optionalText(String(req.body.collegeId || ""));
     const canonicalCollege = await findCollegeByIdentifier(requestedCollegeId);
     if (!requestedCollegeId || !canonicalCollege) return res.status(400).json({ code: "INVALID_COLLEGE", message: "Please select a college from the suggestions." });
     const set = {

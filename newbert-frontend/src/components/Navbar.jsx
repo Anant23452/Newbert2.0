@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Menu, Moon, Sun, X } from "lucide-react";
 import useAuth from "../hook/useAuth";
 
 const links = [
+  { to: "/", label: "Today" },
   { to: "/alumni-wall", label: "Alumni" },
   { to: "/roadmap", label: "My Plan" },
   { to: "/jobs", label: "Jobs" },
@@ -37,10 +38,11 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
 
         {/* Desktop Direct Navigation */}
         <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Primary navigation">
-          {links.map((link) => (
+          {links.filter((link) => ["/", "/roadmap", "/jobs"].includes(link.to)).map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
+              end={link.to === "/"}
               className={({ isActive }) =>
                 `rounded-md px-2 py-1 text-xs xl:px-2.5 xl:py-1.5 xl:text-sm font-semibold transition-all duration-150 ${
                   isActive
@@ -49,9 +51,16 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
                 }`
               }
             >
-              {link.label}
+              {link.to === "/" && !identity ? "Home" : link.label}
             </NavLink>
           ))}
+          <details className="relative" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false; }} onKeyDown={(event) => { if (event.key === "Escape") { event.currentTarget.open = false; event.currentTarget.querySelector("summary")?.focus(); } }}>
+            <summary className="flex cursor-pointer list-none items-center gap-1 rounded-md px-3 py-2 text-sm font-semibold text-slate-300 hover:text-white">Explore <ChevronDown size={15}/></summary>
+            <div className="absolute left-0 top-full mt-2 grid w-56 gap-1 rounded-lg border border-white/15 bg-[#171c26] p-2 shadow-xl">
+              {links.filter((link) => !["/", "/roadmap", "/jobs"].includes(link.to)).map((link) => <NavLink key={link.to} to={link.to} onClick={(event) => { event.currentTarget.closest("details").open = false; }} className={({ isActive }) => `rounded px-3 py-2 text-sm ${isActive ? "bg-orange-400/10 text-orange-300" : "text-slate-300 hover:bg-white/5"}`}>{link.label}</NavLink>)}
+              {user?.isAdmin && <Link to="/admin/notes" className="border-t border-white/10 px-3 py-2 text-sm text-orange-300" onClick={(event) => { event.currentTarget.closest("details").open = false; }}>Admin Notes</Link>}
+            </div>
+          </details>
         </nav>
 
         {/* Right Section: Theme Toggle, Profile/Avatar, Admin Links, Build My Plan */}
@@ -63,7 +72,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
             title={`Switch to ${theme === "day" ? "night" : "day"} theme`}
           >
             <span aria-hidden="true" className="theme-toggle-icon">
-              {theme === "day" ? "Moon" : "Sun"}
+              {theme === "day" ? <Moon size={16}/> : <Sun size={16}/>}
             </span>
             <span className="hidden sm:inline">{theme === "day" ? "Night" : "Day"}</span>
           </button>
@@ -178,6 +187,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
 
             {user?.isAdmin && (
               <div className="flex flex-col gap-1 pt-1">
+                <Link to="/admin/notes" onClick={() => setOpen(false)} className="rounded-md border border-slate-700 px-3 py-2 text-left text-xs font-bold text-orange-400">Admin Notes</Link>
                 <button
                   onClick={() => {
                     setOpen(false);

@@ -147,7 +147,7 @@ test("User ownership: Anant and Dileep Yadav receive distinct activity data with
     currentStreak: 5,
     longestStreak: 12,
     activityCalendar: [
-      { date: "2026-09-01", github: 9, githubCommits: 9, total: 9 },
+      { date: getKolkataDayOffset(-2, today), github: 9, githubCommits: 9, total: 9 },
       { date: today, github: 1, githubCommits: 1, total: 1 },
     ],
     privacy: { profileVisibility: "public", sections: { github: true, streakStats: true, leaderboardRank: true } },
@@ -160,7 +160,7 @@ test("User ownership: Anant and Dileep Yadav receive distinct activity data with
     currentStreak: 1,
     longestStreak: 4,
     activityCalendar: [
-      { date: "2026-08-30", github: 3, githubCommits: 3, total: 3 },
+      { date: getKolkataDayOffset(-3, today), github: 3, githubCommits: 3, total: 3 },
     ],
     privacy: { profileVisibility: "public", sections: { github: true, streakStats: true, leaderboardRank: true } },
   };
@@ -181,7 +181,7 @@ test("User ownership: Anant and Dileep Yadav receive distinct activity data with
   const publicDileep = serializePublicProfile(profileDileep, userDileep, null);
   assert.equal(publicDileep.name, "Dileep Yadav");
   assert.equal(publicDileep.activityCalendar.length, 1);
-  assert.equal(publicDileep.activityCalendar[0].date, "2026-08-30");
+  assert.equal(publicDileep.activityCalendar[0].date, getKolkataDayOffset(-3, today));
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

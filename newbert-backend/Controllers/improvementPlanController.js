@@ -66,7 +66,12 @@ exports.getNextUnlocks = async (req, res, next) => {
       });
     }
 
-    const jobs = await Job.find({ status: { $ne: "archived" } }).limit(50).lean();
+    const now = new Date();
+    const jobs = await Job.find({ active: true, "verification.status": "verified", $and: [
+      { $or: [{ deadline: null }, { deadline: { $gte: now } }] },
+      { $or: [{ expiresAt: null }, { expiresAt: { $gte: now } }] },
+      { $or: [{ "application.deadline": null }, { "application.deadline": { $gte: now } }] },
+    ] }).sort({ updatedAt: -1 }).limit(50).lean();
     const activePlans = await ImprovementPlan.find({ userId: req.auth.id }).lean();
 
     const gaps = calculateSkillGaps({
