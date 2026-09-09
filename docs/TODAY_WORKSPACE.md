@@ -16,7 +16,7 @@ Missing records are described as no recorded activity. Missing accounts are labe
 
 ## Navigation and appearance
 
-Alumni is absent from Explore, the primary/mobile navbar, and Today shortcuts. Its routes, implementation, and links elsewhere are preserved. The request said not to put it on the front; it was not promoted to a primary link.
+Alumni is a direct primary navbar link and appears in mobile navigation, outside Explore. Its routes, implementation, and links elsewhere are preserved. It is not duplicated in Today shortcuts.
 
 Styles are isolated in `today.css`, with day/night colors, responsive layout, visible keyboard focus, semantic pressed states, and reduced-motion support. Existing Newbert functionality and backend contracts are unchanged.
 

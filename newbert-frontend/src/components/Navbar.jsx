@@ -5,6 +5,7 @@ import useAuth from "../hook/useAuth";
 
 const links = [
   { to: "/", label: "Today" },
+  { to: "/alumni-wall", label: "Alumni" },
   { to: "/roadmap", label: "My Plan" },
   { to: "/jobs", label: "Jobs" },
   { to: "/resume-ai", label: "Resume AI" },
@@ -37,7 +38,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
 
         {/* Desktop Direct Navigation */}
         <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Primary navigation">
-          {links.filter((link) => ["/", "/roadmap", "/jobs"].includes(link.to)).map((link) => (
+          {links.filter((link) => ["/", "/alumni-wall", "/roadmap", "/jobs"].includes(link.to)).map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
@@ -56,7 +57,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
           <details className="relative" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false; }} onKeyDown={(event) => { if (event.key === "Escape") { event.currentTarget.open = false; event.currentTarget.querySelector("summary")?.focus(); } }}>
             <summary className="flex cursor-pointer list-none items-center gap-1 rounded-md px-3 py-2 text-sm font-semibold text-slate-300 hover:text-white">Explore <ChevronDown size={15}/></summary>
             <div className="absolute left-0 top-full mt-2 grid w-56 gap-1 rounded-lg border border-white/15 bg-[#171c26] p-2 shadow-xl">
-              {links.filter((link) => !["/", "/roadmap", "/jobs"].includes(link.to)).map((link) => <NavLink key={link.to} to={link.to} onClick={(event) => { event.currentTarget.closest("details").open = false; }} className={({ isActive }) => `rounded px-3 py-2 text-sm ${isActive ? "bg-orange-400/10 text-orange-300" : "text-slate-300 hover:bg-white/5"}`}>{link.label}</NavLink>)}
+              {links.filter((link) => !["/", "/alumni-wall", "/roadmap", "/jobs"].includes(link.to)).map((link) => <NavLink key={link.to} to={link.to} onClick={(event) => { event.currentTarget.closest("details").open = false; }} className={({ isActive }) => `rounded px-3 py-2 text-sm ${isActive ? "bg-orange-400/10 text-orange-300" : "text-slate-300 hover:bg-white/5"}`}>{link.label}</NavLink>)}
               {user?.isAdmin && <Link to="/admin/notes" className="border-t border-white/10 px-3 py-2 text-sm text-orange-300" onClick={(event) => { event.currentTarget.closest("details").open = false; }}>Admin Notes</Link>}
             </div>
           </details>
