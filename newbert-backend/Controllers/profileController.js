@@ -84,6 +84,7 @@ function response(profile, user) {
     userId: String(user._id),
     name: user.name,
     email: user.email,
+    isAdmin: (process.env.ADMIN_EMAILS || "").split(",").map((email) => email.trim().toLowerCase()).includes(String(user.email || "").toLowerCase()),
     college: profile.college || "",
     collegeId: profile.collegeId || null,
     collegeMongoId: profile.collegeRef ? String(profile.collegeRef) : null,
@@ -352,10 +353,18 @@ exports.syncPublicProfiles = async (req, res, next) => {
     const storedLeetcode = sameLeetcode ? extractStoredActivity(existing, "leetcode") : [];
     const freshLeetcodeActivity = leetcodeFresh?.activity?.length ? leetcodeFresh.activity : [];
 
+    // A newly linked account must never inherit the previous account's activity.
+    const retainedActivity = (existing.activityCalendar || []).map((day) => {
+      const normalized = normalizeDailyItem(day, timezone);
+      return normalizeDailyItem({ ...normalized,
+        ...(!sameGithub && { github: 0, githubCommits: 0, githubPullRequests: 0, githubIssues: 0, githubRepositoriesCreated: 0 }),
+        ...(!sameLeetcode && { leetcode: 0, leetcodeAccepted: 0, leetcodeSubmissions: 0, leetcodeAcceptedProblems: [] }),
+      }, timezone);
+    });
     const activityCalendar = mergeActivity(
       freshGithubActivity.length ? freshGithubActivity : storedGithub,
       freshLeetcodeActivity.length ? freshLeetcodeActivity : storedLeetcode,
-      existing.activityCalendar || [],
+      retainedActivity,
       timezone,
     );
     const streaks = calculateStreaks(activityCalendar);

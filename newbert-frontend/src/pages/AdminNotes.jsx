@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Save } from "lucide-react";
 import API from "../Services/api";
 import { branches } from "../data/notesCatalog";
@@ -13,13 +13,13 @@ export default function AdminNotes() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true); setError("");
     try { const { data } = await API.get("/admin/notes"); setResources(data.resources); setForm(data.resources.find((r) => r.key === key) || empty); }
     catch (err) { setError(err.response?.data?.message || "Unable to load notes administration."); }
     finally { setLoading(false); }
-  };
-  useEffect(() => { void load(); }, []);
+  }, [key]);
+  useEffect(() => { void load(); }, [load]);
   const select = (value) => { setKey(value); setForm(resources.find((r) => r.key === value) || empty); setMessage(""); };
   const save = async (event) => {
     event.preventDefault(); setBusy(true); setMessage("");

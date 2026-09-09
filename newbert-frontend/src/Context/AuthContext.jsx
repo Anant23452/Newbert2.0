@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(readCachedProfile);
   const [user, setUser] = useState(() => {
     const cached = readCachedProfile();
-    return cached ? { name: cached.name, email: cached.email, avatar: cached.avatar } : null;
+    return cached ? { name: cached.name, email: cached.email, avatar: cached.avatar, isAdmin: Boolean(cached.isAdmin) } : null;
   });
   const [loading, setLoading] = useState(() => Boolean(localStorage.getItem(AUTH_TOKEN_KEY)));
   const [error, setError] = useState("");
@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
 
   const storeProfile = useCallback((nextProfile) => {
     setProfile(nextProfile);
-    setUser((current) => ({ ...current, name: nextProfile.name, email: nextProfile.email, avatar: nextProfile.avatar }));
+    setUser((current) => ({ ...current, name: nextProfile.name, email: nextProfile.email, avatar: nextProfile.avatar, isAdmin: Boolean(nextProfile.isAdmin) }));
     localStorage.setItem(PROFILE_KEY, JSON.stringify(nextProfile));
   }, []);
 

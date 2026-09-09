@@ -85,6 +85,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .home-compare-line { animation: comparePulse 2.4s ease-in-out infinite; }
 .home-signal-bar { transition: height 500ms ease; }
 .home-hero { isolation: isolate; }
+:root[data-theme="day"] :is(.notes-page, .resume-ai-page, .today-page) :is(.text-orange-200, .text-orange-300, .text-orange-400) { color: #a3440c; }
+:root[data-theme="day"] :is(.notes-page, .resume-ai-page) .text-slate-300 { color: #475569; }
+:root[data-theme="day"] :is(.notes-page, .resume-ai-page) .border-white\/25 { border-color: #a8afb9; }
 .home-sky { pointer-events: none; position: absolute; inset: 0; z-index: -1; overflow: hidden; opacity: .95; transition: background-color 600ms ease; }
 .home-orb { position: absolute; top: 9%; right: 10%; width: 5rem; height: 5rem; border-radius: 50%; background: #fde68a; box-shadow: 0 0 56px 10px rgba(253, 230, 138, .35); transition: transform 700ms ease, background-color 700ms ease, box-shadow 700ms ease; }
 .home-cloud { position: absolute; height: 1.15rem; width: 10rem; border-radius: 999px; background: rgba(255,255,255,.16); filter: blur(1px); transition: opacity 600ms ease; }
@@ -92,10 +95,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .home-cloud::before { left: 1.3rem; width: 2.8rem; height: 2.8rem; }
 .home-cloud::after { right: 1.2rem; width: 3.5rem; height: 3.5rem; }
 .home-cloud-one { top: 30%; left: 8%; }.home-cloud-two { top: 18%; right: 25%; transform: scale(.65); }
-:root[data-theme="day"] .home-hero { background: #165e68; }
-:root[data-theme="day"] .home-page { background: #123b42; }
-:root[data-theme="day"] .home-page .bg-\[\#20231f\] { background-color: #164b50; }
-:root[data-theme="day"] .home-page .bg-\[\#171918\] { background-color: #123b42; }
+:root[data-theme="day"] .home-hero { background: #30323b; }
+:root[data-theme="day"] .home-page { background: #24262d; }
+:root[data-theme="day"] .home-page .bg-\[\#20231f\] { background-color: #30323b; }
+:root[data-theme="day"] .home-page .bg-\[\#171918\] { background-color: #24262d; }
 :root[data-theme="day"] .home-page .bg-orange-500 { background-color: #fb923c; }
 :root[data-theme="night"] .home-orb { transform: translateY(6rem) translateX(1rem) scale(.72); background: #dbeafe; box-shadow: 0 0 42px 7px rgba(191,219,254,.25); }
 :root[data-theme="night"] .home-cloud { opacity: 0; }

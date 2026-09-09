@@ -8,7 +8,7 @@ exports.getToday = async (req, res, next) => {
     const userId = req.auth.id;
     const [plans, savedJobs, studies] = await Promise.all([
       ImprovementPlan.find({ userId }).sort({ updatedAt: -1 }).lean(),
-      SavedJob.find({ userId }).populate("jobId", "title company deadline active verification").lean(),
+      SavedJob.find({ userId }).populate("jobId", "title company deadline application.deadline expiresAt active verification").lean(),
       StudyProgress.find({ userId, completed: false }).sort({ lastViewedAt: -1 }).limit(1).lean(),
     ]);
     res.json(buildTodaySummary({ plans, savedJobs, studies }));

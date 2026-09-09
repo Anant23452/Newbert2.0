@@ -70,7 +70,7 @@ export default function ResumeAi() {
     setExporting(true); setError("");
     try {
       const normalized = draft.replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/[–—]/g, "-").replace(/•/g, "-");
-      if (/[^\x09\x0a\x0d\x20-\xff]/.test(normalized)) throw new Error("This PDF font cannot display some characters. Use the text download to preserve them.");
+      if (Array.from(normalized).some((char) => char.codePointAt(0) > 255)) throw new Error("This PDF font cannot display some characters. Use the text download to preserve them.");
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ unit: "mm", format: "a4" });
       doc.setFont("helvetica"); doc.setFontSize(11);

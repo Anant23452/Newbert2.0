@@ -5,10 +5,10 @@ function buildTodaySummary({ plans = [], savedJobs = [], studies = [], now = new
     completed: task.completed, completedAt: task.completedAt, order: task.order,
     planId: String(plan._id), skillName: plan.skillName, planStatus: plan.status,
   })));
-  const upcoming = savedJobs.filter((entry) => {
+  const upcoming = savedJobs.map((entry) => ({ ...entry, jobId: entry.jobId ? { ...entry.jobId, deadline: entry.jobId.application?.deadline || entry.jobId.deadline } : null })).filter((entry) => {
     const job = entry.jobId;
     return job && job.active !== false && job.verification?.status === "verified" &&
-      ["saved", "planning"].includes(entry.status) && job.deadline && new Date(job.deadline) >= now;
+      ["saved", "planning"].includes(entry.status) && job.deadline && new Date(job.deadline) >= now && (!job.expiresAt || new Date(job.expiresAt) >= now);
   }).sort((a, b) => new Date(a.jobId.deadline) - new Date(b.jobId.deadline)).slice(0, 3).map(({ jobId: job }) => ({
     id: String(job._id), title: job.title, company: job.company, deadline: job.deadline,
   }));
