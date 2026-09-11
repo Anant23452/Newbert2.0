@@ -14,6 +14,16 @@ function buildTodaySummary({ plans = [], savedJobs = [], studies = [], now = new
   }));
   return {
     generatedAt: now.toISOString(),
+    // Suggest only the next unfinished step in each plan, preserving prerequisites.
+    nextActions: plans.filter((plan) => !["verified", "evidence_submitted"].includes(plan.status)).flatMap((plan) => {
+      const next = tasks.filter((task) => task.planId === String(plan._id) && !task.completed).sort((a, b) => a.order - b.order)[0];
+      return next ? [next] : [];
+    }),
+    planProgress: plans.map((plan) => ({
+      id: String(plan._id), skillName: plan.skillName, status: plan.status,
+      completed: (plan.tasks || []).filter((task) => task.completed).length,
+      total: (plan.tasks || []).length,
+    })),
     tasks: tasks.filter((task) => !task.completed && !["verified", "evidence_submitted"].includes(task.planStatus)).sort((a, b) => a.order - b.order).slice(0, 3),
     completedThisWeek: tasks.filter((task) => task.completed && task.completedAt && new Date(task.completedAt).getTime() >= recent && new Date(task.completedAt) <= now).length,
     activePlans: plans.filter((plan) => plan.status !== "verified").length,
