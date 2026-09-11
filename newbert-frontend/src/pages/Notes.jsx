@@ -1,13 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { Bookmark, Check, Download, ExternalLink, RefreshCw } from "lucide-react";
 import { branches } from "../data/notesCatalog";
 import useStudyProgress from "../hook/useStudyProgress";
 import API from "../Services/api";
+import LecturePlayer from "../components/LecturePlayer";
+import { youtubeId } from "../utils/studyTools";
+import "../study.css";
 
 export default function Notes() {
   return <main className="notes-page min-h-screen bg-[#171918] px-5 py-12 text-white"><div className="mx-auto max-w-6xl">
-    <header className="border-b border-white/10 pb-8"><p className="text-sm font-bold text-orange-400">Newbert learning hub</p><h1 className="mt-3 text-3xl font-extrabold">Your semester, one unit at a time.</h1><p className="mt-3 text-sm leading-6 text-slate-400">Subject outlines, revision practice, and published resources for AKTU students.</p></header>
+    <header className="border-b border-white/10 pb-8"><Link to="/study" className="text-sm font-bold text-orange-400">← Study Studio</Link><h1 className="mt-3 text-3xl font-extrabold">Your semester notes library.</h1><p className="mt-3 text-sm leading-6 text-slate-400">Subject outlines, revision practice, and published resources for AKTU students.</p><Link to="/study" className="mt-5 inline-block rounded bg-orange-400 px-4 py-3 text-sm font-bold text-slate-950">Open Newbert lectures & personal notebooks →</Link></header>
     <section className="mt-8 grid gap-5 md:grid-cols-3">{Object.entries(branches).map(([id, branch]) => <Link key={id} to={`/notes/${id}`} className="rounded-lg border border-white/10 p-6 transition hover:border-orange-400"><p className="text-sm font-bold text-orange-400">{branch.code}</p><h2 className="mt-4 text-xl font-bold">{branch.label}</h2><p className="mt-3 text-sm leading-6 text-slate-400">{branch.description}</p><p className="mt-6 text-sm text-orange-300">{branch.semesters.length} semester outlines · Open branch</p></Link>)}</section>
     <p className="mt-8 max-w-3xl text-sm leading-6 text-slate-400">Resources are published unit by unit. Check the syllabus version on each resource against your academic session. Unpublished units still include a revision worksheet.</p>
   </div></main>;
@@ -29,6 +32,7 @@ export function BranchNotes() {
   const key = `${branchId}:${semester?.id}:${subject?.id}:${unitIndex + 1}`;
   const record = progress.records.find((r) => r.key === key) || {};
   const resource = resources.find((r) => r.key === key);
+  const relatedCourse = { network: "network-analysis", signals: "signals-systems", bee: "electrical-foundations", dbms: "dbms" }[subject?.id];
   const loadResources = async () => {
     setResourceError("");
     try { const { data } = await API.get("/notes/resources"); setResources(data.resources); }
@@ -62,6 +66,8 @@ export function BranchNotes() {
         })}{!subject.units.some((name) => name.toLowerCase().includes(query.toLowerCase())) && <p className="text-sm text-slate-400">No matching units.</p>}</div>
       </aside>
       <article className="min-w-0"><p className="text-sm text-orange-400">Unit {unitIndex + 1}</p><h2 className="mt-2 text-2xl font-bold">{unit}</h2><p className="mt-4 text-sm leading-7 text-slate-400">{resource?.summary || "Build a concise explanation, work through an example, and test what you remember without looking at your notes."}</p>
+        {relatedCourse && <Link to={`/study/${relatedCourse}`} className="my-5 block rounded-lg border border-orange-400/40 bg-orange-500/10 p-4 text-sm font-bold text-orange-300">Study this subject with Newbert lectures, timestamp notes & recall →<small className="mt-2 block font-normal text-slate-400">Check the course’s published unit coverage against your syllabus.</small></Link>}
+        {youtubeId(resource?.lectureUrl) && <PublishedLecture key={resource.lectureUrl} videoId={youtubeId(resource.lectureUrl)} title={`${subject.name}: ${unit}`}/>}
         {resource?.syllabusVersion && <p className="mt-3 text-xs text-slate-400">Syllabus: {resource.syllabusVersion} · Updated {new Date(resource.updatedAt).toLocaleDateString("en-IN")}</p>}
         <div className="mt-6 space-y-3">{resource?.lectureUrl ? <ResourceLink url={resource.lectureUrl} label="Watch published lecture"/> : <ResourceLink url={`https://www.youtube.com/results?search_query=${encodeURIComponent(`AKTU ${subject.name} ${unit}`)}`} label="Search YouTube for this topic"/>}
           {resource?.notesUrl ? <ResourceLink url={resource.notesUrl} label="Open published notes"/> : <p className="text-sm text-slate-400">Official unit notes have not been published here yet.</p>}
@@ -75,3 +81,4 @@ export function BranchNotes() {
   </div></main>;
 }
 function ResourceLink({ url, label }) { return <a href={url} target="_blank" rel="noopener noreferrer" className="flex w-fit items-center gap-2 text-sm font-bold text-orange-300 hover:underline">{label}<ExternalLink size={15}/></a>; }
+function PublishedLecture({ videoId, title }) { const controller = useRef(null); return <div className="studio-page studio-embedded-lecture"><LecturePlayer videoId={videoId} title={title} controller={controller}/></div>; }

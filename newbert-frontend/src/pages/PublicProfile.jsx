@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ExternalLink, Github, Globe, Lock } from "lucide-react";
 import API from "../Services/api";
 import useAuth from "../hook/useAuth";
 import MomentumSection from "../profileComponents/MomentumSection";
 import StreakLeaderboardPreview from "../profileComponents/StreakLeaderboardPreview";
+import ProfileComparison from "../components/ProfileComparison";
 
 export default function PublicProfile() {
   const { userId } = useParams();
-  const navigate = useNavigate();
-  const { profile: ownProfile } = useAuth();
+  return <PublicProfileContent key={userId} userId={userId}/>;
+}
+
+function PublicProfileContent({ userId }) {
+  const { profile: ownProfile, isAuthenticated } = useAuth();
   const [state, setState] = useState({ loading: true });
   useEffect(() => {
     let active = true;
@@ -98,7 +102,7 @@ export default function PublicProfile() {
             </p>
           </section>
         ) : (
-          <PublicSections profile={p} />
+          <><div className="mt-6"><ProfileComparison own={isAuthenticated ? ownProfile : null} peer={p}/></div><PublicSections profile={p} /></>
         )}
       </div>
     </main>

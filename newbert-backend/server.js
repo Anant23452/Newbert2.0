@@ -30,7 +30,7 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "512kb" }));
 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/profiles", require("./routes/profileRoutes"));

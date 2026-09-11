@@ -10,10 +10,11 @@ import useAuth from "../hook/useAuth";
 import { updateImprovementTask } from "../Services/improvementPlanService";
 import { activityWeek } from "../utils/todayActivity";
 import { deadlineLabel, readSaved, recommendTask, saveLocal, taskKey } from "../utils/todayPersonalization";
+import { studyHref } from "../data/studyCatalog";
 
 const destinations = [
   ["/roadmap", "My Plan", "Continue your preparation"], ["/jobs", "Jobs", "Explore roles and saved applications"],
-  ["/courses", "Courses", "Study a gap in your target skills"], ["/notes", "Notes", "Return to your semester subjects"],
+  ["/courses", "Courses", "Study a gap in your target skills"], ["/study", "Study Studio", "Lectures, your notes, and recall practice"],
   ["/mentorship", "Mentorship", "Get a focused review"],
   ["/resume-ai", "Resume AI", "Prepare a role-specific application"], ["/leaderboard", "Leaderboard", "Check your college activity"],
 ];
@@ -69,7 +70,7 @@ function TodayWorkspace({ profile, syncState }) {
   const exploring = !profile.targetRole || profile.targetRole === "Still exploring";
   const branch = /civil/i.test(profile.branch) ? "civil" : /electrical/i.test(profile.branch) ? "electrical" : /information|computer/i.test(profile.branch) ? "information-technology" : null;
   const study = data?.continueStudying?.key;
-  const studyUrl = study ? `/notes/${study.split(":")[0]}?unit=${encodeURIComponent(study)}` : branch ? `/notes/${branch}` : "/notes";
+  const studyUrl = study ? studyHref(study) : branch ? `/study?branch=${branch}` : "/study";
   const dateLabel = new Date().toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", weekday: "long", day: "numeric", month: "long" });
 
   return <main className="today-page min-h-screen px-5 py-10 text-slate-900"><div className="mx-auto max-w-6xl">
@@ -93,7 +94,7 @@ function TodayWorkspace({ profile, syncState }) {
         </div>
         <aside className="today-side-column"><TodayMomentum profile={profile}/>
           <section className="today-deadlines"><div className="today-section-heading"><h2><CalendarClock size={19}/>Don’t miss your window</h2></div><p className="today-section-note">Application deadlines from your saved jobs.</p>{data.upcoming.length ? data.upcoming.map((job) => <Link key={job.id} to="/jobs" className="today-deadline"><span className="today-deadline-date"><strong>{new Date(job.deadline).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric" })}</strong><small>{new Date(job.deadline).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", month: "short" })}</small></span><span><strong>{job.title}</strong><small>{job.company}</small><em>{deadlineLabel(job.deadline)}</em></span><ArrowRight size={16}/></Link>) : <div className="today-sidebar-empty"><CalendarClock size={24}/><p>No upcoming deadlines on your saved jobs.</p><Link to="/jobs">Explore jobs <ArrowRight size={14}/></Link></div>}</section>
-          <section className="today-study"><BookOpen size={23}/><div><p className="today-eyebrow">Keep the thread</p><h2>Continue learning</h2><p>{study ? "Pick up your most recent unfinished unit." : "Build your foundations alongside placement preparation."}</p><Link to={studyUrl}>{study ? "Resume unit" : "Open notes"}<ArrowRight size={15}/></Link></div></section>
+          <section className="today-study"><BookOpen size={23}/><div><p className="today-eyebrow">Keep the thread</p><h2>Continue learning</h2><p>{study ? "Pick up your most recent unfinished lesson or unit." : "Build your foundations alongside placement preparation."}</p><Link to={studyUrl}>{study ? "Resume learning" : "Open Study Studio"}<ArrowRight size={15}/></Link></div></section>
         </aside>
       </section>
     </>}

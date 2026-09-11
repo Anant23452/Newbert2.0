@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Award,
   BookOpen,
@@ -20,8 +20,9 @@ import CourseFitDrawer from "../courseComponents/CourseFitDrawer";
 const TABS = ["All", "DSA", "DBMS", "Web Development", "JavaScript", "System Design", "Core", "Free"];
 
 export default function Courses() {
+  const [searchParams] = useSearchParams();
   const [tab, setTab] = useState("All");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => searchParams.get("search") || "");
   const [recommendedData, setRecommendedData] = useState(null);
   const [catalogData, setCatalogData] = useState({ courses: [], context: {} });
   const [loadingRecommended, setLoadingRecommended] = useState(true);

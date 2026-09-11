@@ -10,7 +10,7 @@ const links = [
   { to: "/jobs", label: "Jobs" },
   { to: "/resume-ai", label: "Resume AI" },
   { to: "/courses", label: "Courses" },
-  { to: "/notes", label: "Notes" },
+  { to: "/study", label: "Study Studio" },
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/mentorship", label: "Mentorship" },
 ];

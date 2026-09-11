@@ -18,6 +18,8 @@ const ResumeAi = lazy(() => import('./pages/ResumeAi'));
 const Courses = lazy(() => import('./pages/Courses'));
 const CourseDetail = lazy(() => import('./pages/CourseDetail'));
 const Notes = lazy(() => import('./pages/Notes'));
+const StudyStudio = lazy(() => import('./pages/StudyStudio'));
+const StudyCourse = lazy(() => import('./pages/StudyCourse'));
 const BranchNotes = lazy(() => import('./pages/Notes').then((module) => ({ default: module.BranchNotes })));
 
 
@@ -47,6 +49,8 @@ function Routing() {
         < Route path="/courses" element={<Courses/> }/>
         <Route path="/courses/:courseId" element={<CourseDetail/>}/>
         < Route path="/notes" element={<Notes/> }/>
+        <Route path="/study" element={<StudyStudio/>}/>
+        <Route path="/study/:courseId" element={<StudyCourse/>}/>
         < Route path="/notes/:branchId" element={<BranchNotes/> }/>
         <Route path="*" element={<NotFound/>}/>
     </Routes></Suspense>
