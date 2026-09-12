@@ -1,9 +1,17 @@
 const legacyKey = /^(electrical|civil|information-technology):sem[1-8]:[a-z0-9-]{1,60}:[1-5]$/;
 const lectureKey = /^lecture:[a-z0-9-]{1,60}:[A-Za-z0-9_-]{11}$/;
+const { resolveUnit } = require('./studyAssistantService');
+const unitPattern = /^unit:(electrical|civil|information-technology):([a-z0-9-]{1,60}):([1-5])$/;
+const notebookKey = { test(key) {
+  if (typeof key !== 'string') return false;
+  if (lectureKey.test(key)) return true;
+  const parts = key.match(unitPattern);
+  return Boolean(parts && resolveUnit(parts[1], parts[2], Number(parts[3])));
+} };
 const confidenceDays = { again: 0, good: 3, solid: 7 };
 function validateStudyUpdate(body, now = new Date()) {
   const { key } = body;
-  if (typeof key !== "string" || !(legacyKey.test(key) || lectureKey.test(key))) throw new Error("Choose a valid study unit or lecture.");
+  if (typeof key !== "string" || !(legacyKey.test(key) || notebookKey.test(key))) throw new Error("Choose a valid study unit or lecture.");
   const fields = { lastViewedAt: now };
   for (const field of ["completed", "saved"]) {
     if (body[field] !== undefined) {
@@ -11,7 +19,7 @@ function validateStudyUpdate(body, now = new Date()) {
       fields[field] = body[field];
     }
   }
-  if (lectureKey.test(key)) {
+  if (notebookKey.test(key)) {
     for (const field of ["positionSeconds", "durationSeconds"]) {
       if (body[field] !== undefined) {
         if (typeof body[field] !== "number" || !Number.isFinite(body[field]) || body[field] < 0 || body[field] > 86400) throw new Error("Lecture time must be between 0 and 86400 seconds.");
@@ -41,6 +49,6 @@ function validateStudyUpdate(body, now = new Date()) {
 }
 function serializeStudyRecord(record) {
   return { key: record.key, completed: Boolean(record.completed), saved: Boolean(record.saved), lastViewedAt: record.lastViewedAt,
-    ...(lectureKey.test(record.key) && { positionSeconds: record.positionSeconds || 0, durationSeconds: record.durationSeconds || 0, notes: record.notes || [], reflection: record.reflection || "", confidence: record.confidence || "", reviewAt: record.reviewAt || null }) };
+    ...(notebookKey.test(record.key) && { positionSeconds: record.positionSeconds || 0, durationSeconds: record.durationSeconds || 0, notes: record.notes || [], reflection: record.reflection || "", confidence: record.confidence || "", reviewAt: record.reviewAt || null }) };
 }
-module.exports = { validateStudyUpdate, serializeStudyRecord, lectureKey };
+module.exports = { validateStudyUpdate, serializeStudyRecord, lectureKey, notebookKey };

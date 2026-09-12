@@ -1,0 +1,7912 @@
+{
+  "checkedOn": "2026-09-12",
+  "sources": {
+    "common1": {
+      "id": "common1",
+      "url": "https://aktu.ac.in/pdf/syllabus/syllabus2223/Syllabus_BTech_First_Yr_Common_other_than_AG_&_BT_effective_from_2022_23_R.pdf",
+      "title": "B.Tech. 1st Year (Common to ALL Branches EXCEPT Agriculture Engineering and Biotechnology)",
+      "edition": 2022,
+      "pages": 40
+    },
+    "civil2": {
+      "id": "civil2",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2324/B.Tech_2nd_Yr_CE.pdf",
+      "title": "Civil Engineering",
+      "edition": 2023,
+      "pages": 16
+    },
+    "it2": {
+      "id": "it2",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2324/B.Tech_2nd_Yr_CSE_v3.pdf",
+      "title": "Computer Science & Engineering and allied branches (CSE/Computer Engg /CS/ CSE(Cyber Security) / CSIT/ IT/ CSE(AI) / CSE(AIML)/CSE (DS) / CSE(IOT)/ AIDS/ AIML / Computer Science & Design/ Computer Science and Business Systems",
+      "edition": 2023,
+      "pages": 18
+    },
+    "ee2": {
+      "id": "ee2",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2324/B.Tech_2nd_Yr_EE_V2%202026.pdf",
+      "title": "Electrical Engineering / Electrical and Electronics",
+      "edition": 2023,
+      "pages": 20
+    },
+    "bcc": {
+      "id": "bcc",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2324/B.Tech_Common_Course_BCC.pdf",
+      "title": "Common Courses: Python Programming/ Cyber Security",
+      "edition": 2023,
+      "pages": 3
+    },
+    "communication": {
+      "id": "communication",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2324/Technical%20Communication_2023-2024.pdf",
+      "title": "Technical Communication",
+      "edition": 2023,
+      "pages": 2
+    },
+    "maths": {
+      "id": "maths",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2324/Mathematics-III_Mathematics_IV_Mathematics_V.pdf",
+      "title": "Mathematics-III / Mathematics-IV /Mathematics-V",
+      "edition": 2023,
+      "pages": 7
+    },
+    "uhv": {
+      "id": "uhv",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2324/AKTU_UHVPE.pdf",
+      "title": "Universal Human Values and Professional Ethics (BVE301/ BVE401/ BVE301H/ BVE401H )",
+      "edition": 2023,
+      "pages": 16
+    },
+    "elective2": {
+      "id": "elective2",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2324/Open_Elective_BTech_2nd_Yr_2023_24_v2.pdf",
+      "title": "B.Tech 2nd year Open Electives (BOE301-314/ BOE401-414/ BOE301H-314H/ BOE401H-414H)",
+      "edition": 2023,
+      "pages": 19
+    },
+    "civil3": {
+      "id": "civil3",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2425/B.Tech.%203rd%20Year%20Civil%20Engineering.pdf",
+      "title": "Civil/Environmental Engineering",
+      "edition": 2024,
+      "pages": 38
+    },
+    "it3": {
+      "id": "it3",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2425/B.TECH%20CE&IT%20,%20CSIT,%20IT%203rd%20YR%202024-25.pdf",
+      "title": "Information Technology/Computer Science and Information Technology",
+      "edition": 2024,
+      "pages": 37
+    },
+    "ee3": {
+      "id": "ee3",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2425/1%20B.Tech.%203rd%20Year%20Electrical%20Engineering%202024-25.pdf",
+      "title": "Electrical Engineering",
+      "edition": 2024,
+      "pages": 50
+    },
+    "elective3": {
+      "id": "elective3",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2425/B.Tech.%20Open%20Elective%201%20_3rd%20Year%20VI%20Semester%202024-25%20%281%29.pdf",
+      "title": "Open Elective-1 of 6th Sem",
+      "edition": 2024,
+      "pages": 16
+    },
+    "civil4": {
+      "id": "civil4",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2526/Revised_B.Tech.%20Final%20Year%20Civil%20Engineering%20Syllabus%202025-26.pdf",
+      "title": "Civil Engineering",
+      "edition": 2025,
+      "pages": 13
+    },
+    "it4": {
+      "id": "it4",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2526/B.Tech.%20CE&IT,CSIT%20and%20IT%20Syllabus%20%204th%20Year%202025-26.pdf",
+      "title": "Computer Engineering and Information Technology/ Computer Science Information Technology/ Information Technology",
+      "edition": 2025,
+      "pages": 9
+    },
+    "ee4": {
+      "id": "ee4",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2526/B.Tech_EE_EN_Final_Year_Syllabus_2025-26.docx.pdf",
+      "title": "Electrical Engineering & Electrical and Electronics Engineering",
+      "edition": 2025,
+      "pages": 14
+    },
+    "cse4": {
+      "id": "cse4",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2526/B.Tech.%20CS_CE%20and%20CSE%20Syllabus%20%204th%20Year%202025-26.pdf",
+      "title": "Computer Science/ Computer Engineering/ Computer Science and Engineering",
+      "edition": 2025,
+      "pages": 9
+    },
+    "open7": {
+      "id": "open7",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2526/B.Tech.%20Final%20Year%20VIIth%20Semester_Open%20Elective-II%20Syllabus.pdf",
+      "title": "VII Semester: OPEN ELECTIVE-II",
+      "edition": 2025,
+      "pages": 25
+    },
+    "open8": {
+      "id": "open8",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2526/B.Tech.%20Open%20Elective%20III%20&%20IV%20List%204th%20Year%20VIII%20Semester%202025-26%20%282%29.pdf",
+      "title": "VIII Semester: OPEN ELECTIVES- III & IV",
+      "edition": 2025,
+      "pages": 45
+    },
+    "civil26": {
+      "id": "civil26",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2627/CE%20Stream_AKTU_UG_B.Tech._Course%20Structure_Syllabus_Evaluation%20Scheme%20%281%29.pdf",
+      "title": "Civil Engineering",
+      "edition": 2026,
+      "pages": 94
+    },
+    "it26": {
+      "id": "it26",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2627/CSE%20Stream_AKTU_UG_B.Tech._Course%20Structure_Syllabus_Evaluation%20Scheme%20%281%29.pdf",
+      "title": "CSE Stream",
+      "edition": 2026,
+      "pages": 98
+    },
+    "ee26": {
+      "id": "ee26",
+      "url": "https://fms.aktu.ac.in/Resources/aktu/pdf/syllabus/Syllabus2627/EE_Stream_AKTU_UG_B.Tech._Course%20Structure_Syllabus_Evaluation%20Scheme.pdf",
+      "title": "EE Stream",
+      "edition": 2026,
+      "pages": 101
+    }
+  },
+  "subjects": [
+    {
+      "id": "common1-bas101",
+      "code": "BAS101",
+      "title": "Engineering Physics",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "common1",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Quantum mechanics"
+        },
+        {
+          "number": 2,
+          "title": "Electromagnetic field theory"
+        },
+        {
+          "number": 3,
+          "title": "Wave optics"
+        },
+        {
+          "number": 4,
+          "title": "Fibre optics and lasers"
+        },
+        {
+          "number": 5,
+          "title": "Superconductors and nanomaterials"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "common1-bas102",
+      "code": "BAS102",
+      "title": "Engineering Chemistry",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "common1",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Atomic and molecular structure"
+        },
+        {
+          "number": 2,
+          "title": "Spectroscopy and stereochemistry"
+        },
+        {
+          "number": 3,
+          "title": "Electrochemistry and corrosion"
+        },
+        {
+          "number": 4,
+          "title": "Water chemistry"
+        },
+        {
+          "number": 5,
+          "title": "Polymers and materials"
+        }
+      ],
+      "lectureCollection": "engineering-chemistry"
+    },
+    {
+      "id": "common1-bas103",
+      "code": "BAS103",
+      "title": "Engineering Mathematics I",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        1
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "common1",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Matrices"
+        },
+        {
+          "number": 2,
+          "title": "Differential calculus I"
+        },
+        {
+          "number": 3,
+          "title": "Differential calculus II"
+        },
+        {
+          "number": 4,
+          "title": "Multiple integration"
+        },
+        {
+          "number": 5,
+          "title": "Vector calculus"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "common1-bas203",
+      "code": "BAS203",
+      "title": "Engineering Mathematics II",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        2
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "common1",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Higher-order differential equations"
+        },
+        {
+          "number": 2,
+          "title": "Laplace transforms"
+        },
+        {
+          "number": 3,
+          "title": "Sequences and series"
+        },
+        {
+          "number": 4,
+          "title": "Complex differentiation"
+        },
+        {
+          "number": 5,
+          "title": "Complex integration"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "common1-bee101",
+      "code": "BEE101",
+      "title": "Fundamentals of Electrical Engineering",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "common1",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "DC circuits"
+        },
+        {
+          "number": 2,
+          "title": "Single-phase AC circuits"
+        },
+        {
+          "number": 3,
+          "title": "Transformers"
+        },
+        {
+          "number": 4,
+          "title": "Electrical machines"
+        },
+        {
+          "number": 5,
+          "title": "Electrical installations"
+        }
+      ],
+      "lectureCollection": "electrical-foundations"
+    },
+    {
+      "id": "common1-bec101",
+      "code": "BEC101",
+      "title": "Fundamentals of Electronics Engineering",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "common1",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Semiconductor diodes"
+        },
+        {
+          "number": 2,
+          "title": "Transistors"
+        },
+        {
+          "number": 3,
+          "title": "Operational amplifiers"
+        },
+        {
+          "number": 4,
+          "title": "Digital electronics"
+        },
+        {
+          "number": 5,
+          "title": "Communication fundamentals"
+        }
+      ],
+      "lectureCollection": "electronics-foundations"
+    },
+    {
+      "id": "common1-bcs101",
+      "code": "BCS101",
+      "title": "Programming for Problem Solving",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "common1",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Computer fundamentals and algorithms"
+        },
+        {
+          "number": 2,
+          "title": "Expressions, operators and conditionals"
+        },
+        {
+          "number": 3,
+          "title": "Loops and arrays"
+        },
+        {
+          "number": 4,
+          "title": "Functions, searching and sorting"
+        },
+        {
+          "number": 5,
+          "title": "Pointers, strings and structures"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "common1-bme101",
+      "code": "BME101",
+      "title": "Fundamentals of Mechanical Engineering",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "common1",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Mechanics"
+        },
+        {
+          "number": 2,
+          "title": "IC engines and electric vehicles"
+        },
+        {
+          "number": 3,
+          "title": "Refrigeration and air conditioning"
+        },
+        {
+          "number": 4,
+          "title": "Fluid mechanics"
+        },
+        {
+          "number": 5,
+          "title": "Measurement and mechatronics"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "common1-bas104",
+      "code": "BAS104",
+      "title": "Environment and Ecology",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "common1",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Environment and ecosystems"
+        },
+        {
+          "number": 2,
+          "title": "Natural resources"
+        },
+        {
+          "number": 3,
+          "title": "Pollution and public health"
+        },
+        {
+          "number": 4,
+          "title": "Current environmental issues"
+        },
+        {
+          "number": 5,
+          "title": "Environmental protection"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "common1-bas105",
+      "code": "BAS105",
+      "title": "Soft Skills",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "common1",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Applied grammar"
+        },
+        {
+          "number": 2,
+          "title": "Listening and speaking"
+        },
+        {
+          "number": 3,
+          "title": "Reading and writing"
+        },
+        {
+          "number": 4,
+          "title": "Presentation and interaction"
+        },
+        {
+          "number": 5,
+          "title": "Workplace communication"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it2-bcs301",
+      "code": "BCS301",
+      "title": "Data Structure",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        3
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "it2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Arrays and linked lists"
+        },
+        {
+          "number": 2,
+          "title": "Stacks, queues and recursion"
+        },
+        {
+          "number": 3,
+          "title": "Searching, hashing and sorting"
+        },
+        {
+          "number": 4,
+          "title": "Trees and traversal"
+        },
+        {
+          "number": 5,
+          "title": "Graphs and spanning trees"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it2-bcs302",
+      "code": "BCS302",
+      "title": "Computer Organization and Architecture",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        3
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "it2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Functional units and bus architecture"
+        },
+        {
+          "number": 2,
+          "title": "Arithmetic and logic unit"
+        },
+        {
+          "number": 3,
+          "title": "Control unit and instruction execution"
+        },
+        {
+          "number": 4,
+          "title": "Memory organization"
+        },
+        {
+          "number": 5,
+          "title": "Input and output organization"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it2-bcs303",
+      "code": "BCS303",
+      "title": "Discrete Structures and Theory of Logic",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        3
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "it2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Sets and relations"
+        },
+        {
+          "number": 2,
+          "title": "Functions and Boolean algebra"
+        },
+        {
+          "number": 3,
+          "title": "Propositional and predicate logic"
+        },
+        {
+          "number": 4,
+          "title": "Groups and algebraic structures"
+        },
+        {
+          "number": 5,
+          "title": "Graphs and combinatorics"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it2-bcs401",
+      "code": "BCS401",
+      "title": "Operating System",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        4
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "it2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Operating-system fundamentals"
+        },
+        {
+          "number": 2,
+          "title": "Concurrency and synchronization"
+        },
+        {
+          "number": 3,
+          "title": "Processes and CPU scheduling"
+        },
+        {
+          "number": 4,
+          "title": "Memory management"
+        },
+        {
+          "number": 5,
+          "title": "I/O and file systems"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it2-bcs402",
+      "code": "BCS402",
+      "title": "Theory of Automata and Formal Languages",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        4
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "it2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Finite automata"
+        },
+        {
+          "number": 2,
+          "title": "Regular expressions and languages"
+        },
+        {
+          "number": 3,
+          "title": "Context-free grammars"
+        },
+        {
+          "number": 4,
+          "title": "Pushdown automata"
+        },
+        {
+          "number": 5,
+          "title": "Turing machines and decidability"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it2-bcs403",
+      "code": "BCS403",
+      "title": "Object Oriented Programming with Java",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        4
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "it2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Object-oriented programming"
+        },
+        {
+          "number": 2,
+          "title": "Exceptions and multithreading"
+        },
+        {
+          "number": 3,
+          "title": "Modern Java features"
+        },
+        {
+          "number": 4,
+          "title": "Collections"
+        },
+        {
+          "number": 5,
+          "title": "Spring and Spring Boot"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil2-bce301",
+      "code": "BCE301",
+      "title": "Engineering Mechanics",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        3
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "civil2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Forces and rigid-body equilibrium"
+        },
+        {
+          "number": 2,
+          "title": "Centroids and moments of inertia"
+        },
+        {
+          "number": 3,
+          "title": "Trusses and structural equilibrium"
+        },
+        {
+          "number": 4,
+          "title": "Particle dynamics"
+        },
+        {
+          "number": 5,
+          "title": "Rigid-body kinetics"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil2-bce302",
+      "code": "BCE302",
+      "title": "Surveying and Geomatics",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        3
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "civil2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Surveying principles and levelling"
+        },
+        {
+          "number": 2,
+          "title": "Curves and setting out"
+        },
+        {
+          "number": 3,
+          "title": "Electronic field-survey systems"
+        },
+        {
+          "number": 4,
+          "title": "Photogrammetry"
+        },
+        {
+          "number": 5,
+          "title": "Remote sensing"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil2-bce303",
+      "code": "BCE303",
+      "title": "Fluid Mechanics",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        3
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "civil2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Fluid properties and pressure"
+        },
+        {
+          "number": 2,
+          "title": "Flow classification and kinematics"
+        },
+        {
+          "number": 3,
+          "title": "Potential flow and flow equations"
+        },
+        {
+          "number": 4,
+          "title": "Viscous flow and boundary layers"
+        },
+        {
+          "number": 5,
+          "title": "Drag, lift and similarity"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil2-bce401",
+      "code": "BCE401",
+      "title": "Materials, Testing and Construction Practices",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        4
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "civil2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Building materials"
+        },
+        {
+          "number": 2,
+          "title": "Paints and finishes"
+        },
+        {
+          "number": 3,
+          "title": "Building construction"
+        },
+        {
+          "number": 4,
+          "title": "Building components"
+        },
+        {
+          "number": 5,
+          "title": "Plumbing services"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil2-bce402",
+      "code": "BCE402",
+      "title": "Introduction to Solid Mechanics",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        4
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "civil2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Stress and strain"
+        },
+        {
+          "number": 2,
+          "title": "Shear force and bending moment"
+        },
+        {
+          "number": 3,
+          "title": "Flexural stresses"
+        },
+        {
+          "number": 4,
+          "title": "Principal stresses and strains"
+        },
+        {
+          "number": 5,
+          "title": "Torsion of shafts"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil2-bce403",
+      "code": "BCE403",
+      "title": "Hydraulic Engineering and Machines",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        4
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "civil2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Free-surface flow"
+        },
+        {
+          "number": 2,
+          "title": "Specific energy and critical flow"
+        },
+        {
+          "number": 3,
+          "title": "Hydraulic jumps"
+        },
+        {
+          "number": 4,
+          "title": "Momentum and impact of jets"
+        },
+        {
+          "number": 5,
+          "title": "Hydraulic turbines"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee2-bee301",
+      "code": "BEE301",
+      "title": "Electromagnetic Field Theory",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        3
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "ee2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Coordinates and vector calculus"
+        },
+        {
+          "number": 2,
+          "title": "Electrostatic fields"
+        },
+        {
+          "number": 3,
+          "title": "Magnetostatics"
+        },
+        {
+          "number": 4,
+          "title": "Magnetic forces and materials"
+        },
+        {
+          "number": 5,
+          "title": "Electromagnetic waves"
+        }
+      ],
+      "lectureCollection": "electromagnetic-fields"
+    },
+    {
+      "id": "ee2-bee302",
+      "code": "BEE302",
+      "title": "Electrical Measurements and Instrumentation",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        3
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "ee2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Measurements and instruments"
+        },
+        {
+          "number": 2,
+          "title": "Power and energy measurement"
+        },
+        {
+          "number": 3,
+          "title": "Potentiometers and bridges"
+        },
+        {
+          "number": 4,
+          "title": "Instrument transformers and electronic measurements"
+        },
+        {
+          "number": 5,
+          "title": "Transducers"
+        }
+      ],
+      "lectureCollection": "electrical-measurements"
+    },
+    {
+      "id": "ee2-bee303",
+      "code": "BEE303",
+      "title": "Basic Signals and Systems",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        3
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "ee2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Signals and system properties"
+        },
+        {
+          "number": 2,
+          "title": "Fourier representations"
+        },
+        {
+          "number": 3,
+          "title": "Laplace analysis"
+        },
+        {
+          "number": 4,
+          "title": "State-space analysis"
+        },
+        {
+          "number": 5,
+          "title": "Z-transforms"
+        }
+      ],
+      "lectureCollection": "signals-systems"
+    },
+    {
+      "id": "ee2-bee401",
+      "code": "BEE401",
+      "title": "Digital Electronics",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        4
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "ee2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Logic simplification"
+        },
+        {
+          "number": 2,
+          "title": "Combinational circuits"
+        },
+        {
+          "number": 3,
+          "title": "Sequential circuits"
+        },
+        {
+          "number": 4,
+          "title": "Logic families and memories"
+        },
+        {
+          "number": 5,
+          "title": "Converters and programmable logic"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee2-bee402",
+      "code": "BEE402",
+      "title": "Electrical Machines I",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        4
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "ee2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Electromechanical energy conversion"
+        },
+        {
+          "number": 2,
+          "title": "DC generators and motors"
+        },
+        {
+          "number": 3,
+          "title": "DC-machine performance and control"
+        },
+        {
+          "number": 4,
+          "title": "Single-phase transformers"
+        },
+        {
+          "number": 5,
+          "title": "Three-phase transformers"
+        }
+      ],
+      "lectureCollection": "electrical-machines"
+    },
+    {
+      "id": "ee2-bee403",
+      "code": "BEE403",
+      "title": "Network Analysis and Synthesis",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        4
+      ],
+      "year": 2,
+      "kind": "core",
+      "source": "ee2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Graph theory"
+        },
+        {
+          "number": 2,
+          "title": "AC network theorems"
+        },
+        {
+          "number": 3,
+          "title": "Transient circuit analysis"
+        },
+        {
+          "number": 4,
+          "title": "Network functions"
+        },
+        {
+          "number": 5,
+          "title": "Network synthesis"
+        }
+      ],
+      "lectureCollection": "network-analysis"
+    },
+    {
+      "id": "maths-bas303-ce",
+      "code": "BAS303",
+      "title": "Mathematics III",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "paired",
+      "source": "maths",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Partial differential equations"
+        },
+        {
+          "number": 2,
+          "title": "PDE applications and Fourier transforms"
+        },
+        {
+          "number": 3,
+          "title": "Statistical techniques"
+        },
+        {
+          "number": 4,
+          "title": "Numerical techniques I"
+        },
+        {
+          "number": 5,
+          "title": "Numerical techniques II"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "maths-bas303-itee",
+      "code": "BAS303",
+      "title": "Mathematics IV",
+      "branches": [
+        "information-technology",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "paired",
+      "source": "maths",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Partial differential equations"
+        },
+        {
+          "number": 2,
+          "title": "Applications of partial differential equations"
+        },
+        {
+          "number": 3,
+          "title": "Statistical techniques I"
+        },
+        {
+          "number": 4,
+          "title": "Statistical techniques II"
+        },
+        {
+          "number": 5,
+          "title": "Statistical techniques III"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "communication-bas301",
+      "code": "BAS301",
+      "title": "Technical Communication",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "paired",
+      "source": "communication",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Communication foundations and voice dynamics"
+        },
+        {
+          "number": 2,
+          "title": "Career communication"
+        },
+        {
+          "number": 3,
+          "title": "Presentations and technical writing"
+        },
+        {
+          "number": 4,
+          "title": "Leadership communication"
+        },
+        {
+          "number": 5,
+          "title": "Digital communication and personality"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "uhv-bve301",
+      "code": "BVE301",
+      "title": "Universal Human Values and Professional Ethics",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "paired",
+      "source": "uhv",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Value education"
+        },
+        {
+          "number": 2,
+          "title": "Harmony in the human being"
+        },
+        {
+          "number": 3,
+          "title": "Harmony in family and society"
+        },
+        {
+          "number": 4,
+          "title": "Harmony in nature and existence"
+        },
+        {
+          "number": 5,
+          "title": "Professional ethics"
+        }
+      ],
+      "lectureCollection": "human-values"
+    },
+    {
+      "id": "bcc-bcc301",
+      "code": "BCC301",
+      "title": "Cyber Security",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "paired",
+      "source": "bcc",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Cybercrime foundations and offences"
+        },
+        {
+          "number": 2,
+          "title": "Mobile and wireless security"
+        },
+        {
+          "number": 3,
+          "title": "Cybercrime tools and identity theft"
+        },
+        {
+          "number": 4,
+          "title": "Computer forensics"
+        },
+        {
+          "number": 5,
+          "title": "Security policies and cyberlaw"
+        }
+      ],
+      "lectureCollection": "cyber-security"
+    },
+    {
+      "id": "bcc-bcc302",
+      "code": "BCC302",
+      "title": "Python Programming",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "paired",
+      "source": "bcc",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Python basics and data types"
+        },
+        {
+          "number": 2,
+          "title": "Conditionals and loops"
+        },
+        {
+          "number": 3,
+          "title": "Collections, strings and functions"
+        },
+        {
+          "number": 4,
+          "title": "File operations"
+        },
+        {
+          "number": 5,
+          "title": "Python packages and GUI programming"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs501",
+      "code": "BCS501",
+      "title": "Database Management System",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Database foundations and ER modelling"
+        },
+        {
+          "number": 2,
+          "title": "Relational model and SQL"
+        },
+        {
+          "number": 3,
+          "title": "Dependencies and normalization"
+        },
+        {
+          "number": 4,
+          "title": "Transactions and recovery"
+        },
+        {
+          "number": 5,
+          "title": "Concurrency control"
+        }
+      ],
+      "lectureCollection": "dbms"
+    },
+    {
+      "id": "it3-bcs502",
+      "code": "BCS502",
+      "title": "Web Technology",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Web foundations and HTML"
+        },
+        {
+          "number": 2,
+          "title": "CSS and XML"
+        },
+        {
+          "number": 3,
+          "title": "JavaScript"
+        },
+        {
+          "number": 4,
+          "title": "JavaBeans"
+        },
+        {
+          "number": 5,
+          "title": "Servlets and JSP"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs503",
+      "code": "BCS503",
+      "title": "Design and Analysis of Algorithms",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Analysis and sorting"
+        },
+        {
+          "number": 2,
+          "title": "Advanced data structures"
+        },
+        {
+          "number": 3,
+          "title": "Greedy algorithms"
+        },
+        {
+          "number": 4,
+          "title": "Dynamic programming and backtracking"
+        },
+        {
+          "number": 5,
+          "title": "String matching and complexity"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs601",
+      "code": "BCS601",
+      "title": "Software Engineering",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Software processes and lifecycle"
+        },
+        {
+          "number": 2,
+          "title": "Requirements engineering"
+        },
+        {
+          "number": 3,
+          "title": "Software design and metrics"
+        },
+        {
+          "number": 4,
+          "title": "Testing"
+        },
+        {
+          "number": 5,
+          "title": "Maintenance and configuration management"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bit601",
+      "code": "BIT601",
+      "title": "Data Analytics",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Data-analytics foundations"
+        },
+        {
+          "number": 2,
+          "title": "Data-analysis methods"
+        },
+        {
+          "number": 3,
+          "title": "Mining data streams"
+        },
+        {
+          "number": 4,
+          "title": "Frequent patterns and clustering"
+        },
+        {
+          "number": 5,
+          "title": "Visualization"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs603",
+      "code": "BCS603",
+      "title": "Computer Networks",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Network and physical-layer foundations"
+        },
+        {
+          "number": 2,
+          "title": "Data-link protocols"
+        },
+        {
+          "number": 3,
+          "title": "Network layer and routing"
+        },
+        {
+          "number": 4,
+          "title": "Transport protocols"
+        },
+        {
+          "number": 5,
+          "title": "Application protocols"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs051",
+      "code": "BCS051",
+      "title": "Statistical Computing",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Statistical foundations"
+        },
+        {
+          "number": 2,
+          "title": "Regression methods"
+        },
+        {
+          "number": 3,
+          "title": "Simulation and sampling"
+        },
+        {
+          "number": 4,
+          "title": "Numerical methods"
+        },
+        {
+          "number": 5,
+          "title": "R programming"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bit052",
+      "code": "BIT052",
+      "title": "Compiler Design",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Lexical analysis"
+        },
+        {
+          "number": 2,
+          "title": "Syntax analysis"
+        },
+        {
+          "number": 3,
+          "title": "Intermediate code"
+        },
+        {
+          "number": 4,
+          "title": "Runtime environments"
+        },
+        {
+          "number": 5,
+          "title": "Code generation and optimization"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs053",
+      "code": "BCS053",
+      "title": "Computer Graphics",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Display and drawing primitives"
+        },
+        {
+          "number": 2,
+          "title": "Clipping and transformations"
+        },
+        {
+          "number": 3,
+          "title": "Three-dimensional graphics"
+        },
+        {
+          "number": 4,
+          "title": "Curves and surfaces"
+        },
+        {
+          "number": 5,
+          "title": "Visibility and illumination"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs054",
+      "code": "BCS054",
+      "title": "Object Oriented System Design with C++",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Object modelling"
+        },
+        {
+          "number": 2,
+          "title": "Object interactions"
+        },
+        {
+          "number": 3,
+          "title": "Design methodologies"
+        },
+        {
+          "number": 4,
+          "title": "C++ foundations"
+        },
+        {
+          "number": 5,
+          "title": "Inheritance and polymorphism"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs055",
+      "code": "BCS055",
+      "title": "Machine Learning Techniques",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Learning-system foundations"
+        },
+        {
+          "number": 2,
+          "title": "Bayesian learning"
+        },
+        {
+          "number": 3,
+          "title": "Decision trees"
+        },
+        {
+          "number": 4,
+          "title": "Neural networks and deep learning"
+        },
+        {
+          "number": 5,
+          "title": "Reinforcement learning"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs056",
+      "code": "BCS056",
+      "title": "Application of Soft Computing",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Neural-network foundations"
+        },
+        {
+          "number": 2,
+          "title": "Learning and backpropagation"
+        },
+        {
+          "number": 3,
+          "title": "Fuzzy sets"
+        },
+        {
+          "number": 4,
+          "title": "Fuzzy inference"
+        },
+        {
+          "number": 5,
+          "title": "Genetic algorithms"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs057",
+      "code": "BCS057",
+      "title": "Image Processing",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Digital-image fundamentals"
+        },
+        {
+          "number": 2,
+          "title": "Image enhancement"
+        },
+        {
+          "number": 3,
+          "title": "Image restoration"
+        },
+        {
+          "number": 4,
+          "title": "Segmentation and morphology"
+        },
+        {
+          "number": 5,
+          "title": "Compression and representation"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs058",
+      "code": "BCS058",
+      "title": "Data Warehousing and Data Mining",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Warehouse architecture"
+        },
+        {
+          "number": 2,
+          "title": "Warehouse implementation"
+        },
+        {
+          "number": 3,
+          "title": "Data preprocessing"
+        },
+        {
+          "number": 4,
+          "title": "Classification and clustering"
+        },
+        {
+          "number": 5,
+          "title": "OLAP and mining tools"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs061",
+      "code": "BCS061",
+      "title": "Big Data",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Big-data foundations"
+        },
+        {
+          "number": 2,
+          "title": "Hadoop and MapReduce"
+        },
+        {
+          "number": 3,
+          "title": "Distributed storage"
+        },
+        {
+          "number": 4,
+          "title": "MongoDB"
+        },
+        {
+          "number": 5,
+          "title": "Pig, Hive and HBase"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs062",
+      "code": "BCS062",
+      "title": "Augmented and Virtual Reality",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Virtual-reality foundations"
+        },
+        {
+          "number": 2,
+          "title": "Interaction devices"
+        },
+        {
+          "number": 3,
+          "title": "Modelling virtual worlds"
+        },
+        {
+          "number": 4,
+          "title": "Interaction design"
+        },
+        {
+          "number": 5,
+          "title": "Augmented reality"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs063",
+      "code": "BCS063",
+      "title": "Blockchain Architecture Design",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Blockchain foundations"
+        },
+        {
+          "number": 2,
+          "title": "Consensus"
+        },
+        {
+          "number": 3,
+          "title": "Smart contracts"
+        },
+        {
+          "number": 4,
+          "title": "Financial applications"
+        },
+        {
+          "number": 5,
+          "title": "Government applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it3-bcs064",
+      "code": "BCS064",
+      "title": "Data Compression",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "it3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Compression foundations"
+        },
+        {
+          "number": 2,
+          "title": "Statistical coding"
+        },
+        {
+          "number": 3,
+          "title": "Dictionary coding"
+        },
+        {
+          "number": 4,
+          "title": "Scalar quantization"
+        },
+        {
+          "number": 5,
+          "title": "Vector quantization"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce501",
+      "code": "BCE501",
+      "title": "Geotechnical Engineering",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Soil formation and classification"
+        },
+        {
+          "number": 2,
+          "title": "Soil hydraulics"
+        },
+        {
+          "number": 3,
+          "title": "Compaction and consolidation"
+        },
+        {
+          "number": 4,
+          "title": "Stress distribution and shear strength"
+        },
+        {
+          "number": 5,
+          "title": "Earth pressure and slopes"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce502",
+      "code": "BCE502",
+      "title": "Structural Analysis",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Structures and load transfer"
+        },
+        {
+          "number": 2,
+          "title": "Determinate trusses"
+        },
+        {
+          "number": 3,
+          "title": "Energy methods"
+        },
+        {
+          "number": 4,
+          "title": "Moving loads and influence lines"
+        },
+        {
+          "number": 5,
+          "title": "Arches"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce503",
+      "code": "BCE503",
+      "title": "Quantity Estimation and Construction Management",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Building quantities"
+        },
+        {
+          "number": 2,
+          "title": "Rate analysis and tenders"
+        },
+        {
+          "number": 3,
+          "title": "Management and network techniques"
+        },
+        {
+          "number": 4,
+          "title": "Equipment management"
+        },
+        {
+          "number": 5,
+          "title": "Project cost management"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce601",
+      "code": "BCE601",
+      "title": "Design of Concrete Structures",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Design philosophies"
+        },
+        {
+          "number": 2,
+          "title": "RCC beams"
+        },
+        {
+          "number": 3,
+          "title": "Slabs and staircases"
+        },
+        {
+          "number": 4,
+          "title": "Compression members"
+        },
+        {
+          "number": 5,
+          "title": "Footings and retaining walls"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce602",
+      "code": "BCE602",
+      "title": "Transportation Engineering",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Transportation systems"
+        },
+        {
+          "number": 2,
+          "title": "Highway geometric design"
+        },
+        {
+          "number": 3,
+          "title": "Traffic engineering"
+        },
+        {
+          "number": 4,
+          "title": "Pavements and materials"
+        },
+        {
+          "number": 5,
+          "title": "Highway construction"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce603",
+      "code": "BCE603",
+      "title": "Environmental Engineering",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Water-supply systems"
+        },
+        {
+          "number": 2,
+          "title": "Storage and distribution"
+        },
+        {
+          "number": 3,
+          "title": "Water-quality assessment"
+        },
+        {
+          "number": 4,
+          "title": "Water treatment"
+        },
+        {
+          "number": 5,
+          "title": "Wastewater treatment"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce051",
+      "code": "BCE051",
+      "title": "Concrete Technology",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Cement and aggregates"
+        },
+        {
+          "number": 2,
+          "title": "Admixtures"
+        },
+        {
+          "number": 3,
+          "title": "Concrete production"
+        },
+        {
+          "number": 4,
+          "title": "Mix proportioning"
+        },
+        {
+          "number": 5,
+          "title": "Special concretes"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce052",
+      "code": "BCE052",
+      "title": "Modern Construction Materials",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Modern building materials"
+        },
+        {
+          "number": 2,
+          "title": "Geosynthetics and bituminous materials"
+        },
+        {
+          "number": 3,
+          "title": "Ferrocement and fibre concrete"
+        },
+        {
+          "number": 4,
+          "title": "Polymers and composites"
+        },
+        {
+          "number": 5,
+          "title": "Conventional and modern materials"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce053",
+      "code": "BCE053",
+      "title": "Open Channel Flow",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Free-surface flow"
+        },
+        {
+          "number": 2,
+          "title": "Gradually varied flow"
+        },
+        {
+          "number": 3,
+          "title": "Rapidly varied flow"
+        },
+        {
+          "number": 4,
+          "title": "Spatially varied flow"
+        },
+        {
+          "number": 5,
+          "title": "Channel design"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce054",
+      "code": "BCE054",
+      "title": "Engineering Geology",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Geology for civil engineering"
+        },
+        {
+          "number": 2,
+          "title": "Rocks"
+        },
+        {
+          "number": 3,
+          "title": "Minerals"
+        },
+        {
+          "number": 4,
+          "title": "Deformation and earthquakes"
+        },
+        {
+          "number": 5,
+          "title": "Geological investigation"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce055",
+      "code": "BCE055",
+      "title": "Engineering Hydrology",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Hydrologic cycle"
+        },
+        {
+          "number": 2,
+          "title": "Runoff and hydrographs"
+        },
+        {
+          "number": 3,
+          "title": "Flood analysis"
+        },
+        {
+          "number": 4,
+          "title": "Groundwater"
+        },
+        {
+          "number": 5,
+          "title": "Water wells"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce057",
+      "code": "BCE057",
+      "title": "Air and Noise Pollution Control",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Air-pollution foundations"
+        },
+        {
+          "number": 2,
+          "title": "Atmospheric dispersion"
+        },
+        {
+          "number": 3,
+          "title": "Air-quality measurement"
+        },
+        {
+          "number": 4,
+          "title": "Gaseous-pollutant control"
+        },
+        {
+          "number": 5,
+          "title": "Noise pollution"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce058",
+      "code": "BCE058",
+      "title": "GIS and Advanced Remote Sensing",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Photogrammetry"
+        },
+        {
+          "number": 2,
+          "title": "Remote sensing"
+        },
+        {
+          "number": 3,
+          "title": "GIS foundations"
+        },
+        {
+          "number": 4,
+          "title": "Vector data"
+        },
+        {
+          "number": 5,
+          "title": "Raster data"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce061",
+      "code": "BCE061",
+      "title": "Advanced Structural Analysis",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Indeterminate structures"
+        },
+        {
+          "number": 2,
+          "title": "Influence lines and arches"
+        },
+        {
+          "number": 3,
+          "title": "Suspension bridges"
+        },
+        {
+          "number": 4,
+          "title": "Matrix methods"
+        },
+        {
+          "number": 5,
+          "title": "Plastic analysis"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce062",
+      "code": "BCE062",
+      "title": "River Engineering",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "River morphology"
+        },
+        {
+          "number": 2,
+          "title": "Hydraulic geometry"
+        },
+        {
+          "number": 3,
+          "title": "River restoration"
+        },
+        {
+          "number": 4,
+          "title": "Bio-engineering and data analysis"
+        },
+        {
+          "number": 5,
+          "title": "River protection"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce063",
+      "code": "BCE063",
+      "title": "Repair and Rehabilitation of Structures",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Maintenance strategies"
+        },
+        {
+          "number": 2,
+          "title": "Concrete durability"
+        },
+        {
+          "number": 3,
+          "title": "Repair materials"
+        },
+        {
+          "number": 4,
+          "title": "Retrofitting"
+        },
+        {
+          "number": 5,
+          "title": "Monitoring and demolition"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil3-bce064",
+      "code": "BCE064",
+      "title": "Foundation Design",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "civil3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Soil exploration"
+        },
+        {
+          "number": 2,
+          "title": "Bearing capacity and settlement"
+        },
+        {
+          "number": 3,
+          "title": "Shallow and deep foundations"
+        },
+        {
+          "number": 4,
+          "title": "Well foundations and retaining structures"
+        },
+        {
+          "number": 5,
+          "title": "Soil reinforcement"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee501",
+      "code": "BEE501",
+      "title": "Power System I",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Power generation"
+        },
+        {
+          "number": 2,
+          "title": "Transmission and distribution I"
+        },
+        {
+          "number": 3,
+          "title": "Transmission and distribution II"
+        },
+        {
+          "number": 4,
+          "title": "Line parameters"
+        },
+        {
+          "number": 5,
+          "title": "Insulated cables"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee502",
+      "code": "BEE502",
+      "title": "Control System",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Control-system concepts"
+        },
+        {
+          "number": 2,
+          "title": "Time-response analysis"
+        },
+        {
+          "number": 3,
+          "title": "Stability and algebraic criteria"
+        },
+        {
+          "number": 4,
+          "title": "Frequency-response analysis"
+        },
+        {
+          "number": 5,
+          "title": "Controller design"
+        }
+      ],
+      "lectureCollection": "control-systems"
+    },
+    {
+      "id": "ee3-bee503",
+      "code": "BEE503",
+      "title": "Electrical Machines II",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Synchronous machines I"
+        },
+        {
+          "number": 2,
+          "title": "Synchronous machines II"
+        },
+        {
+          "number": 3,
+          "title": "Three-phase induction machines I"
+        },
+        {
+          "number": 4,
+          "title": "Three-phase induction machines II"
+        },
+        {
+          "number": 5,
+          "title": "Single-phase induction motors"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee601",
+      "code": "BEE601",
+      "title": "Power System II",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Fault analysis"
+        },
+        {
+          "number": 2,
+          "title": "Load-flow analysis"
+        },
+        {
+          "number": 3,
+          "title": "Travelling waves"
+        },
+        {
+          "number": 4,
+          "title": "Power-system stability"
+        },
+        {
+          "number": 5,
+          "title": "Protection fundamentals"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee602",
+      "code": "BEE602",
+      "title": "Microprocessor",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Microprocessor foundations"
+        },
+        {
+          "number": 2,
+          "title": "8-bit microprocessors"
+        },
+        {
+          "number": 3,
+          "title": "16-bit microprocessors"
+        },
+        {
+          "number": 4,
+          "title": "Programming"
+        },
+        {
+          "number": 5,
+          "title": "Peripheral interfacing"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee603",
+      "code": "BEE603",
+      "title": "Power Electronics",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "core",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Power semiconductor devices"
+        },
+        {
+          "number": 2,
+          "title": "Thyristor protection and commutation"
+        },
+        {
+          "number": 3,
+          "title": "Controlled converters"
+        },
+        {
+          "number": 4,
+          "title": "AC voltage controllers"
+        },
+        {
+          "number": 5,
+          "title": "Inverters"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee051",
+      "code": "BEE051",
+      "title": "Robotics",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Robotics foundations"
+        },
+        {
+          "number": 2,
+          "title": "Robot kinematics"
+        },
+        {
+          "number": 3,
+          "title": "Actuators and transmissions"
+        },
+        {
+          "number": 4,
+          "title": "Grippers"
+        },
+        {
+          "number": 5,
+          "title": "Sensors and control"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee052",
+      "code": "BEE052",
+      "title": "Sensors and Transducers",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Sensor foundations"
+        },
+        {
+          "number": 2,
+          "title": "Transducer principles"
+        },
+        {
+          "number": 3,
+          "title": "Machine vision"
+        },
+        {
+          "number": 4,
+          "title": "Sensor applications"
+        },
+        {
+          "number": 5,
+          "title": "Smart sensors"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee053",
+      "code": "BEE053",
+      "title": "Industrial Automation and Control",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Automation systems"
+        },
+        {
+          "number": 2,
+          "title": "Relay logic"
+        },
+        {
+          "number": 3,
+          "title": "PLCs"
+        },
+        {
+          "number": 4,
+          "title": "Industrial sensors"
+        },
+        {
+          "number": 5,
+          "title": "Pneumatics"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee054",
+      "code": "BEE054",
+      "title": "Electrical Standards and Engineering Practices",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Standards and design practice"
+        },
+        {
+          "number": 2,
+          "title": "Electrical standards I"
+        },
+        {
+          "number": 3,
+          "title": "Electrical standards II"
+        },
+        {
+          "number": 4,
+          "title": "National codes"
+        },
+        {
+          "number": 5,
+          "title": "Equipment selection"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee055",
+      "code": "BEE055",
+      "title": "Optimization Techniques",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Optimization foundations"
+        },
+        {
+          "number": 2,
+          "title": "Linear programming"
+        },
+        {
+          "number": 3,
+          "title": "Nonlinear programming"
+        },
+        {
+          "number": 4,
+          "title": "Simulation"
+        },
+        {
+          "number": 5,
+          "title": "Power-system case studies"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee056",
+      "code": "BEE056",
+      "title": "Neural Networks and Fuzzy Systems",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Neural architectures"
+        },
+        {
+          "number": 2,
+          "title": "Backpropagation"
+        },
+        {
+          "number": 3,
+          "title": "Fuzzy sets"
+        },
+        {
+          "number": 4,
+          "title": "Fuzzy inference"
+        },
+        {
+          "number": 5,
+          "title": "Fuzzy neural networks"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee057",
+      "code": "BEE057",
+      "title": "Digital Signal Processing",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Discrete signals and systems"
+        },
+        {
+          "number": 2,
+          "title": "Sampling"
+        },
+        {
+          "number": 3,
+          "title": "Transform analysis"
+        },
+        {
+          "number": 4,
+          "title": "Filter design"
+        },
+        {
+          "number": 5,
+          "title": "Fast Fourier transform"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee058",
+      "code": "BEE058",
+      "title": "Analog and Digital Communication",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        5
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Amplitude modulation"
+        },
+        {
+          "number": 2,
+          "title": "Angle modulation"
+        },
+        {
+          "number": 3,
+          "title": "Pulse modulation"
+        },
+        {
+          "number": 4,
+          "title": "Digital modulation"
+        },
+        {
+          "number": 5,
+          "title": "Time-division multiplexing"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee061",
+      "code": "BEE061",
+      "title": "Special Electrical Machines",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Induction-machine controls"
+        },
+        {
+          "number": 2,
+          "title": "Stepper motors"
+        },
+        {
+          "number": 3,
+          "title": "Switched reluctance motors"
+        },
+        {
+          "number": 4,
+          "title": "Permanent-magnet machines"
+        },
+        {
+          "number": 5,
+          "title": "Single-phase synchronous motors"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee062",
+      "code": "BEE062",
+      "title": "Electrical Machine Design",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Design foundations"
+        },
+        {
+          "number": 2,
+          "title": "Transformers"
+        },
+        {
+          "number": 3,
+          "title": "Rotating-machine design I"
+        },
+        {
+          "number": 4,
+          "title": "Rotating-machine design II"
+        },
+        {
+          "number": 5,
+          "title": "Computer-aided design"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee063",
+      "code": "BEE063",
+      "title": "Digital Control System",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Digital control"
+        },
+        {
+          "number": 2,
+          "title": "Pulse-transfer models"
+        },
+        {
+          "number": 3,
+          "title": "Discrete stability"
+        },
+        {
+          "number": 4,
+          "title": "Sampled-data design"
+        },
+        {
+          "number": 5,
+          "title": "Discrete state space"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee064",
+      "code": "BEE064",
+      "title": "Electric and Hybrid Vehicles",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Vehicle foundations"
+        },
+        {
+          "number": 2,
+          "title": "Hybrid drivetrains"
+        },
+        {
+          "number": 3,
+          "title": "Electric propulsion"
+        },
+        {
+          "number": 4,
+          "title": "Energy storage"
+        },
+        {
+          "number": 5,
+          "title": "Energy management"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee3-bee065",
+      "code": "BEE065",
+      "title": "Digital Design with VHDL",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "elective",
+      "source": "ee3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Logic-design review"
+        },
+        {
+          "number": 2,
+          "title": "VHDL"
+        },
+        {
+          "number": 3,
+          "title": "Programmable logic"
+        },
+        {
+          "number": 4,
+          "title": "FPGAs"
+        },
+        {
+          "number": 5,
+          "title": "Design case studies"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it4-bcs701",
+      "code": "BCS701",
+      "title": "Artificial Intelligence",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "core",
+      "source": "it4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "AI foundations and intelligent agents"
+        },
+        {
+          "number": 2,
+          "title": "Problem solving and search"
+        },
+        {
+          "number": 3,
+          "title": "Knowledge representation and reasoning"
+        },
+        {
+          "number": 4,
+          "title": "Uncertainty and learning"
+        },
+        {
+          "number": 5,
+          "title": "AI applications and multi-agent systems"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it4-bcs070",
+      "code": "BCS070",
+      "title": "Internet of Things",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "it4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "IoT foundations"
+        },
+        {
+          "number": 2,
+          "title": "Sensors and embedded platforms"
+        },
+        {
+          "number": 3,
+          "title": "Network communication"
+        },
+        {
+          "number": 4,
+          "title": "Arduino programming"
+        },
+        {
+          "number": 5,
+          "title": "IoT applications and challenges"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it4-bcs071",
+      "code": "BCS071",
+      "title": "Cloud Computing",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "it4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Cloud foundations"
+        },
+        {
+          "number": 2,
+          "title": "Virtualization and service-oriented architecture"
+        },
+        {
+          "number": 3,
+          "title": "Cloud architecture and services"
+        },
+        {
+          "number": 4,
+          "title": "Resource management and security"
+        },
+        {
+          "number": 5,
+          "title": "Cloud platforms and applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it4-bcs072",
+      "code": "BCS072",
+      "title": "Cryptography and Network Security",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "it4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Security and classical cryptography"
+        },
+        {
+          "number": 2,
+          "title": "Modern symmetric and public-key cryptography"
+        },
+        {
+          "number": 3,
+          "title": "Authentication and hashes"
+        },
+        {
+          "number": 4,
+          "title": "Key management"
+        },
+        {
+          "number": 5,
+          "title": "Network security protocols"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it4-bcs073",
+      "code": "BCS073",
+      "title": "Design and Development of Applications",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "it4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Mobile-application foundations"
+        },
+        {
+          "number": 2,
+          "title": "Application architecture"
+        },
+        {
+          "number": 3,
+          "title": "Integration and services"
+        },
+        {
+          "number": 4,
+          "title": "Android development"
+        },
+        {
+          "number": 5,
+          "title": "iOS development"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil4-bce701",
+      "code": "BCE701",
+      "title": "Advanced Structural Design",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "core",
+      "source": "civil4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Steel design and connections"
+        },
+        {
+          "number": 2,
+          "title": "Tension and compression members"
+        },
+        {
+          "number": 3,
+          "title": "Plastic analysis"
+        },
+        {
+          "number": 4,
+          "title": "Prestressed concrete"
+        },
+        {
+          "number": 5,
+          "title": "Water-tank design"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil4-bce070",
+      "code": "BCE070",
+      "title": "Railway, Airway and Waterway Infrastructure Systems",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "civil4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Railway infrastructure"
+        },
+        {
+          "number": 2,
+          "title": "Railway safety and signalling"
+        },
+        {
+          "number": 3,
+          "title": "Airway infrastructure"
+        },
+        {
+          "number": 4,
+          "title": "Harbours and waterways"
+        },
+        {
+          "number": 5,
+          "title": "Design and maintenance"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil4-bce071",
+      "code": "BCE071",
+      "title": "AI and Machine Learning in Civil Engineering",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "civil4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "AI and ML foundations"
+        },
+        {
+          "number": 2,
+          "title": "Regression and classification"
+        },
+        {
+          "number": 3,
+          "title": "AI-based optimization"
+        },
+        {
+          "number": 4,
+          "title": "Infrastructure applications"
+        },
+        {
+          "number": 5,
+          "title": "Interpretation, deployment and ethics"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil4-bce072",
+      "code": "BCE072",
+      "title": "Disaster Mitigation and Climate Resilient Infrastructure",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "civil4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Disasters and frameworks"
+        },
+        {
+          "number": 2,
+          "title": "Resilient infrastructure"
+        },
+        {
+          "number": 3,
+          "title": "Air-pollution control"
+        },
+        {
+          "number": 4,
+          "title": "Waste management"
+        },
+        {
+          "number": 5,
+          "title": "EIA and preparedness"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil4-bce073",
+      "code": "BCE073",
+      "title": "Geosynthetics and Ground Improvement Techniques",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "civil4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Geosynthetic materials"
+        },
+        {
+          "number": 2,
+          "title": "Geosynthetic applications"
+        },
+        {
+          "number": 3,
+          "title": "Mechanical ground improvement"
+        },
+        {
+          "number": 4,
+          "title": "Reinforcement and grouting"
+        },
+        {
+          "number": 5,
+          "title": "Case studies and design"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee4-bee701",
+      "code": "BEE701",
+      "title": "Power System Protection",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "core",
+      "source": "ee4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Protection schemes"
+        },
+        {
+          "number": 2,
+          "title": "Protective relays"
+        },
+        {
+          "number": 3,
+          "title": "Component protection"
+        },
+        {
+          "number": 4,
+          "title": "Circuit breaking"
+        },
+        {
+          "number": 5,
+          "title": "Modern protection"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee4-bee071",
+      "code": "BEE071",
+      "title": "Energy Conservation and Auditing",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "ee4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Energy scenario"
+        },
+        {
+          "number": 2,
+          "title": "Demand-side management"
+        },
+        {
+          "number": 3,
+          "title": "Energy auditing"
+        },
+        {
+          "number": 4,
+          "title": "Mechanical-utility audits"
+        },
+        {
+          "number": 5,
+          "title": "Energy-efficient technology"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee4-bee072",
+      "code": "BEE072",
+      "title": "HVDC and AC Transmission",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "ee4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "EHV transmission"
+        },
+        {
+          "number": 2,
+          "title": "EHV AC transmission"
+        },
+        {
+          "number": 3,
+          "title": "High-voltage testing"
+        },
+        {
+          "number": 4,
+          "title": "HVDC converters"
+        },
+        {
+          "number": 5,
+          "title": "HVDC control and protection"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee4-bee073",
+      "code": "BEE073",
+      "title": "Power Quality and FACTS",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "ee4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Power-quality foundations"
+        },
+        {
+          "number": 2,
+          "title": "Voltage sags"
+        },
+        {
+          "number": 3,
+          "title": "Transients"
+        },
+        {
+          "number": 4,
+          "title": "FACTS controllers"
+        },
+        {
+          "number": 5,
+          "title": "Harmonics"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee4-bee074",
+      "code": "BEE074",
+      "title": "Electric Drives",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "ee4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Drive fundamentals"
+        },
+        {
+          "number": 2,
+          "title": "Drive dynamics"
+        },
+        {
+          "number": 3,
+          "title": "Electric braking"
+        },
+        {
+          "number": 4,
+          "title": "DC-drive control"
+        },
+        {
+          "number": 5,
+          "title": "AC-drive control"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee4-bee075",
+      "code": "BEE075",
+      "title": "Utilization of Electrical Energy and Electric Traction",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "elective",
+      "source": "ee4",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Electric heating"
+        },
+        {
+          "number": 2,
+          "title": "Electric welding"
+        },
+        {
+          "number": 3,
+          "title": "Illumination"
+        },
+        {
+          "number": 4,
+          "title": "Traction systems"
+        },
+        {
+          "number": 5,
+          "title": "Traction drives"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open7-boe070",
+      "code": "BOE070",
+      "title": "Project Management",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open7",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Project foundations"
+        },
+        {
+          "number": 2,
+          "title": "Selection and planning"
+        },
+        {
+          "number": 3,
+          "title": "Procurement and supply chains"
+        },
+        {
+          "number": 4,
+          "title": "Project control"
+        },
+        {
+          "number": 5,
+          "title": "Site planning and project applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open7-boe071",
+      "code": "BOE071",
+      "title": "Filter Design",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open7",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Filter fundamentals"
+        },
+        {
+          "number": 2,
+          "title": "First-order filters"
+        },
+        {
+          "number": 3,
+          "title": "Second-order filters"
+        },
+        {
+          "number": 4,
+          "title": "Transmission zeros"
+        },
+        {
+          "number": 5,
+          "title": "Chebyshev filters"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open7-boe072",
+      "code": "BOE072",
+      "title": "Bioeconomics",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open7",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Bioeconomy foundations"
+        },
+        {
+          "number": 2,
+          "title": "Growth and innovation"
+        },
+        {
+          "number": 3,
+          "title": "Interdisciplinary research"
+        },
+        {
+          "number": 4,
+          "title": "Biobased value chains"
+        },
+        {
+          "number": 5,
+          "title": "Sustainable biomass use"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open7-boe073",
+      "code": "BOE073",
+      "title": "Machine Learning",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open7",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Learning problems"
+        },
+        {
+          "number": 2,
+          "title": "Decision trees"
+        },
+        {
+          "number": 3,
+          "title": "Hypothesis evaluation"
+        },
+        {
+          "number": 4,
+          "title": "Learning theory"
+        },
+        {
+          "number": 5,
+          "title": "Genetic algorithms"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open7-boe074",
+      "code": "BOE074",
+      "title": "Renewable Energy Resources",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open7",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Renewable-energy overview"
+        },
+        {
+          "number": 2,
+          "title": "Solar thermal energy"
+        },
+        {
+          "number": 3,
+          "title": "Geothermal energy"
+        },
+        {
+          "number": 4,
+          "title": "Direct energy conversion"
+        },
+        {
+          "number": 5,
+          "title": "Biomass"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open7-boe075",
+      "code": "BOE075",
+      "title": "Operations Research",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open7",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Operations-research foundations"
+        },
+        {
+          "number": 2,
+          "title": "Transportation problems"
+        },
+        {
+          "number": 3,
+          "title": "Network techniques"
+        },
+        {
+          "number": 4,
+          "title": "Game theory"
+        },
+        {
+          "number": 5,
+          "title": "Inventory models"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open7-boe076",
+      "code": "BOE076",
+      "title": "Vision for Humane Society",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open7",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Human aspirations"
+        },
+        {
+          "number": 2,
+          "title": "Human relationships"
+        },
+        {
+          "number": 3,
+          "title": "Justice and society"
+        },
+        {
+          "number": 4,
+          "title": "Universal human order"
+        },
+        {
+          "number": 5,
+          "title": "Human tradition"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open7-boe077",
+      "code": "BOE077",
+      "title": "Design Thinking",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open7",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Design-thinking foundations"
+        },
+        {
+          "number": 2,
+          "title": "Understanding people"
+        },
+        {
+          "number": 3,
+          "title": "Problem definition"
+        },
+        {
+          "number": 4,
+          "title": "Critical thinking"
+        },
+        {
+          "number": 5,
+          "title": "Arguments and reasoning"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open7-boe078",
+      "code": "BOE078",
+      "title": "Soil and Water Conservation",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open7",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Soil conservation"
+        },
+        {
+          "number": 2,
+          "title": "Water erosion"
+        },
+        {
+          "number": 3,
+          "title": "Biological erosion control"
+        },
+        {
+          "number": 4,
+          "title": "Water losses"
+        },
+        {
+          "number": 5,
+          "title": "Water-resource planning"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open7-boe079",
+      "code": "BOE079",
+      "title": "Introduction to Women's and Gender Studies",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open7",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Women and society"
+        },
+        {
+          "number": 2,
+          "title": "Feminist theory"
+        },
+        {
+          "number": 3,
+          "title": "Women's movements"
+        },
+        {
+          "number": 4,
+          "title": "Gender roles"
+        },
+        {
+          "number": 5,
+          "title": "Gender and representation"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open7-boe080",
+      "code": "BOE080",
+      "title": "Smart Manufacturing for Industry 4.0",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        7
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open7",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Industry 4.0"
+        },
+        {
+          "number": 2,
+          "title": "Industrial automation"
+        },
+        {
+          "number": 3,
+          "title": "Communication"
+        },
+        {
+          "number": 4,
+          "title": "IoT platforms"
+        },
+        {
+          "number": 5,
+          "title": "Machine learning"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe081",
+      "code": "BOE081",
+      "title": "Fundamentals of Drone Technology",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Drone foundations"
+        },
+        {
+          "number": 2,
+          "title": "UAV design"
+        },
+        {
+          "number": 3,
+          "title": "Avionics"
+        },
+        {
+          "number": 4,
+          "title": "Communication, payload and control"
+        },
+        {
+          "number": 5,
+          "title": "Navigation and testing"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe082",
+      "code": "BOE082",
+      "title": "Cloud Computing",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Cloud foundations"
+        },
+        {
+          "number": 2,
+          "title": "Cloud services"
+        },
+        {
+          "number": 3,
+          "title": "Cloud collaboration"
+        },
+        {
+          "number": 4,
+          "title": "Virtualization"
+        },
+        {
+          "number": 5,
+          "title": "Security, standards and applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe083",
+      "code": "BOE083",
+      "title": "Biomedical Signal Processing",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Biomedical signals"
+        },
+        {
+          "number": 2,
+          "title": "Electrocardiography"
+        },
+        {
+          "number": 3,
+          "title": "Data reduction"
+        },
+        {
+          "number": 4,
+          "title": "Electroencephalography"
+        },
+        {
+          "number": 5,
+          "title": "Evoked potentials and adaptive filtering"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe084",
+      "code": "BOE084",
+      "title": "Entrepreneurship Development",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Entrepreneurship"
+        },
+        {
+          "number": 2,
+          "title": "Project identification"
+        },
+        {
+          "number": 3,
+          "title": "Accounting"
+        },
+        {
+          "number": 4,
+          "title": "Project planning and control"
+        },
+        {
+          "number": 5,
+          "title": "Entrepreneurship and law"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe085",
+      "code": "BOE085",
+      "title": "Smart Grid",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Smart-grid foundations"
+        },
+        {
+          "number": 2,
+          "title": "Smart-meter technologies"
+        },
+        {
+          "number": 3,
+          "title": "Smart substations"
+        },
+        {
+          "number": 4,
+          "title": "Microgrids and distributed resources"
+        },
+        {
+          "number": 5,
+          "title": "Power quality"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe086",
+      "code": "BOE086",
+      "title": "Quality Management",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Quality concepts"
+        },
+        {
+          "number": 2,
+          "title": "Quality management"
+        },
+        {
+          "number": 3,
+          "title": "Control charts"
+        },
+        {
+          "number": 4,
+          "title": "Defect prevention"
+        },
+        {
+          "number": 5,
+          "title": "ISO quality systems"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe087",
+      "code": "BOE087",
+      "title": "Industrial Optimization Techniques",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Linear programming"
+        },
+        {
+          "number": 2,
+          "title": "Sequencing and networks"
+        },
+        {
+          "number": 3,
+          "title": "Games and queues"
+        },
+        {
+          "number": 4,
+          "title": "Dynamic programming and simulation"
+        },
+        {
+          "number": 5,
+          "title": "Inventory and replacement"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe088",
+      "code": "BOE088",
+      "title": "Virology",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Virus foundations"
+        },
+        {
+          "number": 2,
+          "title": "Effects of infection"
+        },
+        {
+          "number": 3,
+          "title": "Virus classification and RNA viruses"
+        },
+        {
+          "number": 4,
+          "title": "Negative RNA viruses"
+        },
+        {
+          "number": 5,
+          "title": "Antivirals and vaccines"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe089",
+      "code": "BOE089",
+      "title": "Natural Language Processing",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Language understanding"
+        },
+        {
+          "number": 2,
+          "title": "Semantics and knowledge representation"
+        },
+        {
+          "number": 3,
+          "title": "Grammars and parsing"
+        },
+        {
+          "number": 4,
+          "title": "Natural-language grammars"
+        },
+        {
+          "number": 5,
+          "title": "Statistical ambiguity resolution"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe090",
+      "code": "BOE090",
+      "title": "Human Values in Madhyasth Darshan",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Foundations"
+        },
+        {
+          "number": 2,
+          "title": "Nature in space"
+        },
+        {
+          "number": 3,
+          "title": "Human being in nature"
+        },
+        {
+          "number": 4,
+          "title": "Human goals"
+        },
+        {
+          "number": 5,
+          "title": "Human conduct"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe092",
+      "code": "BOE092",
+      "title": "Electric Vehicles",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Electric-vehicle foundations"
+        },
+        {
+          "number": 2,
+          "title": "Electric drives"
+        },
+        {
+          "number": 3,
+          "title": "Batteries and management systems"
+        },
+        {
+          "number": 4,
+          "title": "Charging design"
+        },
+        {
+          "number": 5,
+          "title": "Charging-facility planning"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe093",
+      "code": "BOE093",
+      "title": "Automation and Robotics",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Automation"
+        },
+        {
+          "number": 2,
+          "title": "Manufacturing automation"
+        },
+        {
+          "number": 3,
+          "title": "Robotics"
+        },
+        {
+          "number": 4,
+          "title": "Drives and transmissions"
+        },
+        {
+          "number": 5,
+          "title": "Programming and simulation"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe094",
+      "code": "BOE094",
+      "title": "Computerized Process Control",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Process-control foundations"
+        },
+        {
+          "number": 2,
+          "title": "Industrial communication"
+        },
+        {
+          "number": 3,
+          "title": "Process modelling"
+        },
+        {
+          "number": 4,
+          "title": "Advanced control"
+        },
+        {
+          "number": 5,
+          "title": "Case examples"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe095",
+      "code": "BOE095",
+      "title": "Data Warehousing and Data Mining",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Data warehousing"
+        },
+        {
+          "number": 2,
+          "title": "Warehouse process and technology"
+        },
+        {
+          "number": 3,
+          "title": "Data mining"
+        },
+        {
+          "number": 4,
+          "title": "Classification"
+        },
+        {
+          "number": 5,
+          "title": "Visualization"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe096",
+      "code": "BOE096",
+      "title": "Digital and Social Media Marketing",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Digital-marketing foundations"
+        },
+        {
+          "number": 2,
+          "title": "Social media"
+        },
+        {
+          "number": 3,
+          "title": "Acquisition and engagement"
+        },
+        {
+          "number": 4,
+          "title": "Digital organizations"
+        },
+        {
+          "number": 5,
+          "title": "Innovation and trends"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe097",
+      "code": "BOE097",
+      "title": "Nano Devices",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "MOSFET scaling"
+        },
+        {
+          "number": 2,
+          "title": "MOS electrostatics"
+        },
+        {
+          "number": 3,
+          "title": "Nanowire MOSFETs"
+        },
+        {
+          "number": 4,
+          "title": "Radiation effects"
+        },
+        {
+          "number": 5,
+          "title": "Digital-circuit performance"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe098",
+      "code": "BOE098",
+      "title": "Modelling and Simulation of Dynamic Systems",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Modelling foundations"
+        },
+        {
+          "number": 2,
+          "title": "Bond graphs"
+        },
+        {
+          "number": 3,
+          "title": "Combined systems"
+        },
+        {
+          "number": 4,
+          "title": "Dynamic response"
+        },
+        {
+          "number": 5,
+          "title": "Simulation applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe099",
+      "code": "BOE099",
+      "title": "Big Data",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Big-data foundations"
+        },
+        {
+          "number": 2,
+          "title": "Hadoop"
+        },
+        {
+          "number": 3,
+          "title": "HDFS"
+        },
+        {
+          "number": 4,
+          "title": "Ecosystem and YARN"
+        },
+        {
+          "number": 5,
+          "title": "Pig, Hive and HBase"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe100",
+      "code": "BOE100",
+      "title": "Human Values in Bauddha and Jain Darshan",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Foundations"
+        },
+        {
+          "number": 2,
+          "title": "Buddhist principles"
+        },
+        {
+          "number": 3,
+          "title": "Buddhist human goals"
+        },
+        {
+          "number": 4,
+          "title": "Jain principles"
+        },
+        {
+          "number": 5,
+          "title": "Jain human goals"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe101",
+      "code": "BOE101",
+      "title": "Human Values in Vedic Darshan",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Vedic traditions and Nyaya"
+        },
+        {
+          "number": 2,
+          "title": "Vaisheshika"
+        },
+        {
+          "number": 3,
+          "title": "Samkhya and Yoga"
+        },
+        {
+          "number": 4,
+          "title": "Upanishads and Vedanta"
+        },
+        {
+          "number": 5,
+          "title": "Human goals"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-aas101e",
+      "code": "AAS101E",
+      "title": "Quantum Physics and Applications",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Quantum mechanics"
+        },
+        {
+          "number": 2,
+          "title": "Quantum theory of solids"
+        },
+        {
+          "number": 3,
+          "title": "Quantum computing and communication"
+        },
+        {
+          "number": 4,
+          "title": "Photonics"
+        },
+        {
+          "number": 5,
+          "title": "Superconductors and nanomaterials"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-aas102d",
+      "code": "AAS102D",
+      "title": "Applied Chemistry for Smart Systems",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Chemistry of computing hardware"
+        },
+        {
+          "number": 2,
+          "title": "Energy storage and power chemistry"
+        },
+        {
+          "number": 3,
+          "title": "Sensors and chemical detection"
+        },
+        {
+          "number": 4,
+          "title": "Nanomaterials and functional materials"
+        },
+        {
+          "number": 5,
+          "title": "Green chemistry and electronic waste"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-aas103d",
+      "code": "AAS103D",
+      "title": "Calculus and Linear Algebra",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        1
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Multivariable calculus"
+        },
+        {
+          "number": 2,
+          "title": "Multiple integrals"
+        },
+        {
+          "number": 3,
+          "title": "Vector calculus"
+        },
+        {
+          "number": 4,
+          "title": "Matrices"
+        },
+        {
+          "number": 5,
+          "title": "Vector spaces"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-aas203d",
+      "code": "AAS203D",
+      "title": "Numerical Methods",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        2
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Differential equations"
+        },
+        {
+          "number": 2,
+          "title": "Complex analysis"
+        },
+        {
+          "number": 3,
+          "title": "Laplace transforms"
+        },
+        {
+          "number": 4,
+          "title": "Fourier series and transforms"
+        },
+        {
+          "number": 5,
+          "title": "Applied linear algebra"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-aas101a",
+      "code": "AAS101A",
+      "title": "Physics for Sustainable Structural Systems",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Quantum mechanics"
+        },
+        {
+          "number": 2,
+          "title": "Photonics"
+        },
+        {
+          "number": 3,
+          "title": "Mechanics and fluid physics"
+        },
+        {
+          "number": 4,
+          "title": "Thermal physics"
+        },
+        {
+          "number": 5,
+          "title": "Superconductivity and nanomaterials"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-aas102a",
+      "code": "AAS102A",
+      "title": "Applied Chemistry for Sustainable Structure and Material Design",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Construction materials"
+        },
+        {
+          "number": 2,
+          "title": "Corrosion science"
+        },
+        {
+          "number": 3,
+          "title": "Water chemistry"
+        },
+        {
+          "number": 4,
+          "title": "Sustainable building materials"
+        },
+        {
+          "number": 5,
+          "title": "Adhesives, sealants and composites"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-aas103a",
+      "code": "AAS103A",
+      "title": "Differential Calculus and Linear Algebra",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        1
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Matrices"
+        },
+        {
+          "number": 2,
+          "title": "Multivariable calculus"
+        },
+        {
+          "number": 3,
+          "title": "Multiple integrals"
+        },
+        {
+          "number": 4,
+          "title": "Vector spaces"
+        },
+        {
+          "number": 5,
+          "title": "Vector calculus"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-aas203a",
+      "code": "AAS203A",
+      "title": "Differential Calculus and Numerical Methods",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        2
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Differential equations"
+        },
+        {
+          "number": 2,
+          "title": "Laplace transforms"
+        },
+        {
+          "number": 3,
+          "title": "Sequences and series"
+        },
+        {
+          "number": 4,
+          "title": "Complex differentiation"
+        },
+        {
+          "number": 5,
+          "title": "Complex integration"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-aas101d",
+      "code": "AAS101D",
+      "title": "Physics of Electrical Engineering Materials",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Quantum mechanics"
+        },
+        {
+          "number": 2,
+          "title": "Quantum theory of solids"
+        },
+        {
+          "number": 3,
+          "title": "Electromagnetic field theory"
+        },
+        {
+          "number": 4,
+          "title": "Dielectric and magnetic materials"
+        },
+        {
+          "number": 5,
+          "title": "Superconductivity and nanomaterials"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-aas102c",
+      "code": "AAS102C",
+      "title": "Applied Chemistry for Emerging Electronics and Futuristic Devices",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Chemistry of electronic materials"
+        },
+        {
+          "number": 2,
+          "title": "Electrochemistry and energy storage"
+        },
+        {
+          "number": 3,
+          "title": "Dielectric, magnetic and optical materials"
+        },
+        {
+          "number": 4,
+          "title": "Nanomaterials and thin films"
+        },
+        {
+          "number": 5,
+          "title": "Organic electronics and futuristic devices"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-aas103c",
+      "code": "AAS103C",
+      "title": "Differential Calculus and Linear Algebra",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        1
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Differential calculus"
+        },
+        {
+          "number": 2,
+          "title": "Multiple integrals"
+        },
+        {
+          "number": 3,
+          "title": "Matrix algebra"
+        },
+        {
+          "number": 4,
+          "title": "Vector spaces"
+        },
+        {
+          "number": 5,
+          "title": "Vector calculus"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-aas203c",
+      "code": "AAS203C",
+      "title": "Calculus, Laplace Transform and Numerical Techniques",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        2
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Series solutions and special functions"
+        },
+        {
+          "number": 2,
+          "title": "Laplace transforms"
+        },
+        {
+          "number": 3,
+          "title": "Fourier series and transforms"
+        },
+        {
+          "number": 4,
+          "title": "Complex analysis"
+        },
+        {
+          "number": 5,
+          "title": "Sequences and series"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-acs101",
+      "code": "ACS101",
+      "title": "Programming Languages",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        1
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "C programming basics"
+        },
+        {
+          "number": 2,
+          "title": "Control flow"
+        },
+        {
+          "number": 3,
+          "title": "Advanced C concepts"
+        },
+        {
+          "number": 4,
+          "title": "Python introduction"
+        },
+        {
+          "number": 5,
+          "title": "Python data structures"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-acs201",
+      "code": "ACS201",
+      "title": "Essentials of Data Structures",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        2
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Data structures, arrays and complexity"
+        },
+        {
+          "number": 2,
+          "title": "Linked lists"
+        },
+        {
+          "number": 3,
+          "title": "Stacks and queues"
+        },
+        {
+          "number": 4,
+          "title": "Searching and sorting"
+        },
+        {
+          "number": 5,
+          "title": "Trees and graphs"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-aas104",
+      "code": "AAS104",
+      "title": "Introduction to Indian Knowledge System",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Foundations of Indian knowledge systems"
+        },
+        {
+          "number": 2,
+          "title": "Indian mathematics and astronomy"
+        },
+        {
+          "number": 3,
+          "title": "Engineering, technology and material sciences"
+        },
+        {
+          "number": 4,
+          "title": "Health, environment and governance"
+        },
+        {
+          "number": 5,
+          "title": "Contemporary relevance and AI"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-aas105",
+      "code": "AAS105",
+      "title": "Professional Communication and Technical Writing",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Professional communication and workplace readiness"
+        },
+        {
+          "number": 2,
+          "title": "Grammar and vocabulary"
+        },
+        {
+          "number": 3,
+          "title": "Public speaking and AI-assisted communication"
+        },
+        {
+          "number": 4,
+          "title": "Emotional intelligence and critical thinking"
+        },
+        {
+          "number": 5,
+          "title": "Leadership and mindful communication"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-aai101",
+      "code": "AAI101",
+      "title": "Introduction to AI and Prompt Engineering",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Introduction to AI"
+        },
+        {
+          "number": 2,
+          "title": "Core AI concepts"
+        },
+        {
+          "number": 3,
+          "title": "Generative AI and language models"
+        },
+        {
+          "number": 4,
+          "title": "AI applications across engineering"
+        },
+        {
+          "number": 5,
+          "title": "Prompt engineering"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-aac101",
+      "code": "AAC101",
+      "title": "Environment and Sustainability",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Environment and ecosystems"
+        },
+        {
+          "number": 2,
+          "title": "Natural resources"
+        },
+        {
+          "number": 3,
+          "title": "Environmental pollution"
+        },
+        {
+          "number": 4,
+          "title": "Climate change and sustainability"
+        },
+        {
+          "number": 5,
+          "title": "Environmental protection and engineers"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-aee101a",
+      "code": "AEE101A",
+      "title": "Fundamentals of Electrical Engineering",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Electrical quantities and DC circuits"
+        },
+        {
+          "number": 2,
+          "title": "AC circuits"
+        },
+        {
+          "number": 3,
+          "title": "Three-phase systems"
+        },
+        {
+          "number": 4,
+          "title": "Magnetic circuits and transformers"
+        },
+        {
+          "number": 5,
+          "title": "Electrical machines and emerging systems"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-aec101a",
+      "code": "AEC101A",
+      "title": "Fundamentals of Electronics Engineering",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Diodes and power supplies"
+        },
+        {
+          "number": 2,
+          "title": "Transistors as switches and amplifiers"
+        },
+        {
+          "number": 3,
+          "title": "Operational amplifiers"
+        },
+        {
+          "number": 4,
+          "title": "Digital electronics"
+        },
+        {
+          "number": 5,
+          "title": "Electronic systems and emerging applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "it26-ame101a",
+      "code": "AME101A",
+      "title": "Fundamentals of Mechanical Engineering",
+      "branches": [
+        "information-technology"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "it26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Engineering mechanics and materials"
+        },
+        {
+          "number": 2,
+          "title": "Thermodynamics and heat transfer"
+        },
+        {
+          "number": 3,
+          "title": "Machine elements and power transmission"
+        },
+        {
+          "number": 4,
+          "title": "Manufacturing processes"
+        },
+        {
+          "number": 5,
+          "title": "Mechatronics and robotics"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-acs101",
+      "code": "ACS101",
+      "title": "Programming Languages",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        1
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "C programming basics"
+        },
+        {
+          "number": 2,
+          "title": "Control flow"
+        },
+        {
+          "number": 3,
+          "title": "Advanced C concepts"
+        },
+        {
+          "number": 4,
+          "title": "Python introduction"
+        },
+        {
+          "number": 5,
+          "title": "Python data structures"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-acs201",
+      "code": "ACS201",
+      "title": "Essentials of Data Structures",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        2
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Data structures, arrays and complexity"
+        },
+        {
+          "number": 2,
+          "title": "Linked lists"
+        },
+        {
+          "number": 3,
+          "title": "Stacks and queues"
+        },
+        {
+          "number": 4,
+          "title": "Searching and sorting"
+        },
+        {
+          "number": 5,
+          "title": "Trees and graphs"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-aas104",
+      "code": "AAS104",
+      "title": "Introduction to Indian Knowledge System",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Foundations of Indian knowledge systems"
+        },
+        {
+          "number": 2,
+          "title": "Indian mathematics and astronomy"
+        },
+        {
+          "number": 3,
+          "title": "Engineering, technology and material sciences"
+        },
+        {
+          "number": 4,
+          "title": "Health, environment and governance"
+        },
+        {
+          "number": 5,
+          "title": "Contemporary relevance and AI"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-aas105",
+      "code": "AAS105",
+      "title": "Professional Communication and Technical Writing",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Professional communication and workplace readiness"
+        },
+        {
+          "number": 2,
+          "title": "Grammar and vocabulary"
+        },
+        {
+          "number": 3,
+          "title": "Public speaking and AI-assisted communication"
+        },
+        {
+          "number": 4,
+          "title": "Emotional intelligence and critical thinking"
+        },
+        {
+          "number": 5,
+          "title": "Leadership and mindful communication"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-aai101",
+      "code": "AAI101",
+      "title": "Introduction to AI and Prompt Engineering",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Introduction to AI"
+        },
+        {
+          "number": 2,
+          "title": "Core AI concepts"
+        },
+        {
+          "number": 3,
+          "title": "Generative AI and language models"
+        },
+        {
+          "number": 4,
+          "title": "AI applications across engineering"
+        },
+        {
+          "number": 5,
+          "title": "Prompt engineering"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-aac101",
+      "code": "AAC101",
+      "title": "Environment and Sustainability",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Environment and ecosystems"
+        },
+        {
+          "number": 2,
+          "title": "Natural resources"
+        },
+        {
+          "number": 3,
+          "title": "Environmental pollution"
+        },
+        {
+          "number": 4,
+          "title": "Climate change and sustainability"
+        },
+        {
+          "number": 5,
+          "title": "Environmental protection and engineers"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-aee101b",
+      "code": "AEE101B",
+      "title": "Fundamentals of Electrical Engineering",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Electrical quantities and DC circuits"
+        },
+        {
+          "number": 2,
+          "title": "Single-phase AC circuits"
+        },
+        {
+          "number": 3,
+          "title": "Three-phase systems"
+        },
+        {
+          "number": 4,
+          "title": "Transformers and machines"
+        },
+        {
+          "number": 5,
+          "title": "Electrical safety and emerging applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-aec101b",
+      "code": "AEC101B",
+      "title": "Fundamentals of Electronics Engineering",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Diodes and power supplies"
+        },
+        {
+          "number": 2,
+          "title": "Transistors and switching"
+        },
+        {
+          "number": 3,
+          "title": "Sensors and signal conditioning"
+        },
+        {
+          "number": 4,
+          "title": "Digital and microcontroller basics"
+        },
+        {
+          "number": 5,
+          "title": "Industrial electronics and smart systems"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "civil26-ame101b",
+      "code": "AME101B",
+      "title": "Fundamentals of Mechanical Engineering",
+      "branches": [
+        "civil"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "civil26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Engineering mechanics"
+        },
+        {
+          "number": 2,
+          "title": "Mechanics of solids"
+        },
+        {
+          "number": 3,
+          "title": "Fluid mechanics"
+        },
+        {
+          "number": 4,
+          "title": "Thermodynamics"
+        },
+        {
+          "number": 5,
+          "title": "Materials and manufacturing processes"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-acs101",
+      "code": "ACS101",
+      "title": "Programming Languages",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        1
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "C programming basics"
+        },
+        {
+          "number": 2,
+          "title": "Control flow"
+        },
+        {
+          "number": 3,
+          "title": "Advanced C concepts"
+        },
+        {
+          "number": 4,
+          "title": "Python introduction"
+        },
+        {
+          "number": 5,
+          "title": "Python data structures"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-acs201",
+      "code": "ACS201",
+      "title": "Essentials of Data Structures",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        2
+      ],
+      "year": 1,
+      "kind": "core",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Data structures, arrays and complexity"
+        },
+        {
+          "number": 2,
+          "title": "Linked lists"
+        },
+        {
+          "number": 3,
+          "title": "Stacks and queues"
+        },
+        {
+          "number": 4,
+          "title": "Searching and sorting"
+        },
+        {
+          "number": 5,
+          "title": "Trees and graphs"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-aas104",
+      "code": "AAS104",
+      "title": "Introduction to Indian Knowledge System",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Foundations of Indian knowledge systems"
+        },
+        {
+          "number": 2,
+          "title": "Indian mathematics and astronomy"
+        },
+        {
+          "number": 3,
+          "title": "Engineering, technology and material sciences"
+        },
+        {
+          "number": 4,
+          "title": "Health, environment and governance"
+        },
+        {
+          "number": 5,
+          "title": "Contemporary relevance and AI"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-aas105",
+      "code": "AAS105",
+      "title": "Professional Communication and Technical Writing",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Professional communication and workplace readiness"
+        },
+        {
+          "number": 2,
+          "title": "Grammar and vocabulary"
+        },
+        {
+          "number": 3,
+          "title": "Public speaking and AI-assisted communication"
+        },
+        {
+          "number": 4,
+          "title": "Emotional intelligence and critical thinking"
+        },
+        {
+          "number": 5,
+          "title": "Leadership and mindful communication"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-aai101",
+      "code": "AAI101",
+      "title": "Introduction to AI and Prompt Engineering",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Introduction to AI"
+        },
+        {
+          "number": 2,
+          "title": "Core AI concepts"
+        },
+        {
+          "number": 3,
+          "title": "Generative AI and language models"
+        },
+        {
+          "number": 4,
+          "title": "AI applications across engineering"
+        },
+        {
+          "number": 5,
+          "title": "Prompt engineering"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-aac101",
+      "code": "AAC101",
+      "title": "Environment and Sustainability",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Environment and ecosystems"
+        },
+        {
+          "number": 2,
+          "title": "Natural resources"
+        },
+        {
+          "number": 3,
+          "title": "Environmental pollution"
+        },
+        {
+          "number": 4,
+          "title": "Climate change and sustainability"
+        },
+        {
+          "number": 5,
+          "title": "Environmental protection and engineers"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-aee101a",
+      "code": "AEE101A",
+      "title": "Fundamentals of Electrical Engineering",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Electrical quantities and DC circuits"
+        },
+        {
+          "number": 2,
+          "title": "AC circuits"
+        },
+        {
+          "number": 3,
+          "title": "Three-phase systems"
+        },
+        {
+          "number": 4,
+          "title": "Magnetic circuits and transformers"
+        },
+        {
+          "number": 5,
+          "title": "Electrical machines and emerging systems"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-aec101a",
+      "code": "AEC101A",
+      "title": "Fundamentals of Electronics Engineering",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Diodes and power supplies"
+        },
+        {
+          "number": 2,
+          "title": "Transistors as switches and amplifiers"
+        },
+        {
+          "number": 3,
+          "title": "Operational amplifiers"
+        },
+        {
+          "number": 4,
+          "title": "Digital electronics"
+        },
+        {
+          "number": 5,
+          "title": "Electronic systems and emerging applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "ee26-ame101a",
+      "code": "AME101A",
+      "title": "Fundamentals of Mechanical Engineering",
+      "branches": [
+        "electrical"
+      ],
+      "semesters": [
+        1,
+        2
+      ],
+      "year": 1,
+      "kind": "paired",
+      "source": "ee26",
+      "scheme": 2026,
+      "units": [
+        {
+          "number": 1,
+          "title": "Engineering mechanics and materials"
+        },
+        {
+          "number": 2,
+          "title": "Thermodynamics and heat transfer"
+        },
+        {
+          "number": 3,
+          "title": "Machine elements and power transmission"
+        },
+        {
+          "number": 4,
+          "title": "Manufacturing processes"
+        },
+        {
+          "number": 5,
+          "title": "Mechatronics and robotics"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe301",
+      "code": "BOE301",
+      "title": "Electric and Hybrid Vehicles",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Automobile foundations"
+        },
+        {
+          "number": 2,
+          "title": "Electric and hybrid vehicles"
+        },
+        {
+          "number": 3,
+          "title": "Electric drives"
+        },
+        {
+          "number": 4,
+          "title": "Controllers, storage and charging"
+        },
+        {
+          "number": 5,
+          "title": "Troubleshooting and enterprise"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe302",
+      "code": "BOE302",
+      "title": "Automation and Robotics",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Automation foundations"
+        },
+        {
+          "number": 2,
+          "title": "Robotics foundations"
+        },
+        {
+          "number": 3,
+          "title": "Industrial automation architecture"
+        },
+        {
+          "number": 4,
+          "title": "Manufacturing automation"
+        },
+        {
+          "number": 5,
+          "title": "Industrial applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe303",
+      "code": "BOE303",
+      "title": "Material Science",
+      "branches": [
+        "information-technology",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Phase diagrams"
+        },
+        {
+          "number": 2,
+          "title": "Ferrous alloys"
+        },
+        {
+          "number": 3,
+          "title": "Mechanical properties"
+        },
+        {
+          "number": 4,
+          "title": "Magnetic, dielectric and superconducting materials"
+        },
+        {
+          "number": 5,
+          "title": "New materials"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe304",
+      "code": "BOE304",
+      "title": "Energy Science and Engineering",
+      "branches": [
+        "information-technology",
+        "civil"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Energy and its usage"
+        },
+        {
+          "number": 2,
+          "title": "Nuclear energy"
+        },
+        {
+          "number": 3,
+          "title": "Solar energy"
+        },
+        {
+          "number": 4,
+          "title": "Conventional and unconventional sources"
+        },
+        {
+          "number": 5,
+          "title": "Energy systems and synthesis"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe305",
+      "code": "BOE305",
+      "title": "Sensor and Instrumentation",
+      "branches": [
+        "information-technology",
+        "civil"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Sensors and transducers"
+        },
+        {
+          "number": 2,
+          "title": "Temperature, position and flow sensing"
+        },
+        {
+          "number": 3,
+          "title": "Virtual instrumentation"
+        },
+        {
+          "number": 4,
+          "title": "Data acquisition"
+        },
+        {
+          "number": 5,
+          "title": "Intelligent sensors"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe306",
+      "code": "BOE306",
+      "title": "Basics of Data Structures and Algorithms",
+      "branches": [
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Arrays and linked lists"
+        },
+        {
+          "number": 2,
+          "title": "Stacks, queues and recursion"
+        },
+        {
+          "number": 3,
+          "title": "Searching and sorting"
+        },
+        {
+          "number": 4,
+          "title": "Trees"
+        },
+        {
+          "number": 5,
+          "title": "Graphs"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe307",
+      "code": "BOE307",
+      "title": "Basics of Database Management Systems",
+      "branches": [
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Database foundations"
+        },
+        {
+          "number": 2,
+          "title": "Relational model"
+        },
+        {
+          "number": 3,
+          "title": "SQL implementation"
+        },
+        {
+          "number": 4,
+          "title": "Design and normalization"
+        },
+        {
+          "number": 5,
+          "title": "Transaction processing"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe308",
+      "code": "BOE308",
+      "title": "Analog Electronics Circuits",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Diodes and amplifier models"
+        },
+        {
+          "number": 2,
+          "title": "Frequency response"
+        },
+        {
+          "number": 3,
+          "title": "Oscillators"
+        },
+        {
+          "number": 4,
+          "title": "Current mirrors"
+        },
+        {
+          "number": 5,
+          "title": "Operational-amplifier applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe309",
+      "code": "BOE309",
+      "title": "Electronics Engineering",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Semiconductor junctions"
+        },
+        {
+          "number": 2,
+          "title": "Diode applications"
+        },
+        {
+          "number": 3,
+          "title": "Transistors"
+        },
+        {
+          "number": 4,
+          "title": "Operational amplifiers"
+        },
+        {
+          "number": 5,
+          "title": "Electronic instrumentation"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe310",
+      "code": "BOE310",
+      "title": "Digital Electronics",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Logic simplification"
+        },
+        {
+          "number": 2,
+          "title": "Combinational circuits"
+        },
+        {
+          "number": 3,
+          "title": "Sequential circuits"
+        },
+        {
+          "number": 4,
+          "title": "Logic families and memory"
+        },
+        {
+          "number": 5,
+          "title": "Converters and programmable logic"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe311",
+      "code": "BOE311",
+      "title": "Polymer Science and Technology",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Polymer synthesis and properties"
+        },
+        {
+          "number": 2,
+          "title": "Polymerization"
+        },
+        {
+          "number": 3,
+          "title": "Polymer processing"
+        },
+        {
+          "number": 4,
+          "title": "Thermoplastics, thermosets and elastomers"
+        },
+        {
+          "number": 5,
+          "title": "Resins and applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe312",
+      "code": "BOE312",
+      "title": "Laser Systems and Applications",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Energy levels and transitions"
+        },
+        {
+          "number": 2,
+          "title": "Laser amplification and oscillation"
+        },
+        {
+          "number": 3,
+          "title": "Components and principles"
+        },
+        {
+          "number": 4,
+          "title": "Specific laser systems"
+        },
+        {
+          "number": 5,
+          "title": "Laser applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective2-boe314",
+      "code": "BOE314",
+      "title": "Building Science and Engineering",
+      "branches": [
+        "information-technology",
+        "electrical"
+      ],
+      "semesters": [
+        3,
+        4
+      ],
+      "year": 2,
+      "kind": "open",
+      "source": "elective2",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Building materials"
+        },
+        {
+          "number": 2,
+          "title": "Building components"
+        },
+        {
+          "number": 3,
+          "title": "Water quality and supply"
+        },
+        {
+          "number": 4,
+          "title": "Earthquake-resistant masonry"
+        },
+        {
+          "number": 5,
+          "title": "Smart cities"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective3-boe060",
+      "code": "BOE060",
+      "title": "Idea to Business Model",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "open",
+      "source": "elective3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Choosing a business idea"
+        },
+        {
+          "number": 2,
+          "title": "Entrepreneurship"
+        },
+        {
+          "number": 3,
+          "title": "Entrepreneur development"
+        },
+        {
+          "number": 4,
+          "title": "Production planning and control"
+        },
+        {
+          "number": 5,
+          "title": "Communication and negotiation"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective3-boe061",
+      "code": "BOE061",
+      "title": "Quality Control and Reliability",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "open",
+      "source": "elective3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Quality foundations"
+        },
+        {
+          "number": 2,
+          "title": "Statistics and control charts"
+        },
+        {
+          "number": 3,
+          "title": "Total quality management"
+        },
+        {
+          "number": 4,
+          "title": "Reliability foundations"
+        },
+        {
+          "number": 5,
+          "title": "Reliability management"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective3-boe062",
+      "code": "BOE062",
+      "title": "Embedded System",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "open",
+      "source": "elective3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Embedded-system foundations"
+        },
+        {
+          "number": 2,
+          "title": "Embedded networking"
+        },
+        {
+          "number": 3,
+          "title": "Firmware development"
+        },
+        {
+          "number": 4,
+          "title": "RTOS-based design"
+        },
+        {
+          "number": 5,
+          "title": "Application development"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective3-boe063",
+      "code": "BOE063",
+      "title": "Introduction to MEMS",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "open",
+      "source": "elective3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "MEMS fabrication and materials"
+        },
+        {
+          "number": 2,
+          "title": "Beam and diaphragm mechanics"
+        },
+        {
+          "number": 3,
+          "title": "Air damping"
+        },
+        {
+          "number": 4,
+          "title": "Electrostatic actuation"
+        },
+        {
+          "number": 5,
+          "title": "Thermal effects and RF applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective3-boe064",
+      "code": "BOE064",
+      "title": "Object Oriented Programming",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "open",
+      "source": "elective3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Object-oriented foundations"
+        },
+        {
+          "number": 2,
+          "title": "Structural and behavioural modelling"
+        },
+        {
+          "number": 3,
+          "title": "Object-oriented analysis"
+        },
+        {
+          "number": 4,
+          "title": "C++ foundations"
+        },
+        {
+          "number": 5,
+          "title": "Objects, classes and inheritance"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective3-boe065",
+      "code": "BOE065",
+      "title": "Computer Based Numerical Techniques",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "open",
+      "source": "elective3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Errors and roots of equations"
+        },
+        {
+          "number": 2,
+          "title": "Interpolation"
+        },
+        {
+          "number": 3,
+          "title": "Numerical integration and differentiation"
+        },
+        {
+          "number": 4,
+          "title": "Differential equations"
+        },
+        {
+          "number": 5,
+          "title": "Boundary-value problems"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective3-boe066",
+      "code": "BOE066",
+      "title": "GIS and Remote Sensing",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "open",
+      "source": "elective3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Remote-sensing principles"
+        },
+        {
+          "number": 2,
+          "title": "Aerial photography"
+        },
+        {
+          "number": 3,
+          "title": "Photogrammetry and image analysis"
+        },
+        {
+          "number": 4,
+          "title": "Microwave sensing and GIS"
+        },
+        {
+          "number": 5,
+          "title": "GIS data and resource applications"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective3-boe067",
+      "code": "BOE067",
+      "title": "Basics of Database Management System",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "open",
+      "source": "elective3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Databases and ER modelling"
+        },
+        {
+          "number": 2,
+          "title": "Relational concepts and normalization"
+        },
+        {
+          "number": 3,
+          "title": "SQL and PL/SQL"
+        },
+        {
+          "number": 4,
+          "title": "Transactions and concurrency"
+        },
+        {
+          "number": 5,
+          "title": "Database architectures and trends"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective3-boe068",
+      "code": "BOE068",
+      "title": "Software Project Management",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "open",
+      "source": "elective3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Software-project foundations"
+        },
+        {
+          "number": 2,
+          "title": "Processes and estimation"
+        },
+        {
+          "number": 3,
+          "title": "Network planning"
+        },
+        {
+          "number": 4,
+          "title": "Management and control"
+        },
+        {
+          "number": 5,
+          "title": "People and teams"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "elective3-boe069",
+      "code": "BOE069",
+      "title": "Understanding the Human Being Comprehensively",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        6
+      ],
+      "year": 3,
+      "kind": "open",
+      "source": "elective3",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Human aspirations"
+        },
+        {
+          "number": 2,
+          "title": "Understanding the human being"
+        },
+        {
+          "number": 3,
+          "title": "Activities of the self"
+        },
+        {
+          "number": 4,
+          "title": "Coexistence"
+        },
+        {
+          "number": 5,
+          "title": "Harmony and human endeavour"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe091",
+      "code": "BOE091",
+      "title": "BIM for Sustainable Building Planning",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "BIM in building planning"
+        },
+        {
+          "number": 2,
+          "title": "Sustainable and climate-responsive planning"
+        },
+        {
+          "number": 3,
+          "title": "Water-sensitive planning"
+        },
+        {
+          "number": 4,
+          "title": "Solar energy and efficient planning"
+        },
+        {
+          "number": 5,
+          "title": "Traditional planning and professional ethics"
+        }
+      ],
+      "lectureCollection": null
+    },
+    {
+      "id": "open8-boe102",
+      "code": "BOE102",
+      "title": "Building Services Installation, Safety and Practices",
+      "branches": [
+        "information-technology",
+        "civil",
+        "electrical"
+      ],
+      "semesters": [
+        8
+      ],
+      "year": 4,
+      "kind": "open",
+      "source": "open8",
+      "scheme": 2022,
+      "units": [
+        {
+          "number": 1,
+          "title": "Building-services coordination"
+        },
+        {
+          "number": 2,
+          "title": "Plumbing and sanitary installation"
+        },
+        {
+          "number": 3,
+          "title": "Electrical, earthing and lightning protection"
+        },
+        {
+          "number": 4,
+          "title": "Fire and life safety"
+        },
+        {
+          "number": 5,
+          "title": "Inspection, maintenance and post-occupancy"
+        }
+      ],
+      "lectureCollection": null
+    }
+  ]
+}

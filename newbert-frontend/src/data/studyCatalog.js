@@ -49,4 +49,4 @@ export const studyCourses = definitions.map(([id, title, audience, branch, playl
 
 export const lectureKey = (courseId, videoId) => `lecture:${courseId}:${videoId}`;
 export const lessonHref = (courseId, videoId) => `/study/${courseId}${videoId ? `?lesson=${videoId}` : ""}`;
-export const studyHref = (key) => key?.startsWith("lecture:") ? lessonHref(key.split(":")[1], key.split(":")[2]) : key ? `/notes/${key.split(":")[0]}?unit=${encodeURIComponent(key)}` : "/study";
+export const studyHref = (key) => key?.startsWith("unit:") ? `/study/branch/${key.split(":")[1]}/subject/${key.split(":")[2]}?unit=${key.split(":")[3]}` : key?.startsWith("lecture:") ? lessonHref(key.split(":")[1], key.split(":")[2]) : key ? `/notes/${key.split(":")[0]}?unit=${encodeURIComponent(key)}` : "/study";

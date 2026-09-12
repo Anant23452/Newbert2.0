@@ -2,7 +2,7 @@ const ImprovementPlan = require("../Models/ImprovementPlan");
 const SavedJob = require("../Models/SavedJob");
 const StudyProgress = require("../Models/StudyProgress");
 const { buildTodaySummary } = require("../services/todayService");
-const { validateStudyUpdate, serializeStudyRecord, lectureKey } = require("../services/studyProgressService");
+const { validateStudyUpdate, serializeStudyRecord, notebookKey } = require("../services/studyProgressService");
 
 exports.getToday = async (req, res, next) => {
   try {
@@ -36,7 +36,7 @@ exports.updateStudyProgress = async (req, res, next) => {
 exports.getLectureProgress = async (req, res, next) => {
   try {
     const key = req.query.key;
-    if (typeof key !== "string" || !lectureKey.test(key)) return res.status(400).json({ message: "Choose a valid lecture." });
+    if (typeof key !== "string" || !notebookKey.test(key)) return res.status(400).json({ message: "Choose a valid lecture." });
     const record = await StudyProgress.findOne({ userId: req.auth.id, key }).lean();
     return res.json({ record: record ? serializeStudyRecord(record) : { key, notes: [], reflection: "", positionSeconds: 0, durationSeconds: 0, completed: false } });
   } catch (error) { next(error); }

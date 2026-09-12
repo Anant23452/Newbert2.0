@@ -15,6 +15,7 @@ test('YouTube URL parsing rejects unrelated hosts and invalid identifiers',()=>{
 });
 test('resume links preserve both lecture and legacy unit routes',()=>{
  assert.equal(studyHref(lectureKey('dbms','CbtTp6n_Q7A')),'/study/dbms?lesson=CbtTp6n_Q7A');
+ assert.equal(studyHref('unit:information-technology:it4-bcs071:2'),'/study/branch/information-technology/subject/it4-bcs071?unit=2');
  assert.match(studyHref('electrical:sem1:bee:1'),/^\/notes\/electrical\?unit=/);
 });
 test('review scheduling and display handle long lectures',()=>{

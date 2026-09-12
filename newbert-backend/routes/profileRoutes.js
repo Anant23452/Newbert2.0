@@ -17,6 +17,7 @@ router.get("/:userId/public", optionalAuth, getPublicProfile);
 router.use(requireAuth);
 router.get("/me", getMyProfile);
 router.get("/today", studentHome.getToday);
+router.post("/study-assistant", require("../middleWare/aiRateLimit"), require("../Controllers/studyAssistantController").askStudyAssistant);
 router.get("/learning-progress", studentHome.getStudyProgress);
 router.get("/lecture-progress", studentHome.getLectureProgress);
 router.patch("/learning-progress", studentHome.updateStudyProgress);
