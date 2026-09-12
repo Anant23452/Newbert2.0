@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ExternalLink, Pause, Play, RotateCcw } from "lucide-react";
 import { timeLabel } from "../utils/studyTools";
 
-let apiPromise;
+let apiPromise;//
 function youtubeApi() {
   if (window.YT?.Player) return Promise.resolve(window.YT);
   if (apiPromise) return apiPromise;
