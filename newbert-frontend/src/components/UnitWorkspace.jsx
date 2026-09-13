@@ -22,7 +22,7 @@ export default function UnitWorkspace({branch,subject,unit,source,scope,authenti
   const [reveal,setReveal]=useState(false);
   const [focus,setFocus]=useState(false);
   const viewed=useRef(false);
-  useEffect(()=>{if(!notebook.loading&&!viewed.current){viewed.current=true;update({});}},[notebook.loading,update]);
+  useEffect(()=>{if(!notebook.loading&&!viewed.current){viewed.current=true;update({saved:Boolean(record.saved)});}},[notebook.loading,record.saved,update]);
   const lessons=lessonsForUnit(subject,unit.number);
   const lesson=lessons.find(l=>l.videoId===params.get('lesson'))||lessons[0];
   const companion=unitCompanions[subject.code]?.[unit.number-1];
@@ -37,12 +37,13 @@ export default function UnitWorkspace({branch,subject,unit,source,scope,authenti
     <div className="academic-breadcrumb"><Link to={academicSubjectHref(branch.id,subject.id)}><ArrowLeft size={15}/>{subject.title} · All units</Link><button className="studio-secondary" onClick={()=>setFocus(v=>!v)}><Expand size={14}/>{focus?'Standard view':'Focus view'}</button></div>
     <header className="academic-class-header"><p className="studio-eyebrow">{branch.code} / YEAR {subject.year} / {subject.code}</p><h1><span>Unit {unit.number}.</span> {unit.title}</h1><p>{subject.title}</p></header>
     <nav className="academic-unit-nav" aria-label="Units">{subject.units.map(u=><Link aria-current={u.number===unit.number?'page':undefined} to={academicSubjectHref(branch.id,subject.id,u.number)} key={u.number}><span>0{u.number}</span><strong>{u.title}</strong></Link>)}</nav>
+    <a className="academic-mobile-tools studio-secondary" href="#unit-tools">Open unit notes, recall & AI tutor <ArrowRight size={15}/></a>
     <div className="academic-workspace"><div className="academic-video-column">
       {lesson?<><div className="academic-lesson-picker"><label htmlFor="unit-lecture">Published lecture</label><select id="unit-lecture" value={lesson.videoId} onChange={e=>setParams({unit:String(unit.number),lesson:e.target.value})}>{lessons.map(l=><option value={l.videoId} key={l.videoId}>{l.title} · ~{l.minutes} min</option>)}</select></div><UnitVideo key={`${scope}:${lesson.videoId}`} subject={subject} lesson={lesson} scope={scope} authenticated={authenticated}/></>:<section className="academic-no-video"><div className="academic-empty-screen" aria-hidden="true"><Play size={34}/><span>UNIT {unit.number}</span></div><p className="studio-eyebrow">YOUR WORKSPACE IS READY</p><h2>No Newbert video listed for this unit yet.</h2><p>Start with the syllabus and notes beside you. Use the tutor for an explanation or practice, and keep your questions here for revision.</p><div className="studio-hero-links"><a className="studio-primary" href={source.url} target="_blank" rel="noreferrer">Read the official syllabus ↗</a><a className="studio-secondary" href={channelUrl} target="_blank" rel="noreferrer">Visit Newbert’s channel ↗</a></div></section>}
       <StudyConceptLab code={subject.code}/>
       <div className="academic-session-end"><div><h3>{record.completed?'A unit you’ve worked through.':'Finish with something you can explain.'}</h3><p>Use recall before moving on. You decide when this unit is complete.</p></div><button disabled={notebook.loading} className={record.completed?'studio-secondary':'studio-primary'} onClick={()=>update({completed:!record.completed})}><Check size={15}/>{record.completed?'Completed · undo':'Mark unit complete'}</button></div>
       {unit.number<5&&<Link className="studio-next-lesson" to={academicSubjectHref(branch.id,subject.id,unit.number+1)}><span><small>NEXT UNIT</small><strong>{subject.units[unit.number].title}</strong></span><ArrowRight size={20}/></Link>}
-    </div><aside className="academic-notes-column" aria-label="Unit learning tools">
+    </div><aside id="unit-tools" className="academic-notes-column" aria-label="Unit learning tools">
       <section className="studio-notebook"><div className="studio-notebook-tabs" role="group" aria-label="Unit notebook tabs">{[['guide','Unit guide',BookOpen],['notes','My notes',Plus],['recall','Recall',RotateCcw],['tutor','AI tutor',Sparkles]].map(([id,label,icon])=>{const Icon=icon;return <button key={id} aria-pressed={tab===id} onClick={()=>setTab(id)}><Icon size={15}/>{label}</button>;})}</div>
       <div className="academic-notebook-status"><span role="status">{notebook.status}</span><button aria-label="Download unit notebook" onClick={exportNotes}><Download size={16}/></button></div>
       {notebook.error&&<div className="studio-notice" role="alert">{notebook.error}<button onClick={notebook.retry}>Retry</button></div>}

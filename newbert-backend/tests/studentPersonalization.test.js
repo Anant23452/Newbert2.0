@@ -50,3 +50,12 @@ test("Today excludes expired/unverified jobs and already submitted applications 
   assert.equal(result.upcoming.length, 1);
   assert.equal(result.applications, 1);
 });
+
+test("automatic activity becomes eligible after two minutes and tolerates invalid cache dates", () => {
+  const now = Date.now();
+  const profile = { githubUsername: "student", githubStats: { username: "student" }, evidenceCache: { github: { updatedAt: new Date(now - 119999) } } };
+  assert.deepEqual(providersNeedingSync(profile, now), []);
+  assert.deepEqual(providersNeedingSync(profile, now+1), ["github"]);
+  profile.evidenceCache.github.updatedAt = "invalid";
+  assert.deepEqual(providersNeedingSync(profile, now), ["github"]);
+});

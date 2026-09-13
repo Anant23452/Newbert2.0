@@ -1,10 +1,11 @@
-const SYNC_STALE_MS = 6 * 60 * 60 * 1000;
+const SYNC_STALE_MS = 2 * 60 * 1000;
 
 function providersNeedingSync(profile, now = Date.now()) {
   return ["github", "leetcode"].filter((provider) => {
     if (!profile?.[`${provider}Username`] && !profile?.[`${provider}Url`]) return false;
     const updatedAt = profile.evidenceCache?.[provider]?.updatedAt || profile.lastSyncedAt;
-    return !profile[`${provider}Stats`] || !updatedAt || now - new Date(updatedAt).getTime() >= SYNC_STALE_MS;
+    const timestamp = new Date(updatedAt).getTime();
+    return !profile[`${provider}Stats`] || !updatedAt || !Number.isFinite(timestamp) || now - timestamp >= SYNC_STALE_MS;
   });
 }
 

@@ -2,6 +2,7 @@ import Navbar from './components/Navbar';
 import Routing from './Routing';
 import AuthModal from './components/AuthModel';
 import ProfileSyncStatus from './components/ProfileSyncStatus';
+import ActivityRefresh from './components/ActivityRefresh';
 
 import { useEffect, useState } from 'react';
 
@@ -19,6 +20,7 @@ function App() {
 
   return (
     <div className="app-shell">
+      <ActivityRefresh/>
       <Navbar theme={theme} onThemeToggle={() => setTheme((current) => current === 'day' ? 'night' : 'day')} onSignIn={() => setAuthOpen(true)}/>
       <ProfileSyncStatus/>
       <Routing/>

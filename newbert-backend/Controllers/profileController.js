@@ -324,7 +324,8 @@ exports.syncPublicProfiles = async (req, res, next) => {
     const syncLeetcode = Boolean(leetcodeUsername && providers.includes("leetcode"));
 
     const currentYear = Number(getKolkataToday(timezone).slice(0, 4));
-    const years = [currentYear - 2, currentYear - 1, currentYear];
+    // Returning students only need the current year refreshed; historical activity is merged below.
+    const years = req.body.automatic === true && isRefreshOnly && existing.lastSyncedAt && (!syncGithub || existing.githubStats) && (!syncLeetcode || existing.leetcodeStats) ? [currentYear] : [currentYear - 2, currentYear - 1, currentYear];
     const [githubResult, leetcodeResult] = await Promise.allSettled([
       syncGithub ? getGithubActivity(githubUsername, years, { timezone, skipRepoScan: isRefreshOnly && Boolean(existing.githubStats?.repositories?.length), existingRepositories: existing.githubStats?.repositories }) : Promise.resolve(null),
       syncLeetcode ? getLeetcodeStats(leetcodeUsername, years, { timezone }) : Promise.resolve(null),

@@ -23,3 +23,12 @@ Unit notebooks use `unit:<branch>:<catalog-subject-id>:<unit>` keys. The server 
 Restart/rebuild both frontend and backend, or deploy both for a hosted app. Live tutoring uses the existing `GEMINI_API_KEY` and optional `GEMINI_MODEL`. No frontend secret or database migration is introduced. Local QA uses a separate preview entry and simulated account/API outside the shipped project; live database writes and the external AI provider are not exercised by those checks.
 
 Validation covers graduation-year boundaries, branch/year/semester coverage, catalogue parity, elective restrictions, notebook persistence contracts, account ownership, AI validation and error handling, old lecture compatibility, and Today regressions. Browser checks verify the new flow with isolated data. See `study-studio.md` for original lecture/player and profile-comparison behavior.
+
+
+## September 12 usability update
+- Study Studio uses Newbert's orange accents and dark/slate surfaces. The two duplicate library shortcuts and academic-year footnote were removed from the landing screen; the original library and notes routes remain available.
+- Resume/review cards appear after real study activity. No sample student progress is inserted.
+- Route navigation resets scroll after lazy content mounts, while explicit anchors still open their target.
+- Signed-in activity refreshes on entry, route changes, return to the tab, reconnection and every minute while visible. Reads share a 30-second cooldown; successful activity edits request a fresh snapshot. Connected providers become eligible after two minutes, with deduplicated requests and retry cooldowns.
+- Returning students refresh the current year's provider calendar and retain earlier history. First syncs still fetch three years. Merely opening a page never awards activity or fabricates a streak.
+- Background refresh preserves newer saves and account boundaries. Provider errors retain saved activity and expose retry; routine automatic syncs do not add a persistent banner.

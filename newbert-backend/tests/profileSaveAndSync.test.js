@@ -6,7 +6,7 @@ const colleges = require("../services/collegeService");
 const github = require("../services/githubService");
 const leetcode = require("../services/leetcodeService");
 const { getKolkataToday } = require("../utils/dateNormalization");
-let current, failGithub = false, failLeetcode = false;
+let current, failGithub = false, failLeetcode = false, githubYears;
 const user = { _id: "507f1f77bcf86cd799439011", name: "Test Student", email: "test@example.invalid" };
 const college = { _id: "507f1f77bcf86cd799439012", collegeId: "test-college", name: "Test College" };
 function fresh() {
@@ -22,7 +22,8 @@ mock.method(Profile, "findOneAndUpdate", async (query, update) => { Object.assig
 mock.method(User, "findById", async () => user);
 mock.method(User, "findByIdAndUpdate", async () => user);
 mock.method(colleges, "findCollegeByIdentifier", async (id) => { assert.equal(typeof id, "string"); return college; });
-mock.method(github, "getGithubActivity", async (username) => {
+mock.method(github, "getGithubActivity", async (username, years) => {
+  githubYears = years;
   if (failGithub) throw new Error("GitHub unavailable");
   return { username, languageCounts: {}, repositories: [], activity: [{ date: getKolkataToday(), count: 2, commits: 2 }] };
 });
@@ -78,4 +79,22 @@ test("switching GitHub accounts never copies historical activity from the previo
   assert.equal(result.code, 200);
   assert.equal(result.body.profile.githubUsername, "new-owner");
   assert.equal(result.body.profile.activityCalendar.some((day) => day.date === "2026-01-01" && day.github > 0), false);
+});
+
+test("automatic refresh fetches the current year and preserves previous years", async () => {
+  current = fresh(); failGithub = false; failLeetcode = false;
+  current.lastSyncedAt = new Date(Date.now() - 180000);
+  current.githubStats = { username: "owner", repositories: [] };
+  current.activityCalendar = [{ date: "2024-05-01", github: 3, githubCommits: 3, total: 3 }];
+  const result = await call(controller.syncPublicProfiles, { providers: ["github"], automatic: true });
+  assert.equal(result.code, 200);
+  assert.deepEqual(githubYears, [Number(getKolkataToday().slice(0,4))]);
+  assert.equal(result.body.profile.activityCalendar.find(day => day.date === "2024-05-01").github, 3);
+  assert.equal(result.body.profile.activityCalendar.find(day => day.date === getKolkataToday()).github, 2);
+});
+test("a first automatic sync still imports historical activity", async () => {
+  current = fresh(); failGithub = false; failLeetcode = false;
+  await call(controller.syncPublicProfiles, { providers: ["github"], automatic: true });
+  const year = Number(getKolkataToday().slice(0,4));
+  assert.deepEqual(githubYears, [year-2,year-1,year]);
 });

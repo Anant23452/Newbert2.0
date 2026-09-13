@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ACTIVITY_CHANGED, changesStudentActivity } from "../utils/activityRefresh";
 
 export const AUTH_TOKEN_KEY = "newbert-auth-token";
 
@@ -17,3 +18,8 @@ API.interceptors.request.use((config) => {
 });
 
 export default API;
+
+API.interceptors.response.use(response=>{
+  if(typeof window!=='undefined' && changesStudentActivity(response.config))window.dispatchEvent(new Event(ACTIVITY_CHANGED));
+  return response;
+});
