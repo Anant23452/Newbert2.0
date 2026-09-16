@@ -88,7 +88,7 @@ export default function CourseFitDrawer({ item, onClose, onPlanAdded }) {
               {match.score ?? match.fitScore}%
             </div>
           </div>
-{/* course   */}
+{/* courser   */}
           {/* Key Reasons */}
           <div className="mt-6 space-y-2">
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Why this resource?</h3>
