@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ChevronDown, Menu, Moon, Sun, X } from "lucide-react";
 import useAuth from "../hook/useAuth";
+import logo from  "./assets/newberlogo.png";
 
 const links = [
   { to: "/", label: "Today" },
@@ -29,7 +30,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
           <span className="h-8 w-8 place-items-center rounded-md overflow-hidden">
             <img
               className="h-full w-full object-cover"
-              src="https://i.pinimg.com/1200x/41/4a/3c/414a3c7f720792044aad320292d6ccd5.jpg"
+              src={logo}
               alt="Newbert Logo"
             />
           </span>
