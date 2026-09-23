@@ -1,0 +1,14 @@
+const router=require('express').Router();
+const auth=require('../middleWare/authMiddleware');
+const aiLimit=require('../middleWare/aiRateLimit');
+const c=require('../Controllers/alumniChatController');
+router.use(auth);
+const rates=new Map();
+router.use((req,res,next)=>{res.set('Cache-Control','no-store');const now=Date.now();for(const [key,value]of rates)if(value.until<=now)rates.delete(key);const key=String(req.auth.id);const value=rates.get(key)||{count:0,until:now+60000};if(++value.count>120)return res.status(429).json({message:'Please wait a moment before continuing.'});rates.set(key,value);next();});
+router.post('/start',c.start);router.get('/session',c.session);router.post('/prefill',c.prefill);
+router.post('/answer',c.answer);router.patch('/answer/:questionId',c.answer);router.post('/skip',c.skip);router.post('/back',c.back);
+router.post('/extract',aiLimit,c.extract);router.post('/confirm-extraction',c.confirm);router.get('/review',c.review);
+router.post('/publish',c.publish);router.post('/restart',c.restart);router.post('/hide',c.hide);
+router.post('/practice-check',aiLimit,c.inspectPractice);
+router.get('/documents',c.documents);router.post('/documents',c.upload);router.get('/documents/:id',c.download);
+module.exports=router;

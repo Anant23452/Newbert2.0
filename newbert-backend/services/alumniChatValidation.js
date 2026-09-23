@@ -1,0 +1,29 @@
+const {COLLECTION_TYPES,PLATFORMS}=require('../config/alumniQuestions');
+const visibility=['PUBLIC','COLLEGE_ONLY','PRIVATE'];
+function invalid(message){const error=new Error(message);error.status=400;throw error;}
+function cleanText(value,max=3000){if(typeof value!=='string')invalid('Please enter text.');const result=value.trim().replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'');if(result.length>max)invalid(`Keep this answer under ${max} characters.`);return result;}
+function safeUrl(value){let input=cleanText(value,2048);if(!input)return '';if(!/^https?:\/\//i.test(input))input='https://'+input;let parsed;try{parsed=new URL(input);}catch{invalid('Enter a valid public http or https URL.');}if(!['http:','https:'].includes(parsed.protocol)||parsed.username||parsed.password||!parsed.hostname.includes('.')||/^(localhost|127\.|10\.|192\.168\.|169\.254\.|0\.|\[)/i.test(parsed.hostname)||/\.(local|internal)$/i.test(parsed.hostname))invalid('Enter a public http or https URL without credentials.');return parsed.href;}
+function optionsOf(field){return (field.options||[]).map(o=>typeof o==='string'?o:o.value);}
+function validate(field,value,{partial=false}={}){
+  if(value===null||value===undefined||value===''){if(field.required&&!partial)invalid(`${field.label||field.text||field.id} is required.`);return null;}
+  if(COLLECTION_TYPES.includes(field.type)){
+    if(!Array.isArray(value)||value.length>100)invalid('Use a list of at most 100 entries.');
+    if(field.required&&!value.length&&!partial)invalid('Add at least one entry.');
+    return value.map(v=>validate({...field,type:'object',required:true},v,{partial}));
+  }
+  switch(field.type){
+    case 'college':if(!value||typeof value!=='object'||Array.isArray(value))invalid('Choose a college from the suggestions.');return {collegeId:cleanText(String(value.collegeId||value._id||''),100),name:cleanText(String(value.name||''),180)};
+    case 'number':case 'year':case 'rating':{const number=Number(value);if(typeof value==='boolean'||!Number.isFinite(number)||number<(field.min??0)||number>(field.max??1000000)||(field.type==='year'&&!Number.isInteger(number)))invalid(`${field.label||field.text} must be between ${field.min??0} and ${field.max??1000000}.`);return number;}
+    case 'date':{const s=cleanText(value,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s)||Number.isNaN(Date.parse(s))||new Date(s).toISOString().slice(0,10)!==s||s>new Date().toISOString().slice(0,10))invalid('Enter a valid date that is not in the future.');return s;}
+    case 'yes-no':if(typeof value!=='boolean')invalid('Choose Yes or No.');return value;
+    case 'choice':{const allowed=optionsOf(field);const raw=cleanText(value,120);const match=allowed.find(v=>v.toLowerCase()===raw.toLowerCase())||(field.options||[]).find(v=>v.label?.toLowerCase()===raw.toLowerCase())?.value;if(!match)invalid('Choose one of the available answers.');return match;}
+    case 'platform-selector':case 'multi-choice':{const values=Array.isArray(value)?value:typeof value==='string'?value.split(/[,\n]/):null;if(!values||values.length>60)invalid('Choose up to 60 items.');const result=[...new Set(values.map(v=>cleanText(v,120)).filter(Boolean))];if(!field.custom&&result.some(v=>!optionsOf(field).includes(v)))invalid('Choose an available option.');return result;}
+    case 'privacy':{if(typeof value!=='object'||Array.isArray(value))invalid('Choose visibility for your fields.');const result={};for(const [key,v]of Object.entries(value)){if(!/^[a-zA-Z][\w:.-]{0,150}$/.test(key)||key.includes('__')||['constructor','prototype'].includes(key)||!visibility.includes(v))invalid('Invalid visibility setting.');result[key]=v;}return result;}
+    case 'object':{if(!value||typeof value!=='object'||Array.isArray(value))invalid('Enter the details for this answer.');const result={};for(const f of field.fields||[]){const v=validate(f,value[f.id],{partial});if(v!==null)result[f.id]=v;}if(result.startDate&&result.endDate&&result.endDate<result.startDate)invalid('The end date must be after the start date.');return result;}
+    case 'url':return safeUrl(value);
+    default:{const s=cleanText(value,field.maxLength||3000);if(field.required&&!s&&!partial)invalid('This answer is required.');return s;}
+  }
+}
+const hosts={GITHUB:['github.com'],LEETCODE:['leetcode.com','leetcode.cn'],GEEKSFORGEEKS:['geeksforgeeks.org'],CODECHEF:['codechef.com'],CODEFORCES:['codeforces.com'],HACKERRANK:['hackerrank.com'],HACKEREARTH:['hackerearth.com'],CODE360:['naukri.com','codingninjas.com'],ATCODER:['atcoder.jp'],INTERVIEWBIT:['interviewbit.com'],KAGGLE:['kaggle.com'],STACK_OVERFLOW:['stackoverflow.com'],BEHANCE:['behance.net'],DRIBBBLE:['dribbble.com'],GITLAB:['gitlab.com']};
+function normalizePractice(platform,input){if(!PLATFORMS.includes(platform))invalid('Unknown platform selection.');const profileUrl=safeUrl(input.profileUrl);if(!profileUrl)invalid('Add a profile URL.');const parsed=new URL(profileUrl);const host=parsed.hostname.toLowerCase().replace(/^www\./,'');if(hosts[platform]&&!hosts[platform].some(h=>host===h||host.endsWith('.'+h)))invalid(`Please use a ${platform.replaceAll('_',' ')} profile URL.`);const pieces=parsed.pathname.split('/').filter(Boolean);let username=cleanText(input.username||'',120);if(!username&&['GITHUB','LEETCODE','CODEFORCES','CODECHEF','ATCODER','GITLAB','HACKERRANK'].includes(platform))username=pieces.at(-1)||'';let normalized=profileUrl;if(platform==='GITHUB'&&pieces.length===1)normalized=`https://github.com/${pieces[0]}`;if(platform==='LEETCODE'&&host==='leetcode.com'&&pieces.length<=2&&username)normalized=`https://leetcode.com/u/${username}/`;return {platform,platformLabel:platform==='OTHER'?cleanText(input.platformLabel||'Other',100):platform.replaceAll('_',' '),username,profileUrl:normalized};}
+module.exports={validate,cleanText,safeUrl,normalizePractice,invalid,visibility};

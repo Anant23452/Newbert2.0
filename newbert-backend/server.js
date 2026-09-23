@@ -30,6 +30,7 @@ app.use(
   })
 );
 
+app.use('/api/alumni-chat/documents', express.json({limit:'3mb'}));
 app.use(express.json({ limit: "512kb" }));
 
 app.use("/api/auth", require("./routes/authRoutes"));
@@ -40,6 +41,7 @@ app.use("/api/courses", require("./routes/courseRoutes"));
 app.get("/api/notes/resources", require("./Controllers/noteResourceController").list);
 app.use("/api/admin", require("./routes/adminJobRoutes"));
 app.use("/api/alumni", require("./routes/alumniRoutes"));
+app.use('/api/alumni-chat', require('./routes/alumniChatRoutes'));
 app.use("/api/mentorship", require("./routes/mentorshipRoutes"));
 app.use("/api/plans", require("./routes/planRoutes"));
 app.use("/api/projects", require("./routes/projectRoutes"));

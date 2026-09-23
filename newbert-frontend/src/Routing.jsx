@@ -4,6 +4,7 @@ import useAuth from './hook/useAuth';
 import Home from './pages/Home';
 import RouteScrollReset from './components/RouteScrollReset';
 
+const AlumniOnboarding = lazy(() => import('./pages/AlumniOnboarding'));
 const AllumniWall = lazy(() => import('./pages/AlumniWall'));
 const AlumniProfile = lazy(() => import('./pages/AlumniIntelligenceProfile'));
 const Profile = lazy(() => import('./pages/Profile'));
@@ -30,7 +31,7 @@ const BranchNotes = lazy(() => import('./pages/Notes').then((module) => ({ defau
 function Routing() {
   const { profile, loading, isAuthenticated, error, refreshProfile, logout } = useAuth();
   const location = useLocation();
-  const requiresSetup = isAuthenticated && location.pathname !== '/complete-profile' && !location.pathname.startsWith('/admin/');
+  const requiresSetup = isAuthenticated && location.pathname !== '/complete-profile' && location.pathname !== '/alumni/onboarding' && !location.pathname.startsWith('/admin/');
   if (loading && isAuthenticated) return <PageLoader/>;
   if (requiresSetup && !profile && error) return <main className="mx-auto max-w-2xl px-5 py-16"><p role="alert">{error}</p><button onClick={() => refreshProfile().catch(() => {})} className="mt-4 mr-4 text-orange-500">Retry profile</button><button onClick={logout}>Sign out</button></main>;
   if (requiresSetup && profile && !profile.onboardingCompleted) return <Navigate to="/complete-profile" replace state={{ returnTo: location.pathname + location.search }}/>;
@@ -38,6 +39,7 @@ function Routing() {
     <Suspense fallback={<PageLoader/>}><RouteScrollReset/><Routes>
         <Route path="/" element={<Home/> }/>
         <Route path="/alumni-wall" element={<AllumniWall/> }/>
+        <Route path="/alumni/onboarding" element={<AlumniOnboarding/>}/>
         <Route path="/alumni-wall/:alumniId" element={<AlumniProfile/> }/>
         <Route path="/profile" element={<Profile/> }/>
         <Route path="/profile/:userId" element={<PublicProfile/> }/>

@@ -1,3 +1,4 @@
+const {publicAlumniQuery,serializePublicAlumni}=require("../services/alumniPublicService");
 const Alumni = require("../Models/Alumni");
 const mongoose = require("mongoose");
 const Job = require("../Models/Job");
@@ -18,10 +19,10 @@ async function loadPlanningContext(userId) {
     error.status = 400;
     throw error;
   }
-  const alumni = await Alumni.find({
-    verified: true, isDummyData: { $ne: true }, "privacy.profile": { $ne: false },
+  const alumni = (await Alumni.find(publicAlumniQuery({
+    isDummyData: { $ne: true },
     $or: [sameCollegeQuery(profile), { company: { $ne: null } }, { "placement.company": { $ne: null } }],
-  }).sort({ createdAt: -1 }).limit(250).lean();
+  })).sort({ createdAt: -1 }).limit(250).lean()).map(record=>serializePublicAlumni(record,profile));
   return { profile, alumni };
 }
 

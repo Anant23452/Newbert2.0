@@ -1,3 +1,4 @@
+const {publicAlumniQuery,serializePublicAlumni}=require("../services/alumniPublicService");
 const Job = require("../Models/Job");
 const SavedJob = require("../Models/SavedJob");
 const Profile = require("../Models/Profile");
@@ -139,7 +140,7 @@ exports.jobAnalysis = async (req, res, next) => {
     if (!job) return res.status(404).json({ message: "Job not found." });
     const match = analyzeJobMatch(context.normalizedProfile, job);
     const explanation = await explainJobMatch(match);
-    const allAlumni = await Alumni.find({ verified: true, outcomeType: { $in: ["placement", "data", "internship"] } }).lean();
+    const allAlumni = (await Alumni.find(publicAlumniQuery({ outcomeType: { $in: ["placement", "data", "internship"] } })).lean()).map(record=>serializePublicAlumni(record,context.profile));
     const exactCompany = allAlumni.filter((alumni) => (alumni.placement?.company || alumni.company || "").toLowerCase() === job.company.toLowerCase());
     const relevantAlumni = findClosestSeniors(context.profile, exactCompany.length ? exactCompany : allAlumni, 3, { goal: "placement", target: { role: job.title } });
     res.json({ job: serializeJob(job), match, explanation, relevantAlumni, planGaps: { critical: match.gaps.critical, recommended: match.gaps.recommended, optional: match.gaps.optional, unknown: match.gaps.unknown } });

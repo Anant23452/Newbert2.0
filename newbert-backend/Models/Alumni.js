@@ -25,7 +25,7 @@ const courseSchema = new mongoose.Schema({
 const placementOutcomeSchema = new mongoose.Schema({
   company: { type: String, trim: true, maxlength: 120 }, role: { type: String, trim: true, maxlength: 120 },
   packageLpa: { type: Number, min: 0 }, offerType: { type: String, trim: true, maxlength: 80 },
-  placementYear: { type: Number, min: 2000, max: 2050 }, location: { type: String, trim: true, maxlength: 120 },
+  placementYear: { type: Number, min: 1950, max: 2050 }, location: { type: String, trim: true, maxlength: 120 },
 }, { _id: false });
 
 const placementPreparationSchema = new mongoose.Schema({
@@ -37,7 +37,7 @@ const placementPreparationSchema = new mongoose.Schema({
 }, { _id: false });
 
 const gateOutcomeSchema = new mongoose.Schema({
-  examYear: { type: Number, min: 2000, max: 2050 }, paper: { type: String, trim: true, maxlength: 40 },
+  examYear: { type: Number, min: 1950, max: 2050 }, paper: { type: String, trim: true, maxlength: 40 },
   score: { type: Number, min: 0 }, marks: { type: Number, min: 0 }, air: { type: Number, min: 1 },
   qualified: Boolean, percentile: { type: Number, min: 0, max: 100 },
   outcomeType: { type: String, enum: ["iit", "nit", "iiit", "psu", "qualified", "other"] },
@@ -68,18 +68,18 @@ const gatePreparationSchema = new mongoose.Schema({
 const alumniSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", unique: true, sparse: true },
   name: { type: String, required: true, trim: true, maxlength: 100 },
-  college: { type: String, required: true, trim: true, maxlength: 120 },
+  college: { type: String, required: true, trim: true, maxlength: 180 },
   collegeRef: { type: mongoose.Schema.Types.ObjectId, ref: "College", index: true, default: null },
   collegeId: { type: String, trim: true, lowercase: true, index: true, default: null },
   collegeName: { type: String, trim: true, maxlength: 180, default: null },
-  batch: { type: Number, required: true, min: 2000, max: 2050 },
+  batch: { type: Number, required: true, min: 1950, max: 2050 },
   company: { type: String, trim: true, maxlength: 120 },
   role: { type: String, trim: true, maxlength: 120 },
   careerPaths: { type: [{ type: String, enum: ["placement", "gate"] }], default: [] },
-  outcomeType: { type: String, enum: ["placement", "gate", "core", "data", "psu", "internship"], default: "placement" },
-  path: { type: String, enum: ["placement", "gate", "core", "data", "psu", "internship"], default: "placement" },
+  outcomeType: { type: String, enum: ["placement", "gate", "core", "data", "psu", "internship", "other"], default: "placement" },
+  path: { type: String, enum: ["placement", "gate", "core", "data", "psu", "internship", "other"], default: "placement" },
   branch: { type: String, trim: true, maxlength: 80 },
-  graduationYear: { type: Number, min: 2000, max: 2050 },
+  graduationYear: { type: Number, min: 1950, max: 2050 },
   package: { type: Number, min: 0 },
   gateAIR: { type: Number, min: 1 },
   skills: { type: [String], default: [] },
@@ -117,6 +117,15 @@ const alumniSchema = new mongoose.Schema({
   isDemo: { type: Boolean, default: false, index: true },
   demoKey: { type: String, trim: true, sparse: true, index: true },
   verified: { type: Boolean, default: false },
+  onboardingVersion: Number,
+  story: { type: mongoose.Schema.Types.Mixed, default: undefined },
+  practiceProfiles: { type: [mongoose.Schema.Types.Mixed], default: undefined },
+  socialLinks: { type: mongoose.Schema.Types.Mixed, default: undefined },
+  verification: { type: mongoose.Schema.Types.Mixed, default: undefined },
+  dataQuality: { type: mongoose.Schema.Types.Mixed, default: undefined, select: false },
+  publicationStatus: { type: String, enum: ['DRAFT','REVIEW','PUBLISHED','HIDDEN'], default: undefined, index: true },
+  profileCompletion: Number,
+  publishedAt: Date,
 }, { timestamps: true });
 
 alumniSchema.index({ college: 1, verified: 1, createdAt: -1 });

@@ -1,13 +1,17 @@
+const {publicAlumniQuery,serializePublicAlumni}=require("../services/alumniPublicService");
 const Alumni = require("../Models/Alumni");
+const Profile = require("../Models/Profile");
 const MentorshipBooking = require("../Models/MentorshipBooking");
 const { canAlumniTransition, canStudentCancel, statusLabel } = require("../services/mentorshipService");
 function serializeBooking(booking) { const item = booking.toObject ? booking.toObject() : booking; return { ...item, statusLabel: statusLabel(item.status) }; }
 exports.createRequest = async (req, res, next) => { try {
-  const alumni = await Alumni.findOne({ _id: req.body.alumniId, verified: true, mentorshipEnabled: true });
-  if (!alumni) return res.status(404).json({ message: "This alumni is not accepting mentorship requests." });
+  const alumni = await Alumni.findOne(publicAlumniQuery({ _id: req.body.alumniId, mentorshipEnabled: true }));
+  const viewerProfile = await Profile.findOne({ userId: req.auth.id }).select("collegeId").lean();
+  const visibleAlumni = alumni && serializePublicAlumni(alumni.toObject(), viewerProfile);
+  if (!visibleAlumni?.mentorshipEnabled) return res.status(404).json({ message: "This alumni is not accepting mentorship requests." });
   if (alumni.userId && String(alumni.userId) === String(req.auth.id)) return res.status(400).json({ message: "You cannot request mentorship from your own alumni profile." });
   const topicCategory = String(req.body.topicCategory || "").trim();
-  if (!topicCategory || (alumni.availableTopics.length && !alumni.availableTopics.includes(topicCategory))) return res.status(400).json({ message: "Choose an available mentorship topic." });
+  if (!topicCategory || (visibleAlumni.availableTopics?.length && !visibleAlumni.availableTopics.includes(topicCategory))) return res.status(400).json({ message: "Choose an available mentorship topic." });
   const requestedDateTime = new Date(req.body.requestedDateTime); if (Number.isNaN(requestedDateTime.getTime())) return res.status(400).json({ message: "Choose a valid preferred date and time." });
   const durationMinutes = Number(req.body.durationMinutes); if (![30, 60].includes(durationMinutes)) return res.status(400).json({ message: "Choose a 30 or 60 minute session." });
   const phone = req.body.phone ? String(req.body.phone).trim() : null;
