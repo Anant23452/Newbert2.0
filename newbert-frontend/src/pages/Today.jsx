@@ -30,6 +30,7 @@ function TodayWorkspace({ profile, syncState }) {
   const [busy, setBusy] = useState("");
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState("");
+  const [detailPromptOpen, setDetailPromptOpen] = useState(false);
   const day = activityWeek()[6].key;
   const preferenceKey = `newbert-today:${profile.userId}:${day}:minutes`;
   const selectionKey = `newbert-today:${profile.userId}:${day}:task`;
@@ -84,6 +85,8 @@ function TodayWorkspace({ profile, syncState }) {
       </div>
       {data ? <TodayProgress plans={plans}/> : <div className="today-hero-placeholder"><Flag size={40}/><p>{loading ? "Gathering your progress…" : "Your progress will appear when we reconnect."}</p></div>}
     </section>
+    {profile.memberType === 'JUNIOR' && !profile.profileDetailsCompleted && <section className="surface mt-5 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-orange-300/30 p-5"><div><p className="text-xs font-extrabold uppercase tracking-wider text-orange-600">Make this more yours</p><h2 className="mt-1 text-lg font-extrabold">Add your branch and goals when you are ready</h2><p className="mt-1 text-sm text-slate-600">You can already use Newbert. A short conversation helps tailor comparisons and your plan.</p></div><button className="rounded-lg bg-orange-500 px-4 py-3 text-sm font-extrabold text-[#171918]" onClick={() => setDetailPromptOpen(true)}>Personalize my profile →</button></section>}
+    {detailPromptOpen && <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/70 p-5" role="dialog" aria-modal="true" aria-label="Complete your student profile"><div className="w-full max-w-md rounded-2xl bg-[#182235] p-6 text-white shadow-2xl"><p className="text-xs font-bold uppercase tracking-wider text-orange-300">Your next step</p><h2 className="mt-3 text-2xl font-extrabold">Let Newbert know your direction.</h2><p className="mt-3 text-sm leading-7 text-slate-300">Answer one question at a time about your branch, skills, projects and goals. You can skip or stop whenever you like.</p><div className="mt-6 flex flex-wrap gap-3"><Link to="/profile/complete" className="rounded-lg bg-orange-500 px-4 py-3 text-sm font-extrabold text-[#171918]" onClick={() => setDetailPromptOpen(false)}>Start the conversation</Link><button onClick={() => setDetailPromptOpen(false)} className="rounded-lg border border-white/25 px-4 py-3 text-sm font-bold">Maybe later</button></div></div></div>}
     {error && <div role="alert" className="today-error"><p>{error}</p><button onClick={() => load()}><RefreshCw size={16}/>Retry</button></div>}
     <div role="status" aria-live="polite">{notice && <div key={notice} className="today-success"><CheckCheck size={20}/><p>{notice}</p></div>}</div>
     {loading ? <div role="status" className="today-loading"><RefreshCw size={20} className="animate-spin"/>Loading your priorities…</div> : data && <>

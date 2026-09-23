@@ -20,7 +20,7 @@ export default function Profile() {
     if (profileLoading || !profile) return;
     if (!profile.onboardingCompleted) {
       setEditing(true);
-      if (location.pathname !== "/complete-profile") navigate("/complete-profile", { replace: true });
+      if (location.pathname !== "/join") navigate("/join", { replace: true });
     } else if (location.pathname === "/complete-profile") {
       setEditing(false);
       navigate("/profile", { replace: true });

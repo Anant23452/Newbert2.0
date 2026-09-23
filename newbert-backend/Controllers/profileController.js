@@ -5,7 +5,7 @@ const { parseProfileUsername } = require("../services/profileIdentityService");
 const { getGithubActivity } = require("../services/githubService");
 const { getLeetcodeStats } = require("../services/leetcodeService");
 const { findBestSeniorMatch } = require("../services/seniorMatchService");
-const { isProfileComplete, getMissingProfileFields, profileStrength } = require("../services/profileCompletionService");
+const { isProfileComplete, hasJoinBasics, memberType, getMissingProfileFields, profileStrength } = require("../services/profileCompletionService");
 const { providersNeedingSync, manualSkills } = require("../services/profileSyncPolicy");
 const { findCollegeByIdentifier, resolveProfileCollege, sameCollegeQuery } = require("../services/collegeService");
 const { DEFAULT_SECTIONS, normalizePrivacy, serializePublicProfile } = require("../services/publicProfileService");
@@ -116,7 +116,9 @@ function response(profile, user) {
     lastSyncedAt: profile.lastSyncedAt || null,
     syncNeeded: providersNeedingSync(profile),
     missingProfileFields: getMissingProfileFields(profile),
-    onboardingCompleted: isProfileComplete(profile),
+    onboardingCompleted: hasJoinBasics(profile),
+    profileDetailsCompleted: isProfileComplete(profile),
+    memberType: memberType(profile),
     profileStrength: profileStrength(profile),
     connections: {
       github: { connected: Boolean(profile.githubUsername || profile.githubUrl), synced: Boolean(profile.githubStats), error: profile.syncErrors?.github || null },
@@ -167,7 +169,7 @@ exports.getMyProfile = async (req, res, next) => {
     const savedProfile = profile || await Profile.create({ userId: user._id, avatarUrl: user.avatarUrl || "" });
     const resolvedCollege = await resolveProfileCollege(savedProfile.toObject(), { persist: true });
     if (resolvedCollege) { savedProfile.collegeRef = resolvedCollege._id; savedProfile.collegeId = resolvedCollege.collegeId; savedProfile.collegeName = resolvedCollege.name; savedProfile.college = resolvedCollege.name; }
-    const complete = isProfileComplete(savedProfile);
+    const complete = hasJoinBasics(savedProfile);
     if (savedProfile.onboardingCompleted !== complete) {
       savedProfile.onboardingCompleted = complete;
       await savedProfile.save();
@@ -238,7 +240,7 @@ exports.updateMyProfile = async (req, res, next) => {
       { $set: set },
       { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true },
     );
-    const complete = isProfileComplete(profile);
+    const complete = hasJoinBasics(profile);
     if (profile.onboardingCompleted !== complete) {
       profile.onboardingCompleted = complete;
       await profile.save();

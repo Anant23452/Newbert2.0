@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { isProfileComplete, getMissingProfileFields } = require("../services/profileCompletionService");
+const { isProfileComplete, hasJoinBasics, memberType, getMissingProfileFields } = require("../services/profileCompletionService");
 const { providersNeedingSync, manualSkills, SYNC_STALE_MS } = require("../services/profileSyncPolicy");
 const { buildTodaySummary } = require("../services/todayService");
 const { extractStudentEvidence } = require("../services/nextUnlocksService");
@@ -10,6 +10,14 @@ test("essential onboarding supports students with no external accounts", () => {
   assert.equal(isProfileComplete(complete), true);
   assert.deepEqual(getMissingProfileFields({ college: "Raw college name", branch: "IT" }), ["college", "graduationYear", "targetRole"]);
   for (const year of [null, "", 0, 2041, 2027.5]) assert.equal(isProfileComplete({ ...complete, graduationYear: year }), false);
+});
+test('college and class year unlock Newbert while richer profile questions remain optional', () => {
+  const joined = { collegeId: 'rec-ambedkar-nagar', graduationYear: 2027 };
+  assert.equal(hasJoinBasics(joined), true);
+  assert.equal(isProfileComplete(joined), false);
+  assert.equal(memberType(joined, new Date('2026-09-10T00:00:00Z')), 'JUNIOR');
+  assert.equal(memberType({ ...joined, graduationYear: 2026 }, new Date('2026-09-10T00:00:00Z')), 'SENIOR');
+  assert.equal(memberType({ ...joined, graduationYear: 2026 }, new Date('2026-02-10T00:00:00Z')), 'JUNIOR');
 });
 test("sync only fetches connected accounts with missing or stale data", () => {
   const now = Date.parse("2026-09-08T12:00:00Z");

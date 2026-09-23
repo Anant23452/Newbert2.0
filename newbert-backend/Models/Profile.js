@@ -34,7 +34,7 @@ const profileSchema = new mongoose.Schema({
   collegeId: { type: String, trim: true, lowercase: true, index: true, default: null },
   collegeName: { type: String, trim: true, maxlength: 160, default: null },
   branch: { type: String, trim: true, maxlength: 80 },
-  graduationYear: { type: Number, min: 2020, max: 2040 },
+  graduationYear: { type: Number, min: 1950, max: 2040 },
   bio: { type: String, trim: true, maxlength: 600 },
   targetRole: { type: String, trim: true, maxlength: 120, default: null },
   targetCompany: { type: String, trim: true, maxlength: 120 },

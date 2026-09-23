@@ -67,6 +67,8 @@ const gatePreparationSchema = new mongoose.Schema({
 
 const alumniSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", unique: true, sparse: true },
+  guestSessionId: { type: mongoose.Schema.Types.ObjectId, ref: "AlumniGuestSession", unique: true, sparse: true },
+  guestSubmission: { type: Boolean, default: false, select: false },
   name: { type: String, required: true, trim: true, maxlength: 100 },
   college: { type: String, required: true, trim: true, maxlength: 180 },
   collegeRef: { type: mongoose.Schema.Types.ObjectId, ref: "College", index: true, default: null },

@@ -6,7 +6,7 @@ const bcrypt = require("bcryptjs");
 const { OAuth2Client } = require("google-auth-library");
 const requireAuth = require("../middleWare/authMiddleware");
 const Profile = require("../Models/Profile");
-const { isProfileComplete } = require("../services/profileCompletionService");
+const { hasJoinBasics, memberType } = require("../services/profileCompletionService");
 
 function publicUser(user) { const admins = (process.env.ADMIN_EMAILS || "").split(",").map((email) => email.trim().toLowerCase()).filter(Boolean); return { id: user._id, name: user.name, email: user.email, avatar: user.avatarUrl || "", isAdmin: admins.includes(String(user.email || "").toLowerCase()) }; }
 function createToken(user) { return jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" }); }
@@ -15,7 +15,7 @@ async function ensureProfile(user, avatarUrl) {
 }
 
 function authenticationResponse(user, profile) {
-  return { token: createToken(user), user: publicUser(user), onboardingCompleted: isProfileComplete(profile) };
+  return { token: createToken(user), user: publicUser(user), onboardingCompleted: hasJoinBasics(profile), memberType: memberType(profile) };
 }
 
 router.post("/register", async (req, res, next) => {
@@ -62,7 +62,7 @@ router.get("/me", requireAuth, async (req, res, next) => {
     const user = await User.findById(req.auth.id);
     if (!user) return res.status(404).json({ message: "User not found." });
     const profile = await ensureProfile(user);
-    return res.json({ user: publicUser(user), onboardingCompleted: isProfileComplete(profile) });
+    return res.json({ user: publicUser(user), onboardingCompleted: hasJoinBasics(profile), memberType: memberType(profile) });
   } catch (error) { return next(error); }
 });
 

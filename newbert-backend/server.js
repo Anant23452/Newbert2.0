@@ -9,6 +9,7 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 const app = express();
+app.set('trust proxy', 1);
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -42,6 +43,7 @@ app.get("/api/notes/resources", require("./Controllers/noteResourceController").
 app.use("/api/admin", require("./routes/adminJobRoutes"));
 app.use("/api/alumni", require("./routes/alumniRoutes"));
 app.use('/api/alumni-chat', require('./routes/alumniChatRoutes'));
+app.use('/api/alumni-guest', require('./routes/alumniGuestRoutes'));
 app.use("/api/mentorship", require("./routes/mentorshipRoutes"));
 app.use("/api/plans", require("./routes/planRoutes"));
 app.use("/api/projects", require("./routes/projectRoutes"));

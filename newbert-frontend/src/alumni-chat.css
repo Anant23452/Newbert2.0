@@ -19,3 +19,7 @@
 .ac-privacy-group select{max-width:150px;flex-shrink:0}
 .ac-public-story{--ac-line:#e2e8f0;--ac-muted:#64748b;--ac-accent:#c2410c}
 :root[data-theme="night"] .ac-public-story{--ac-line:#33445d;--ac-muted:#aab9ce;--ac-accent:#fb923c}
+.join-card{max-width:560px;background:#fff;color:#182230;border:1px solid #e2e8f0;border-radius:18px;padding:28px;display:grid;gap:18px;box-shadow:0 20px 50px #0002}
+.join-card>label{font-size:13px;font-weight:800}.join-card>select{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:12px;background:#fff;color:#182230;font-size:14px}
+.join-card>p{font-size:12px;line-height:1.7;color:#64748b}.join-card>.join-error{color:#b91c1c}.join-card .ac-primary{justify-self:start}
+@media(max-width:600px){.join-card{padding:20px}.join-card .ac-primary{width:100%}}
