@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ChevronDown, Menu, Moon, Sun, X } from "lucide-react";
 import useAuth from "../hook/useAuth";
-import logo from  "./assets/newberlogo.png";
+import logo from "../assets/newbert2.png";
 
 const links = [
   { to: "/", label: "Today" },
