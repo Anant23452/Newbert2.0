@@ -10,5 +10,6 @@ router.post('/answer',c.answer);router.patch('/answer/:questionId',c.answer);rou
 router.post('/extract',aiLimit,c.extract);router.post('/confirm-extraction',c.confirm);router.get('/review',c.review);
 router.post('/publish',c.publish);router.post('/restart',c.restart);router.post('/hide',c.hide);
 router.post('/practice-check',aiLimit,c.inspectPractice);
+router.get('/github-repos', c.githubRepos);
 router.get('/documents',c.documents);router.post('/documents',c.upload);router.get('/documents/:id',c.download);
 module.exports=router;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, MessageSquare, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Check, MessageSquare, ShieldCheck, Sparkles } from 'lucide-react';
 import useAuth from '../hook/useAuth';
 import API from '../Services/api';
 import { normalizeStoryPayload } from '../utils/alumniPayload';
@@ -113,11 +113,42 @@ function Conversation({ guest, scope, name }) {
     {notice && <div className="ac-notice" role="status">{notice}</div>}
     {loading ? <p className="ac-loading">Finding your saved story…</p> : view === 'welcome' ? <section className="ac-welcome">
       <p className="ac-kicker">NEWBERT ALUMNI NETWORK</p>
-      <h1>{completed ? `Welcome back, ${name.split(' ')[0]}.` : `Hi ${name.split(' ')[0]},`}<br/><em>{completed ? 'Your story is waiting.' : 'make the path clearer.'}</em></h1>
+      {completed > 0 ? (
+        <>
+          <h1>Welcome back, {name.split(' ')[0]} 👋</h1>
+          <p className="mt-2 text-sm text-slate-300">Your profile is <strong>{session?.progress || 0}% complete</strong> ({completed} answers recorded).</p>
+        </>
+      ) : (
+        <>
+          <h1>Hi {name.split(' ')[0]} 👋<br/><em>Welcome to Newbert Alumni Network.</em></h1>
+          <p className="mt-3 text-sm text-slate-300">I'll help create your alumni profile.</p>
+          <div className="mt-5 rounded-2xl border border-orange-500/30 bg-orange-500/10 p-5 max-w-lg">
+            <p className="font-bold text-orange-400 text-sm flex items-center gap-2 mb-2">
+              <Sparkles size={16} /> Good news:
+            </p>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              I can automatically detect many details from your existing Newbert, GitHub and professional profiles. You only need to confirm them. Usually takes just a few minutes.
+            </p>
+          </div>
+        </>
+      )}
       <p>Your experience can help juniors see what actually worked. Add only the details you are comfortable sharing.</p>
       <div className="ac-welcome-points"><span><MessageSquare size={18}/>One question at a time</span><span><Check size={18}/>Save, leave and resume</span><span><ShieldCheck size={18}/>You choose what is shared</span></div>
       {completed > 0 && <p><strong>{session.progress}% complete</strong> · {completed} answers recorded</p>}
-      <button className="ac-primary" disabled={busy} onClick={() => mutate('start')}>{busy ? 'Opening your conversation…' : session?.status === 'COMPLETED' ? 'Manage my published story' : completed ? 'Continue my story' : 'Start my story'}<ArrowRight size={17}/></button>
+      {completed > 0 ? (
+        <div className="flex gap-3">
+          <button className="ac-primary !min-h-[46px] !px-6 font-bold" disabled={busy} onClick={() => mutate('start')}>
+            {busy ? 'Opening…' : 'Continue where I left off'} <ArrowRight size={17}/>
+          </button>
+          <button className="ac-secondary !min-h-[46px] !px-5 font-bold" disabled={busy} onClick={loadReview}>
+            Review answers
+          </button>
+        </div>
+      ) : (
+        <button className="ac-primary !min-h-[48px] !px-8 !text-sm font-black" disabled={busy} onClick={() => mutate('start')}>
+          {busy ? 'Starting…' : 'Start'} <ArrowRight size={17}/>
+        </button>
+      )}
       <p className="ac-note">{guest ? 'No account is needed. Your private editing key stays in this browser; return on this device to continue or change your story.' : 'Submitted answers save to your account. You can edit them before and after publication.'}</p>
     </section> : view === 'published' ? <section className="ac-welcome">
       <p className="ac-kicker">YOUR JOURNEY IS LIVE</p><h1>A clearer path<br/><em>for the next student.</em></h1>
@@ -129,11 +160,75 @@ function Conversation({ guest, scope, name }) {
         <div className="ac-sections">{session?.sections.map(section => <button key={section.name} aria-current={question?.section === section.name ? 'step' : undefined} disabled={busy} onClick={() => { setEditing(session.questions.find(q => q.section === section.name && !Object.hasOwn(session.answers, q.id)) || session.questions.find(q => q.section === section.name)); setView('chat'); }}>{section.completed === section.total ? '✓ ' : ''}{section.name}</button>)}</div>
         <button className="ac-review-link" onClick={loadReview} disabled={busy}>Review answers & privacy →</button>
       </section>
-      {session?.prefill && Object.keys(session.prefill).length > 0 ? <section className="ac-prefill"><p className="ac-kicker">A HEAD START FROM YOUR PROFILE</p><h2>I found details you already shared.</h2><p>Check them before adding them to your alumni story.</p><AnswerValue value={session.prefill}/><div className="ac-actions"><button className="ac-secondary" disabled={busy} onClick={() => mutate('prefill', { use: false })}>Enter details myself</button><button className="ac-primary" disabled={busy} onClick={() => mutate('prefill', { use: true })}>Use these details</button></div></section>
+      {session?.prefill && Object.keys(session.prefill).length > 0 ? (
+        <section className="ac-prefill">
+          <div className="flex items-center gap-2 text-xs font-bold text-orange-400 uppercase tracking-wider mb-2">
+            <Sparkles size={16} /> STEP 1 · AUTOMATIC PROFILE DETECTION
+          </div>
+          <h2 className="text-2xl font-black text-white">I found these details from your Newbert profile:</h2>
+          <p className="text-sm text-slate-400 mt-1 mb-6">Confirm these to skip entering known information.</p>
+          <div className="grid gap-4 sm:grid-cols-2 rounded-xl border border-slate-700 bg-slate-800/60 p-5 mb-6">
+            {session.prefill.name && (
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Name</span>
+                <span className="text-sm font-extrabold text-white">{session.prefill.name}</span>
+              </div>
+            )}
+            {session.prefill.college?.name && (
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">College</span>
+                <span className="text-sm font-extrabold text-white">{session.prefill.college.name}</span>
+              </div>
+            )}
+            {session.prefill.branch && (
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Branch</span>
+                <span className="text-sm font-extrabold text-white">{session.prefill.branch}</span>
+              </div>
+            )}
+            {session.prefill.graduationYear && (
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Graduation</span>
+                <span className="text-sm font-extrabold text-white">{session.prefill.graduationYear}</span>
+              </div>
+            )}
+            {session.prefill['practice:GITHUB']?.profileUrl && (
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">GitHub</span>
+                <span className="text-sm font-extrabold text-orange-400">
+                  {session.prefill['practice:GITHUB'].username ? `@${session.prefill['practice:GITHUB'].username}` : session.prefill['practice:GITHUB'].profileUrl}
+                </span>
+              </div>
+            )}
+            {session.prefill['practice:LEETCODE']?.profileUrl && (
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">LeetCode</span>
+                <span className="text-sm font-extrabold text-orange-400">
+                  {session.prefill['practice:LEETCODE'].username ? `@${session.prefill['practice:LEETCODE'].username}` : session.prefill['practice:LEETCODE'].profileUrl}
+                </span>
+              </div>
+            )}
+            {session.prefill.socialLinks?.linkedin && (
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">LinkedIn</span>
+                <span className="text-sm font-extrabold text-blue-400 truncate block">{session.prefill.socialLinks.linkedin}</span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="ac-primary !min-h-[44px] !px-6 font-black text-sm" disabled={busy} onClick={() => mutate('prefill', { use: true })}>
+              <Check size={16} /> ✓ Use these details
+            </button>
+            <button className="ac-secondary !min-h-[44px] !px-4 text-xs font-bold" disabled={busy} onClick={() => mutate('prefill', { use: false })}>
+              Edit something
+            </button>
+          </div>
+        </section>
+      )
         : view === 'review' ? <AlumniReview session={session} preview={preview} busy={busy} onEdit={q => { setEditing(q); setView('chat'); }} onPublish={() => mutate('publish', { confirm: true })} onContinue={() => { setEditing(null); setView(session.currentQuestion ? 'chat' : 'review'); }}/>
           : question ? <>
             {completed > 0 && <details className="ac-transcript"><summary>Your saved conversation · {completed} answers</summary>{session.questions.filter(q => Object.hasOwn(session.answers, q.id)).map(q => <article key={q.id}><p><strong>Newbert:</strong> {q.text}</p><div className="ac-user-answer"><AnswerValue value={session.answers[q.id]}/></div><button onClick={() => setEditing(q)}>Edit this answer</button></article>)}</details>}
-            <QuestionRenderer key={`${question.id}:${session.version}`} question={question} session={session} scope={draftScope} privacyFields={data.privacyFields} audience={guest?'guest':'alumni'} busy={busy} returnToReview={Boolean(editing)} onAnswer={(id, value) => mutate('answer', { questionId: id, value }, Boolean(editing))} onExtract={(id, rawAnswer) => mutate('extract', { questionId: id, rawAnswer })} onConfirm={value => mutate('confirm-extraction', { value }, Boolean(editing))} onSkip={id => mutate('skip', { questionId: id }, Boolean(editing))} onBack={() => mutate('back')} onPracticeCheck={(id, value) => request('post', 'practice-check', { questionId: id, value })}/>
+            <QuestionRenderer key={`${question.id}:${session.version}`} question={question} session={session} scope={draftScope} privacyFields={data.privacyFields} audience={guest?'guest':'alumni'} busy={busy} returnToReview={Boolean(editing)} onAnswer={(id, value) => mutate('answer', { questionId: id, value }, Boolean(editing))} onExtract={(id, rawAnswer) => mutate('extract', { questionId: id, rawAnswer })} onConfirm={value => mutate('confirm-extraction', { value }, Boolean(editing))} onSkip={id => mutate('skip', { questionId: id }, Boolean(editing))} onBack={() => mutate('back')} onPracticeCheck={(id, value) => request('post', 'practice-check', { questionId: id, value })} onFetchRepos={(username) => request('get', `github-repos${username ? `?username=${encodeURIComponent(username)}` : ''}`)}/>
             {!guest && question.section === 'Verification' && <PrivateEvidence/>}
           </> : <div className="ac-alert">This conversation needs the latest Newbert API. Reload this page after the backend update.</div>}
       <footer className="ac-footer"><p>{guest ? 'Submitted answers stay available through the private key saved in this browser.' : 'Your account keeps submitted answers.'} Use review to jump to any remaining required answer.</p><button disabled={busy} onClick={() => setRestart(true)}>Restart draft</button>{restart && <div className="ac-alert"><p>Start a fresh draft? This clears the saved answers. Your published story remains unchanged.</p><button disabled={busy} onClick={() => { setRestart(false); mutate('restart', { confirm: true }); }}>Restart my draft</button><button onClick={() => setRestart(false)}>Keep my answers</button></div>}</footer>

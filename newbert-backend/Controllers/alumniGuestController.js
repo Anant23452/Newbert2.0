@@ -197,4 +197,21 @@ exports.inspectPractice = handle(async (req, res) => {
   } catch { res.json({ metrics: null, message: 'This link could not be checked right now. You can still save it.' }); }
 });
 
+exports.githubRepos = handle(async (req, res) => {
+  let username = cleanText(req.query.username || '', 60);
+  if (!username) {
+    const session = active(req, false);
+    const p = session?.answers?.['practice:GITHUB'] || session?.prefill?.['practice:GITHUB'];
+    username = p?.username;
+  }
+  if (!username) return res.json({ repositories: [] });
+  try {
+    const { listUserRepositories } = require('../services/githubProjectAnalyzerService');
+    const repos = await listUserRepositories(username);
+    res.json({ username, repositories: repos.slice(0, 30) });
+  } catch (err) {
+    res.json({ username, repositories: [], error: err.message });
+  }
+});
+
 exports.tokenHash = tokenHash;

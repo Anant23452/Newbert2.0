@@ -29,5 +29,6 @@ router.post('/publish', controller.publish);
 router.post('/hide', controller.hide);
 router.post('/restart', controller.restart);
 router.post('/practice-check', aiLimit, controller.inspectPractice);
+router.get('/github-repos', controller.githubRepos);
 
 module.exports = router;
