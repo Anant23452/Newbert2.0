@@ -50,6 +50,7 @@ app.use("/api/projects", require("./routes/projectRoutes"));
 app.use("/api/improvement-plans", require("./routes/improvementPlanRoutes"));
 app.use("/api/leaderboard", require("./routes/leaderboardRoutes"));
 app.use("/api/intelligence", require("./routes/intelligenceRoutes"));
+app.use("/api/career-dna", require("./routes/careerDNARoutes"));
 app.use("/api/ai", require("./routes/aiRoutes"));
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 app.use((error, req, res, next) => { console.error(error); res.status(error.status || 500).json({ message: error.status ? error.message : "Something went wrong on the server." }); });

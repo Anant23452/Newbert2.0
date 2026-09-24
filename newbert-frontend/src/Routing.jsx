@@ -28,6 +28,7 @@ const ChannelLibrary = lazy(() => import('./pages/StudyStudio'));
 const AcademicBranch = lazy(() => import('./pages/AcademicBranch'));
 const AcademicSubject = lazy(() => import('./pages/AcademicSubject'));
 const BranchNotes = lazy(() => import('./pages/Notes').then((module) => ({ default: module.BranchNotes })));
+const CareerDNA = lazy(() => import('./pages/CareerDNA'));
 
 
 function Routing() {
@@ -45,6 +46,7 @@ function Routing() {
         <Route path="/join" element={<JoinNewbert/>}/>
         <Route path="/profile/complete" element={<JuniorProfileChat/>}/>
         <Route path="/alumni-wall/:alumniId" element={<AlumniProfile/> }/>
+        <Route path="/alumni-wall/:alumniId/career-dna" element={<CareerDNA/> }/>
         <Route path="/profile" element={<Profile/> }/>
         <Route path="/profile/:userId" element={<PublicProfile/> }/>
         <Route path="/complete-profile" element={<Navigate to="/join" replace/>}/>
