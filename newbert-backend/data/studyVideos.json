@@ -1,0 +1,427 @@
+[
+  {
+    "id": "control-systems",
+    "title": "Control Systems",
+    "audience": "EE · 3rd year",
+    "branch": "electrical",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLM2rdkxP7mtw",
+    "lessons": [
+      {
+        "videoId": "sLy_cQ6zgf8",
+        "unit": 1,
+        "title": "Control system concepts · Unit 1",
+        "minutes": 110,
+        "url": "https://www.youtube.com/watch?v=sLy_cQ6zgf8"
+      }
+    ],
+    "notesUrl": "https://t.me/newbert7/1418/3486",
+    "notesSource": "Publisher’s notes link from the Unit 1 description"
+  },
+  {
+    "id": "network-analysis",
+    "title": "Network Analysis & Synthesis",
+    "audience": "EE · 2nd year",
+    "branch": "electrical",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLD0H7cwx1k7eCsuFs4Eqfk_ywjIavBNkw",
+    "lessons": [
+      {
+        "videoId": "2tK03pxcAL4",
+        "unit": 1,
+        "title": "Unit 1 · Part 1",
+        "minutes": 72,
+        "url": "https://www.youtube.com/watch?v=2tK03pxcAL4"
+      },
+      {
+        "videoId": "1RAvRkDVvQU",
+        "unit": 1,
+        "title": "Unit 1 · Part 2",
+        "minutes": 57,
+        "url": "https://www.youtube.com/watch?v=1RAvRkDVvQU"
+      },
+      {
+        "videoId": "YTR3a8AtNXY",
+        "unit": 2,
+        "title": "Unit 2 · One shot",
+        "minutes": 117,
+        "url": "https://www.youtube.com/watch?v=YTR3a8AtNXY"
+      },
+      {
+        "videoId": "NBIv2hn1CqA",
+        "unit": 3,
+        "title": "Unit 3 · One shot",
+        "minutes": 98,
+        "url": "https://www.youtube.com/watch?v=NBIv2hn1CqA"
+      },
+      {
+        "videoId": "233qUozrzDY",
+        "unit": 4,
+        "title": "Unit 4 · One shot",
+        "minutes": 113,
+        "url": "https://www.youtube.com/watch?v=233qUozrzDY"
+      },
+      {
+        "videoId": "mfs4uj0g8aA",
+        "unit": 5,
+        "title": "Unit 5 · Part 1",
+        "minutes": 87,
+        "url": "https://www.youtube.com/watch?v=mfs4uj0g8aA"
+      }
+    ]
+  },
+  {
+    "id": "electrical-machines",
+    "title": "Electrical Machines I",
+    "audience": "EE · 2nd year",
+    "branch": "electrical",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLD0H7cwx1k7dczfHv7UZSnQy0L8wIuy5J",
+    "lessons": [
+      {
+        "videoId": "Jo724OwhCV4",
+        "unit": 1,
+        "title": "Opening lecture · Part 1",
+        "minutes": 83,
+        "url": "https://www.youtube.com/watch?v=Jo724OwhCV4"
+      },
+      {
+        "videoId": "pGyggdHCGMs",
+        "unit": 1,
+        "title": "Unit 1 · Part 2",
+        "minutes": 33,
+        "url": "https://www.youtube.com/watch?v=pGyggdHCGMs"
+      },
+      {
+        "videoId": "s3IyDcZccKQ",
+        "unit": 2,
+        "title": "Unit 2 · Part 1",
+        "minutes": 141,
+        "url": "https://www.youtube.com/watch?v=s3IyDcZccKQ"
+      },
+      {
+        "videoId": "avrsX4FPxvg",
+        "unit": 3,
+        "title": "Unit 3 · One shot",
+        "minutes": 111,
+        "url": "https://www.youtube.com/watch?v=avrsX4FPxvg"
+      },
+      {
+        "videoId": "oZNEbZSfk3Q",
+        "unit": 4,
+        "title": "Unit 4 · One shot",
+        "minutes": 161,
+        "url": "https://www.youtube.com/watch?v=oZNEbZSfk3Q"
+      }
+    ]
+  },
+  {
+    "id": "signals-systems",
+    "title": "Signals & Systems",
+    "audience": "EE · 2nd year",
+    "branch": "electrical",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLD0H7cwx1k7fLgbaQDFTnUDoJI5BJcEqm",
+    "lessons": [
+      {
+        "videoId": "hCCHqmlt-OM",
+        "unit": 1,
+        "title": "Unit 1 · One shot",
+        "minutes": 142,
+        "url": "https://www.youtube.com/watch?v=hCCHqmlt-OM"
+      },
+      {
+        "videoId": "fKwKfHN3KjM",
+        "unit": 2,
+        "title": "Fourier transform · Unit 2",
+        "minutes": 134,
+        "url": "https://www.youtube.com/watch?v=fKwKfHN3KjM"
+      },
+      {
+        "videoId": "zrHRCx3nHAE",
+        "unit": 3,
+        "title": "Laplace transform · Unit 3",
+        "minutes": 87,
+        "url": "https://www.youtube.com/watch?v=zrHRCx3nHAE"
+      },
+      {
+        "videoId": "eaM5vBd6KkA",
+        "unit": 4,
+        "title": "Unit 4 · One shot",
+        "minutes": 63,
+        "url": "https://www.youtube.com/watch?v=eaM5vBd6KkA"
+      },
+      {
+        "videoId": "jXUWoFeeZzY",
+        "unit": 5,
+        "title": "Unit 5 · One shot",
+        "minutes": 74,
+        "url": "https://www.youtube.com/watch?v=jXUWoFeeZzY"
+      }
+    ]
+  },
+  {
+    "id": "electromagnetic-fields",
+    "title": "Electromagnetic Field Theory",
+    "audience": "EE · 2nd year",
+    "branch": "electrical",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLD0H7cwx1k7eLAC9PYKmfy5bMv5rVrOhh",
+    "lessons": [
+      {
+        "videoId": "SY6h-BS-gK4",
+        "unit": 1,
+        "title": "Coordinate systems · Unit 1, Part 1",
+        "minutes": 136,
+        "url": "https://www.youtube.com/watch?v=SY6h-BS-gK4"
+      },
+      {
+        "videoId": "e3JZLJ4MPwU",
+        "unit": 1,
+        "title": "Unit 1 · Part 2",
+        "minutes": 65,
+        "url": "https://www.youtube.com/watch?v=e3JZLJ4MPwU"
+      },
+      {
+        "videoId": "xelHKvYvB9U",
+        "unit": 2,
+        "title": "Electrostatics · Unit 2, Part 1",
+        "minutes": 60,
+        "url": "https://www.youtube.com/watch?v=xelHKvYvB9U"
+      },
+      {
+        "videoId": "HwG5gIPR6cw",
+        "unit": 2,
+        "title": "Unit 2 · Part 2",
+        "minutes": 79,
+        "url": "https://www.youtube.com/watch?v=HwG5gIPR6cw"
+      },
+      {
+        "videoId": "YxVam-kr3kw",
+        "unit": 2,
+        "title": "Unit 2 · Part 3",
+        "minutes": 51,
+        "url": "https://www.youtube.com/watch?v=YxVam-kr3kw"
+      },
+      {
+        "videoId": "298QJrNqkrU",
+        "unit": 3,
+        "title": "Unit 3 · One shot",
+        "minutes": 81,
+        "url": "https://www.youtube.com/watch?v=298QJrNqkrU"
+      },
+      {
+        "videoId": "XOeZskS32WY",
+        "unit": 4,
+        "title": "Unit 4 · One shot",
+        "minutes": 129,
+        "url": "https://www.youtube.com/watch?v=XOeZskS32WY"
+      },
+      {
+        "videoId": "85PkTA8NRAE",
+        "unit": 5,
+        "title": "Waves & applications · Unit 5",
+        "minutes": 63,
+        "url": "https://www.youtube.com/watch?v=85PkTA8NRAE"
+      },
+      {
+        "videoId": "J1YJWdwpEf8",
+        "unit": 0,
+        "title": "Exam topics · Archived 2025 live session",
+        "minutes": 14,
+        "url": "https://www.youtube.com/watch?v=J1YJWdwpEf8"
+      }
+    ]
+  },
+  {
+    "id": "electrical-measurements",
+    "title": "Electrical Measurements & Instrumentation",
+    "audience": "EE · 2nd year",
+    "branch": "electrical",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLD0H7cwx1k7d19xTBkeXuXNj7P49j_aP_",
+    "lessons": [
+      {
+        "videoId": "lrNMMqpOiRY",
+        "unit": 1,
+        "title": "Unit 1 · One shot",
+        "minutes": 136,
+        "url": "https://www.youtube.com/watch?v=lrNMMqpOiRY"
+      },
+      {
+        "videoId": "zKvnL-KzjdM",
+        "unit": 2,
+        "title": "Power & energy measurement · Unit 2",
+        "minutes": 64,
+        "url": "https://www.youtube.com/watch?v=zKvnL-KzjdM"
+      },
+      {
+        "videoId": "jER5J2h0T3s",
+        "unit": 3,
+        "title": "Potentiometers & bridges · Unit 3",
+        "minutes": 93,
+        "url": "https://www.youtube.com/watch?v=jER5J2h0T3s"
+      },
+      {
+        "videoId": "tdI0Z9eR83o",
+        "unit": 4,
+        "title": "CT & PT · Unit 4",
+        "minutes": 58,
+        "url": "https://www.youtube.com/watch?v=tdI0Z9eR83o"
+      },
+      {
+        "videoId": "8ojR_Gx4On0",
+        "unit": 5,
+        "title": "Transducers · Unit 5",
+        "minutes": 78,
+        "url": "https://www.youtube.com/watch?v=8ojR_Gx4On0"
+      }
+    ]
+  },
+  {
+    "id": "cyber-security",
+    "title": "Cyber Security",
+    "audience": "AKTU · Elective",
+    "branch": "all",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLD0H7cwx1k7ftlppkvjP__-3zTqygzGn3",
+    "lessons": [
+      {
+        "videoId": "FH6aqgBWOhw",
+        "unit": 1,
+        "title": "Unit 1 · One shot",
+        "minutes": 85,
+        "url": "https://www.youtube.com/watch?v=FH6aqgBWOhw"
+      },
+      {
+        "videoId": "R_Adlx0-F3U",
+        "unit": 2,
+        "title": "Unit 2 · One shot",
+        "minutes": 67,
+        "url": "https://www.youtube.com/watch?v=R_Adlx0-F3U"
+      },
+      {
+        "videoId": "vs5j5jeS1OI",
+        "unit": 3,
+        "title": "Unit 3 · One shot",
+        "minutes": 65,
+        "url": "https://www.youtube.com/watch?v=vs5j5jeS1OI"
+      }
+    ]
+  },
+  {
+    "id": "human-values",
+    "title": "Universal Human Values & Ethics",
+    "audience": "AKTU · 2nd year",
+    "branch": "all",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLD0H7cwx1k7fXrx87KaloxzO-CdEQVLwZ",
+    "lessons": [
+      {
+        "videoId": "ZHH9xKEyaLM",
+        "unit": 1,
+        "title": "Unit 1 · One shot",
+        "minutes": 56,
+        "url": "https://www.youtube.com/watch?v=ZHH9xKEyaLM"
+      },
+      {
+        "videoId": "1VxJmCm5mHU",
+        "unit": 2,
+        "title": "Unit 2 · One shot",
+        "minutes": 47,
+        "url": "https://www.youtube.com/watch?v=1VxJmCm5mHU"
+      },
+      {
+        "videoId": "SRf2hRBm2lc",
+        "unit": 3,
+        "title": "Unit 3 · One shot",
+        "minutes": 39,
+        "url": "https://www.youtube.com/watch?v=SRf2hRBm2lc"
+      }
+    ]
+  },
+  {
+    "id": "dbms",
+    "title": "Database Management Systems",
+    "audience": "AKTU · B.Tech",
+    "branch": "information-technology",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLD0H7cwx1k7eqd4EAbIKrcUt5uA0_qYsb",
+    "lessons": [
+      {
+        "videoId": "CbtTp6n_Q7A",
+        "unit": 1,
+        "title": "Lecture 1 · Start here",
+        "minutes": 15,
+        "url": "https://www.youtube.com/watch?v=CbtTp6n_Q7A"
+      },
+      {
+        "videoId": "D7YIAeAv8T4",
+        "unit": 1,
+        "title": "Lecture 2",
+        "minutes": 33,
+        "url": "https://www.youtube.com/watch?v=D7YIAeAv8T4"
+      },
+      {
+        "videoId": "q_2fA7Ko77M",
+        "unit": 1,
+        "title": "Unit 1 · Lecture 3",
+        "minutes": 27,
+        "url": "https://www.youtube.com/watch?v=q_2fA7Ko77M"
+      }
+    ]
+  },
+  {
+    "id": "electrical-foundations",
+    "title": "Fundamentals of Electrical Engineering",
+    "audience": "AKTU · 1st year",
+    "branch": "all",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLD0H7cwx1k7fLenky9Pz_yRMslCjq1lSI",
+    "lessons": [
+      {
+        "videoId": "iXVjkSV51r0",
+        "unit": 1,
+        "title": "Foundations · Opening lecture",
+        "minutes": 107,
+        "url": "https://www.youtube.com/watch?v=iXVjkSV51r0"
+      },
+      {
+        "videoId": "GBls67eWeKE",
+        "unit": 2,
+        "title": "Unit 2 · Part 1",
+        "minutes": 148,
+        "url": "https://www.youtube.com/watch?v=GBls67eWeKE"
+      }
+    ]
+  },
+  {
+    "id": "electronics-foundations",
+    "title": "Fundamentals of Electronics Engineering",
+    "audience": "AKTU · 1st year",
+    "branch": "all",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLD0H7cwx1k7c02lNcuL7b9P5Yuj7bvmBN",
+    "lessons": [
+      {
+        "videoId": "R5WqaUUtl2U",
+        "unit": 1,
+        "title": "Foundations · Opening lecture",
+        "minutes": 161,
+        "url": "https://www.youtube.com/watch?v=R5WqaUUtl2U"
+      },
+      {
+        "videoId": "EW1bOxwbqkY",
+        "unit": 2,
+        "title": "Unit 2 · One shot",
+        "minutes": 65,
+        "url": "https://www.youtube.com/watch?v=EW1bOxwbqkY"
+      }
+    ]
+  },
+  {
+    "id": "engineering-chemistry",
+    "title": "Engineering Chemistry",
+    "audience": "AKTU · 1st year",
+    "branch": "all",
+    "playlistUrl": "https://www.youtube.com/playlist?list=PLD0H7cwx1k7fsteVatPcfBlHic7SEjg9J",
+    "lessons": [
+      {
+        "videoId": "ecTm0SYC55c",
+        "unit": 1,
+        "title": "Molecular orbital theory · Lecture 1",
+        "minutes": 37,
+        "url": "https://www.youtube.com/watch?v=ecTm0SYC55c"
+      }
+    ]
+  }
+]

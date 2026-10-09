@@ -6,8 +6,10 @@ import useStudyProgress from "../hook/useStudyProgress";
 import { channelUrl, lectureKey, lessonHref, studyCourses, studyHref } from "../data/studyCatalog";
 import { isReviewDue, mergeStudySummaries, readStudyLocal, timeLabel } from "../utils/studyTools";
 import "../study.css";
+import useStudyCatalog from '../hook/useStudyCatalog';
 
 export default function StudyStudio() {
+  useStudyCatalog();
   const { profile, isAuthenticated } = useAuth();
   const progress = useStudyProgress();
   const [params] = useSearchParams();
@@ -19,7 +21,7 @@ export default function StudyStudio() {
   const recent = [...lectures].filter((r) => !r.completed).sort((a,b) => new Date(b.lastViewedAt) - new Date(a.lastViewedAt))[0];
   const due = lectures.filter((r) => isReviewDue(r));
   const relatedBranch = /electrical/i.test(profile?.branch) ? "electrical" : /computer|information/i.test(profile?.branch) ? "information-technology" : "all";
-  const courses = studyCourses.filter((c) => (filter === "all" || (filter === "for-me" ? c.branch === "all" || c.branch === relatedBranch : c.branch === filter)) && `${c.title} ${c.audience}`.toLowerCase().includes(query.toLowerCase()));
+  const courses = studyCourses.filter((c) => c.lessons.length > 0 && (filter === "all" || (filter === "for-me" ? c.branch === "all" || c.branch === relatedBranch : c.branch === filter)) && `${c.title} ${c.audience}`.toLowerCase().includes(query.toLowerCase()));
   const recentCourse = recent && studyCourses.find((c) => c.id === recent.key.split(":")[1]);
   return <main className="studio-page"><div className="studio-shell">
     <header className="studio-hero"><div><p className="studio-eyebrow">NEWBERT / STUDY STUDIO</p><h1>Watch. Work it out.<br/><span>Make it yours.</span></h1><p>Your lectures, notes and revision in one place. Pick up where you stopped, and come back to the ideas that need another pass.</p><div className="studio-hero-links"><a href={channelUrl} target="_blank" rel="noreferrer">From the Newbert channel ↗</a><Link to="/notes">Semester notes library <ArrowRight size={15}/></Link></div></div><div className="studio-learning-art" aria-hidden="true"><span className="studio-art-label">YOUR LEARNING LOOP</span><div><Play size={25}/><span>Understand</span></div><div><BookOpen size={25}/><span>Make a note</span></div><div><RotateCcw size={25}/><span>Recall it</span></div></div></header>

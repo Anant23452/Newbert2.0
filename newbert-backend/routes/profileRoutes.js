@@ -15,6 +15,7 @@ const router = express.Router();
 const studentHome = require("../Controllers/studentHomeController");
 router.get("/:userId/public", optionalAuth, getPublicProfile);
 router.use(requireAuth);
+router.use(['/study-assistant','/learning-progress','/lecture-progress'], require('../middleWare/dynamicStudySubject'));
 router.get("/me", getMyProfile);
 router.get("/today", studentHome.getToday);
 router.post("/study-assistant", require("../middleWare/aiRateLimit"), require("../Controllers/studyAssistantController").askStudyAssistant);

@@ -3,6 +3,7 @@ import { Link, Navigate, Routes, Route, useLocation } from 'react-router-dom';
 import useAuth from './hook/useAuth';
 import Home from './pages/Home';
 import RouteScrollReset from './components/RouteScrollReset';
+import StudyCatalogProvider from './components/StudyCatalogProvider';
 
 const AlumniOnboarding = lazy(() => import('./pages/AlumniOnboarding'));
 const JoinNewbert = lazy(() => import('./pages/JoinNewbert'));
@@ -16,6 +17,9 @@ const Jobs = lazy(() => import('./pages/Jobs'));
 const AdminJobs = lazy(() => import('./pages/AdminJobs'));
 const AdminCourses = lazy(() => import('./pages/AdminCourses'));
 const AdminNotes = lazy(() => import('./pages/AdminNotes'));
+const AdminStudy = lazy(() => import('./pages/AdminStudy'));
+const MentorDoubts = lazy(() => import('./pages/MentorDoubts'));
+const MyStudyDoubts = lazy(() => import('./pages/MyStudyDoubts'));
 const Leaderboard = lazy(() => import('./pages/LeaderboardMetrics'));
 const Mentorship = lazy(() => import('./pages/Mentorship'));
 const ResumeAi = lazy(() => import('./pages/ResumeAi'));
@@ -55,6 +59,9 @@ function Routing() {
         <Route path="/admin/jobs" element={<AdminJobs/> }/>
         <Route path="/admin/courses" element={<AdminCourses/>}/>
         <Route path="/admin/notes" element={<AdminNotes/>}/>
+        <Route path="/admin/study" element={<AdminStudy/>}/>
+        <Route path="/admin/study/doubts" element={<MentorDoubts/>}/>
+        <Route path="/study/my-doubts" element={<MyStudyDoubts/>}/>
         < Route path="/leaderboard" element={<Leaderboard/> }/>
         <Route path="/mentorship" element={<Mentorship/>}/>
         < Route path="/resume-ai" element={<ResumeAi/> }/>
@@ -72,7 +79,7 @@ function Routing() {
   )
 }
 
-export default Routing
+export default function AppRouting() { return <StudyCatalogProvider><Routing/></StudyCatalogProvider>; }
 
 function NotFound() {
   return <main className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-3xl place-items-center px-5 py-16 text-center"><div><p className="eyebrow">404</p><h1 className="mt-3 text-3xl font-extrabold text-slate-950">This page is not part of Newbert yet.</h1><p className="mt-3 text-sm leading-6 text-slate-600">The link may be outdated, or the page may have moved.</p><Link to="/" className="mt-7 inline-block bg-orange-500 px-5 py-3 text-sm font-extrabold text-[#171918] hover:bg-orange-400">Go to home</Link></div></main>;

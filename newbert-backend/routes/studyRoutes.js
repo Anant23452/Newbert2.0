@@ -1,0 +1,13 @@
+const router = require('express').Router();
+const auth = require('../middleWare/authMiddleware');
+const { requireStaff } = require('../middleWare/studyStaff');
+const c = require('../Controllers/studyContentController');
+router.get('/catalog',c.catalog);
+router.get('/videos/:videoId/doubts',auth.optionalAuth,c.questions);
+router.post('/videos/:videoId/doubts',auth,c.ask);
+router.patch('/doubts/:id',auth,c.resolve);
+router.get('/my-doubts',auth,c.mine);
+router.get('/mentor/doubts',auth,requireStaff,c.inbox);
+router.post('/doubts/:id/replies',auth,requireStaff,c.reply);
+router.post('/lessons/:id/quiz',auth,c.grade);
+module.exports = router;

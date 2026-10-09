@@ -9,14 +9,17 @@ import { channelUrl, lectureKey, lessonHref, studyCourses } from "../data/studyC
 import { studyGuides } from "../data/studyGuides";
 import { downloadText, mergeStudySummaries, readStudyLocal, timeLabel } from "../utils/studyTools";
 import "../study.css";
+import useStudyCatalog from '../hook/useStudyCatalog';
+import LessonLearningTools from '../components/LessonLearningTools';
 
 export default function StudyCourse() {
+  useStudyCatalog();
   const { courseId } = useParams();
   const [params, setParams] = useSearchParams();
   const { profile, isAuthenticated } = useAuth();
   const progress = useStudyProgress();
   const course = studyCourses.find((c)=>c.id===courseId);
-  if (!course) return <main className="studio-page"><div className="studio-shell studio-empty"><h1>Subject not found</h1><Link to="/study">Back to Study Studio</Link></div></main>;
+  if (!course?.lessons.length) return <main className="studio-page"><div className="studio-shell studio-empty"><h1>No published lessons here yet</h1><Link to="/study">Back to Study Studio</Link></div></main>;
   const lesson = course.lessons.find((l)=>l.videoId===params.get("lesson")) || course.lessons[0];
   const scope = isAuthenticated ? profile.userId : "guest";
   return <Classroom key={`${scope}:${course.id}:${lesson.videoId}`} course={course} lesson={lesson} scope={scope} authenticated={isAuthenticated} summaries={progress.records} select={(id)=>setParams({lesson:id})}/>;
@@ -25,7 +28,7 @@ export default function StudyCourse() {
 function Classroom({ course, lesson, scope, authenticated, summaries, select }) {
   const notebook = useLectureNotebook(lectureKey(course.id,lesson.videoId),scope,authenticated);
   const { record, update } = notebook;
-  const guide = studyGuides[course.id];
+  const guide = studyGuides[course.id] || { concepts: [], intro: 'Use the attached lesson resources and your personal notebook.', example: 'Write your own worked example.', question: `Explain the key idea in ${lesson.title} in your own words.`, answer: 'Compare your explanation with the lecture and ask your mentor about any gaps.' };
   const controller = useRef(null);
   const position = useRef(record.positionSeconds || 0);
   const [tab, setTab] = useState("notes");
@@ -63,6 +66,7 @@ function Classroom({ course, lesson, scope, authenticated, summaries, select }) 
           {tab==='recall'&&<div className="studio-notebook-body"><p className="studio-eyebrow">CLOSE THE NOTES. TRY FROM MEMORY.</p><h2>A subject checkpoint</h2><p className="studio-recall-question">{guide.question}</p><textarea disabled={notebook.loading} aria-label="Your recall answer" rows={5} maxLength={6000} value={record.reflection||''} onChange={e=>update({reflection:e.target.value})} placeholder="Write your reasoning before revealing the guide…"/><button className="studio-secondary" onClick={()=>setShowAnswer(!showAnswer)}>{showAnswer?'Hide answer guide':'Show answer guide'}</button>{showAnswer&&<div className="studio-answer-guide"><strong>Compare your reasoning</strong><p>{guide.answer}</p></div>}<div className="studio-recall-rating"><h3>How did that feel?</h3><p>Your own rating sets the next review. It is not a graded score.</p><div>{[['again','Another pass','Review today'],['good','Got the idea','Review in 3 days'],['solid','Can explain it','Review in 7 days']].map(([id,label,hint])=><button key={id} disabled={notebook.loading||!record.reflection?.trim()} aria-pressed={record.confidence===id} onClick={()=>update({confidence:id})}><strong>{label}</strong><small>{hint}</small></button>)}</div>{record.reviewAt&&<p role="status">Next review: {new Date(record.reviewAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</p>}</div></div>}
           {tab==='resources'&&<div className="studio-notebook-body"><p className="studio-eyebrow">SUBJECT COMPANION</p><h2>The ideas to keep close</h2><p>{guide.intro}</p><p className="studio-footnote">Original study notes for the subject, not a transcript or a claim that this lesson covers every concept below.</p><div className="studio-concepts">{guide.concepts.map(([title,body],i)=><article key={title}><span>{String(i+1).padStart(2,'0')}</span><div><h3>{title}</h3><p>{body}</p></div></article>)}</div><div className="studio-answer-guide"><strong>Work through an example</strong><p>{guide.example}</p></div><div className="studio-resource-links">{course.notesUrl&&<a href={course.notesUrl} target="_blank" rel="noreferrer">Publisher’s Control Systems PDFs ↗<small>{course.notesSource}</small></a>}<Link to="/notes">Published semester PDFs & past questions <ArrowRight size={14}/></Link><a href={channelUrl} target="_blank" rel="noreferrer">Newbert channel & new uploads ↗</a><button onClick={exportNotebook}><Download size={15}/>Download notes & companion</button></div></div>}
         </section>
+        <LessonLearningTools key={lesson.videoId} lesson={lesson} authenticated={authenticated} controller={controller} position={position}/>
         {next&&<Link className="studio-next-lesson" to={lessonHref(course.id,next.videoId)}><span><small>NEXT IN THIS SUBJECT</small><strong>{next.title}</strong></span><ArrowRight size={20}/></Link>}
       </div>
     </div>

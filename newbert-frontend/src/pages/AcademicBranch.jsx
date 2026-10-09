@@ -8,6 +8,7 @@ import { academicCatalog, lessonsForUnit, subjectProgress, subjectsFor } from '.
 import { readStudyLocal, writeStudyLocal } from '../utils/studyTools';
 import '../study.css';
 import '../academic.css';
+import useStudyCatalog from '../hook/useStudyCatalog';
 
 export default function AcademicBranch() {
   const { branchId } = useParams();
@@ -17,6 +18,7 @@ export default function AcademicBranch() {
   return <BranchShelf key={`${isAuthenticated?profile?.userId:'guest'}:${branchId}`} branch={branch} profile={profile}/>;
 }
 function BranchShelf({ branch, profile }) {
+  const content = useStudyCatalog();
   const progress = useAcademicProgress();
   const academic = inferAcademicYear(profile?.graduationYear);
   const preferenceKey = `newbert-academic:${progress.scope}:${academic.session}`;
@@ -46,7 +48,8 @@ function BranchShelf({ branch, profile }) {
     <div className="studio-heading academic-catalog-heading"><div><p className="studio-eyebrow">YEAR {year} / SEMESTER {semester}</p><h2>Make room for what you’re studying.</h2></div><label className="studio-search"><Search size={17}/><input aria-label="Search this semester" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Subject or course code…"/></label></div>
     <div className="studio-filters" role="group" aria-label="Subject type">{[['all','All subjects'],['my','My subjects'],['core','Core'],['elective','Department electives'],['open','Open electives']].map(([id,label])=><button aria-pressed={filter===id} key={id} onClick={()=>setFilter(id)}>{label}</button>)}</div>
     <div className="academic-subjects">{subjects.map(s=>{const complete=subjectProgress(branch.id,s,progress.records);const videos=s.units.reduce((n,u)=>n+lessonsForUnit(s,u.number).length,0);const elective=['elective','open'].includes(s.kind);return <article className="academic-subject-card" key={s.id}><div className="academic-subject-meta"><span>{s.code} · {s.kind==='open'?'Open elective':s.kind==='elective'?'Dept. elective':s.kind==='paired'?'College group':'Core'}</span>{elective&&<button aria-label={`${selected.includes(s.id)?'Remove':'Add'} ${s.title} ${s.code} ${selected.includes(s.id)?'from':'to'} my subjects`} aria-pressed={selected.includes(s.id)} onClick={()=>chooseElective(s.id)}>{selected.includes(s.id)?<Check size={17}/>:<Bookmark size={17}/>}</button>}</div><Link to={academicSubjectHref(branch.id,s.id)}><h3>{s.title}</h3><p>{s.units[0].title} → {s.units[4].title}</p><div className="academic-unit-dots" aria-label={`${complete} of 5 units marked complete`}>{s.units.map(u=><span key={u.number} className={progress.records.some(r=>r.key===`unit:${branch.id}:${s.id}:${u.number}`&&r.completed)?'done':''}/>)}</div><div className="academic-subject-bottom"><small>{complete}/5 units · {videos?`${videos} channel lessons`:'Syllabus & workspace'}</small><ArrowRight size={19}/></div></Link></article>;})}</div>
-    {!subjects.length&&<div className="studio-empty"><Search size={24}/><h3>No subjects match this view</h3><button className="studio-secondary" onClick={()=>{setQuery('');setFilter('all');}}>Show all semester subjects</button></div>}
+    {content.error&&<p className="studio-notice" role="alert">{content.error}<button onClick={content.refresh}>Retry</button></p>}
+    {!subjects.length&&<div className="studio-empty"><Search size={24}/><h3>{content.loading ? 'Loading published subjects…' : all.length ? 'No subjects match this view' : 'No published video subjects in this semester yet'}</h3>{all.length ? <button className="studio-secondary" onClick={()=>{setQuery('');setFilter('all');}}>Show published subjects</button> : <p>Choose another semester or year to explore available lessons.</p>}</div>}
     <div className="academic-practical"><div><p className="studio-eyebrow">BEYOND THEORY</p><h3>{year===4?'Projects, internship & practical work':'Labs, workshops & practical work'}</h3><p>Your official scheme lists practical credits, projects and elective eligibility. Practical papers follow your college’s activities and assessment, rather than a five-unit lecture structure.</p></div><div><a href={source.url} target="_blank" rel="noreferrer">View practical requirements ↗</a><Link to={`/notes/${branch.id}`}>Open branch notes & papers <ArrowRight size={15}/></Link>{year===2&&<a href={academicCatalog.sources.elective2.url} target="_blank" rel="noreferrer">All second-year open electives ↗</a>}{year===3&&semester===6&&<a href={academicCatalog.sources.elective3.url} target="_blank" rel="noreferrer">All semester 6 open electives ↗</a>}{year===4&&<a href={academicCatalog.sources[`open${semester}`].url} target="_blank" rel="noreferrer">Full open-elective scheme & eligibility ↗</a>}</div></div>
     <p className="studio-footnote">“My subjects” includes core/group papers and electives you select on this device. College offerings vary; avoid selecting an open elective you have already studied. Unit headings are condensed syllabus outlines. Video availability is shown separately.</p>
   </div></main>;

@@ -24,7 +24,7 @@ function prepareStudyRequest(body = {}) {
   if (!['English','Hinglish'].includes(body.language)) throw new Error('Choose English or Hinglish.');
   const {subject, unit, source} = context;
   const prompt = `You are Newbert's supportive engineering study tutor. Respond in ${body.language}, using plain text with short paragraphs and numbered steps, up to 700 words.
-Verified curriculum context: ${subject.title}, ${subject.code}; year ${subject.year}; semesters ${subject.semesters.join('/')}; AKTU edition ${source.edition}.
+Curriculum context: ${subject.title}, ${subject.code}; year ${subject.year}; semesters ${subject.semesters.join('/')}; ${source.managed ? 'Admin-authored Newbert unit headings; not an official AKTU syllabus verification' : `AKTU edition ${source.edition}`}.
 Selected unit ${unit.number}: ${unit.title}.
 Other units for boundaries: ${subject.units.map(u => `${u.number}: ${u.title}`).join('; ')}.
 Task: ${actions[body.action]}
