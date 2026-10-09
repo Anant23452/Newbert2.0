@@ -49,7 +49,7 @@ async function githubFetch(url, customHeaders = {}) {
     ...(process.env.GITHUB_TOKEN && { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }),
     ...customHeaders,
   };
-  const response = await fetch(url, { headers });
+  const response = await fetch(url, { headers, signal: AbortSignal.timeout(15000) });
   if (!response.ok) {
     const errorBody = await response.text().catch(() => "");
     const err = new Error(`GitHub API returned ${response.status}: ${errorBody || response.statusText}`);
@@ -70,7 +70,7 @@ async function listUserRepositories(username) {
   if (!Array.isArray(repos)) return [];
 
   return repos
-    .filter((repo) => !repo.archived)
+    .filter((repo) => !repo.archived && !repo.private)
     .map((repo) => ({
       id: repo.id,
       name: repo.name,

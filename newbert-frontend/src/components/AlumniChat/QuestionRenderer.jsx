@@ -2,6 +2,9 @@ import { useEffect, useState, useCallback } from 'react';
 import AnswerFields, { AnswerValue } from './AnswerFields';
 import { DetectedAnswerCard } from './OptionComponents';
 import { Sparkles } from 'lucide-react';
+import VoiceAnswer from './VoiceAnswer';
+import ResumeAnswer from './ResumeAnswer';
+import { interviewGuidance } from '../../utils/alumniInterview';
 
 function emptyValue(q) {
   return ['object', 'privacy', 'college'].includes(q.type)
@@ -23,6 +26,7 @@ export default function QuestionRenderer({
   onBack,
   onPracticeCheck,
   onFetchRepos,
+  onQuestionHelp,
   busy,
   returnToReview,
   audience = 'alumni'
@@ -39,30 +43,41 @@ export default function QuestionRenderer({
     }
   });
 
-  const [mode, setMode] = useState('details');
-  const [raw, setRaw] = useState(session?.rawAnswers?.[q.id] && typeof session.rawAnswers[q.id] === 'string' ? session.rawAnswers[q.id] : '');
+  const [mode, setMode] = useState(() => {
+    try { const cached = JSON.parse(sessionStorage.getItem(draftKey) || 'null'); return cached?.version === session?.version && cached.mode === 'natural' && q.ai ? 'natural' : 'details'; } catch { return 'details'; }
+  });
+  const [raw, setRaw] = useState(() => {
+    try { const cached = JSON.parse(sessionStorage.getItem(draftKey) || 'null'); if (cached?.version === session?.version && typeof cached.raw === 'string') return cached.raw; } catch { /* Use saved answer. */ }
+    return typeof session?.rawAnswers?.[q.id] === 'string' ? session.rawAnswers[q.id] : '';
+  });
   const [check, setCheck] = useState(null);
   const [checking, setChecking] = useState(false);
   const [repositories, setRepositories] = useState([]);
   const [detectedSkills, setDetectedSkills] = useState([]);
   const [confirmedDetected, setConfirmedDetected] = useState(false);
+  const [questionHelp, setQuestionHelp] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (session.intakeConfirmed && onQuestionHelp) onQuestionHelp(q.id).then(({ data }) => { if (!cancelled) setQuestionHelp(data); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [q.id, session.intakeConfirmed, onQuestionHelp]);
 
   const pending = session.pendingExtraction?.questionId === q.id ? session.pendingExtraction : null;
 
   // Persist draft in sessionStorage
   useEffect(() => {
     try {
-      sessionStorage.setItem(draftKey, JSON.stringify({ version: session.version, value }));
+      sessionStorage.setItem(draftKey, JSON.stringify({ version: session.version, value, raw, mode }));
     } catch {
       /* Browser storage fallback */
     }
-  }, [draftKey, session.version, value]);
+  }, [draftKey, session.version, value, raw, mode]);
 
   // Fetch GitHub repos & skills if GitHub is known and question requires projects or skills
   useEffect(() => {
     let cancelled = false;
-    const ghUser = session?.answers?.['practice:GITHUB']?.username || session?.prefill?.['practice:GITHUB']?.username;
-    if (['projects', 'skillsAtSelection', 'platforms'].includes(q.id) && onFetchRepos) {
+    const ghUser = session?.answers?.['practice:GITHUB']?.username;
+    if (ghUser && ['projects', 'skillsAtSelection'].includes(q.id) && onFetchRepos) {
       onFetchRepos(ghUser)
         .then((res) => {
           if (!cancelled && Array.isArray(res.data?.repositories)) {
@@ -73,7 +88,7 @@ export default function QuestionRenderer({
               if (repo.language) detected.add(repo.language);
               if (Array.isArray(repo.topics)) repo.topics.forEach((t) => detected.add(t));
             });
-            setDetectedSkills(Array.from(detected).map((name) => ({ name, category: 'OTHER', level: 'INTERMEDIATE' })));
+            setDetectedSkills(Array.from(detected).map((name) => ({ name, category: 'OTHER' })));
           }
         })
         .catch(() => {});
@@ -117,8 +132,9 @@ export default function QuestionRenderer({
         </span>
         <div>
           <p className="ac-kicker">NEWBERT · {q.section}</p>
-          <h2 tabIndex={-1}>{q.text}</h2>
+          <h2 tabIndex={-1}>{questionHelp?.question || q.text}</h2>
           <p>{q.required ? 'Needed for your story' : 'Optional · confirm or select below'}</p>
+          <ul className="text-xs text-slate-400">{(questionHelp?.prompts?.length ? questionHelp.prompts : interviewGuidance(q)).map(hint => <li key={hint}>{hint}</li>)}</ul>
         </div>
       </div>
 
@@ -185,10 +201,12 @@ export default function QuestionRenderer({
             maxLength={6000}
             value={raw}
             onChange={(e) => setRaw(e.target.value)}
-            placeholder="For example: I joined as a frontend intern at TCS, worked on React and Node.js dashboards, solved around 300 LeetCode problems..."
+            placeholder="Tell us what happened in your own journey. Approximate details are fine; leave out anything you do not remember."
             className="w-full rounded-xl border border-slate-700 bg-slate-900 p-4 text-sm text-white"
           />
-          <p className="text-xs text-slate-400">Gemini AI will organise this into structured fields. You will confirm before saving.</p>
+          <VoiceAnswer value={raw} onChange={setRaw} disabled={busy}/>
+          {['projects', 'skillsAtSelection'].includes(q.id) && <ResumeAnswer disabled={busy} onUse={setRaw}/>}
+          <p className="text-xs text-slate-400">AI organises your words without adding facts. Review the suggestions before confirming.</p>
           <button className="ac-primary" disabled={busy || !raw.trim()} onClick={() => onExtract(q.id, raw)}>
             {busy ? 'Organising your answer…' : 'Organise with AI'}
           </button>
@@ -205,6 +223,8 @@ export default function QuestionRenderer({
               repositories={repositories}
               detectedSkills={detectedSkills}
             />
+            {['text', 'textarea'].includes(q.type) && <VoiceAnswer value={typeof value === 'string' ? value : ''} onChange={setValue} disabled={busy} maxLength={q.maxLength || 6000}/>}
+            {['projects', 'skillsAtSelection'].includes(q.id) && <p className="text-xs text-slate-400">Repository languages are current signals, not proof of your skill level or what you knew at selection. Confirm your contribution and timing yourself.</p>}
 
             {['GITHUB', 'LEETCODE'].includes(q.platform) && (
               <div className="ac-profile-check">
@@ -240,8 +260,8 @@ export default function QuestionRenderer({
 
       <p className="ac-save-hint text-xs text-slate-500 mt-4">
         {audience === 'guest'
-          ? 'Answers save automatically in this browser.'
-          : 'Answers save to your account immediately. You can close and resume anytime.'}
+          ? 'Save & continue stores this answer on Newbert. Keep this browser’s private editing key to resume; unfinished drafts stay in this tab.'
+          : 'Save & continue stores this answer in your account. Unsubmitted text stays in this tab until you submit it.'}
       </p>
     </section>
   );

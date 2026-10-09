@@ -5,7 +5,7 @@ import { Sparkles, Check, Edit3 } from 'lucide-react';
 
 export default function AlumniReview({ session, onEdit, onPublish, onContinue, busy, preview }) {
   const [confirmed, setConfirmed] = useState(false);
-  const [audience, setAudience] = useState('public');
+
 
   const answers = session?.answers || {};
   const name = answers.name || 'Alumni';
@@ -20,9 +20,10 @@ export default function AlumniReview({ session, onEdit, onPublish, onContinue, b
 
   return (
     <section className="ac-review">
-      <p className="ac-kicker">STEP 25 · FINAL REVIEW</p>
+      <p className="ac-kicker">FINAL REVIEW</p>
       <h1>Make sure it feels like you.</h1>
-      <p>Review your answers and choose what juniors can see. Publishing is your approval to share on Newbert.</p>
+      <p>Review and correct your story. All completed story answers will be public when you publish.</p>
+      {preview?.public?.journeySummary && <div className="ac-preview"><h2>Your public journey at a glance</h2><p className="whitespace-pre-wrap">{preview.public.journeySummary}</p><p className="text-xs text-slate-400">Built from your confirmed story answers. Edit any answer below before publishing.</p></div>}
 
       {/* Clean Structured Summary Card */}
       <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-6 my-6 space-y-4">
@@ -66,18 +67,7 @@ export default function AlumniReview({ session, onEdit, onPublish, onContinue, b
         </div>
       </div>
 
-      <details className="ac-preview">
-        <summary>Preview what readers can see (Public vs College)</summary>
-        <div className="ac-choices mt-3 mb-3">
-          <button type="button" aria-pressed={audience === 'public'} onClick={() => setAudience('public')}>
-            Public View
-          </button>
-          <button type="button" aria-pressed={audience === 'college'} onClick={() => setAudience('college')}>
-            College Only View
-          </button>
-        </div>
-        {preview?.[audience] ? <AnswerValue value={preview[audience]} /> : <p className="text-xs text-slate-400">Open review again to refresh this preview.</p>}
-      </details>
+      <details className="ac-preview"><summary>Preview my public story</summary>{preview?.public ? <AnswerValue value={preview.public}/> : <p>Open review again to refresh this preview.</p>}</details>
 
       {session.missingRequired?.length > 0 && (
         <p className="ac-alert">
@@ -121,7 +111,7 @@ export default function AlumniReview({ session, onEdit, onPublish, onContinue, b
       <label className="ac-consent cursor-pointer">
         <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="accent-orange-500 rounded" />
         <span className="text-xs text-slate-300">
-          I reviewed my story and privacy settings. Publish the information I chose to share on Newbert Alumni Network.
+          I reviewed my story. Publish all my completed story answers publicly on Newbert Alumni Network.
         </span>
       </label>
 
@@ -171,12 +161,12 @@ export function PrivateEvidence() {
 
   return (
     <details className="ac-evidence mt-4">
-      <summary className="text-xs text-orange-400 font-bold cursor-pointer">Optional private evidence (offer letter, ID, scorecard)</summary>
-      <p className="text-xs text-slate-400 mt-2">Documents are stored privately for review. They never appear on the Alumni Wall.</p>
+      <summary className="text-xs text-orange-400 font-bold cursor-pointer">Optional private evidence (resume, offer letter, scorecard)</summary>
+      <p className="text-xs text-slate-400 mt-2">Documents are stored privately and never appear on the Alumni Wall. Remove contact details and confidential information first. Uploading creates a pending item; it does not automatically verify your skills or employment.</p>
       <label className="block text-xs font-bold text-slate-300 mt-3">
         Evidence type
         <select value={source} onChange={(e) => setSource(e.target.value)} className="mt-1 block w-full rounded border border-slate-700 bg-slate-900 p-2 text-xs text-white">
-          {['OFFER_LETTER', 'EMPLOYEE_ID', 'GATE_SCORECARD', 'COLLEGE_RECORD', 'COMPANY_EMAIL', 'OTHER'].map((v) => (
+          {['RESUME', 'OFFER_LETTER', 'GATE_SCORECARD', 'COLLEGE_RECORD', 'COMPANY_EMAIL', 'OTHER'].map((v) => (
             <option key={v} value={v}>
               {v.replaceAll('_', ' ')}
             </option>

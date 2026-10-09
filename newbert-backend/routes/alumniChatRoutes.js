@@ -3,6 +3,8 @@ const auth=require('../middleWare/authMiddleware');
 const aiLimit=require('../middleWare/aiRateLimit');
 const c=require('../Controllers/alumniChatController');
 router.use(auth);
+router.use(async(req,res,next)=>{res.set('Cache-Control','no-store');try{const p=await require('../Models/Profile').findOne({userId:req.auth.id}).lean();if(p?.graduationYear&&!require('../services/alumniIntakeService').alumniYear(p.graduationYear))return res.status(403).json({message:'This interview is for alumni. Continue with your student profile.'});next();}catch(e){next(e);}});
+router.post('/intake',aiLimit,c.intake);router.post('/confirm-intake',c.confirmIntake);router.post('/question-help',aiLimit,c.questionHelp);
 const rates=new Map();
 router.use((req,res,next)=>{res.set('Cache-Control','no-store');const now=Date.now();for(const [key,value]of rates)if(value.until<=now)rates.delete(key);const key=String(req.auth.id);const value=rates.get(key)||{count:0,until:now+60000};if(++value.count>120)return res.status(429).json({message:'Please wait a moment before continuing.'});rates.set(key,value);next();});
 router.post('/start',c.start);router.get('/session',c.session);router.post('/prefill',c.prefill);

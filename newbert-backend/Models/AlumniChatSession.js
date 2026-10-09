@@ -2,6 +2,7 @@ const mongoose=require('mongoose');
 const mixed=()=>({type:mongoose.Schema.Types.Mixed,default:()=>({})});
 const schema=new mongoose.Schema({
   userId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true,unique:true},
+  publicStory:{type:Boolean,default:false}, intakeConfirmed:{type:Boolean,default:false}, intake:{type:mongoose.Schema.Types.Mixed,default:null},
   answers:mixed(),rawAnswers:mixed(),extractedAnswers:mixed(),inactiveAnswers:mixed(),prefill:mixed(),
   pendingExtraction:{type:mongoose.Schema.Types.Mixed,default:null},
   history:{type:[mongoose.Schema.Types.Mixed],default:[]},skippedQuestions:{type:[String],default:[]},completedSections:{type:[String],default:[]},

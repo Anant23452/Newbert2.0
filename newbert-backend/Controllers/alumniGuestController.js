@@ -3,10 +3,10 @@ const Session = require('../Models/AlumniGuestSession');
 const Alumni = require('../Models/Alumni');
 const engine = require('../services/alumniQuestionEngine');
 const { ownerSnapshot, buildPublication } = require('../services/alumniChatService');
-const { redactStory, legacyFields } = require('../services/alumniStoryService');
 const { findCollegeByIdentifier } = require('../services/collegeService');
 const { extractAnswer } = require('../services/alumniAIService');
 const { cleanText, invalid, normalizePractice } = require('../services/alumniChatValidation');
+const intakeService = require('../services/alumniIntakeService');
 
 const tokenHash = token => crypto.createHash('sha256').update(token).digest('hex');
 const tokenIsValid = token => typeof token === 'string' && /^[a-zA-Z0-9_-]{43}$/.test(token);
@@ -90,6 +90,24 @@ exports.skip = handle(async (req, res) => {
   res.json(ownerSnapshot(session));
 });
 
+exports.intake = handle(async (req, res) => {
+  const session = active(req);
+  session.intake = await intakeService.prepareIntake(req.body);
+  session.markModified('intake');
+  await save(session);
+  res.json(ownerSnapshot(session));
+});
+exports.confirmIntake = handle(async (req, res) => {
+  const session = active(req);
+  intakeService.confirmIntake(session, req.body.values);
+  await save(session);
+  res.json(ownerSnapshot(session));
+});
+exports.questionHelp = handle(async (req, res) => {
+  const session = active(req, false);
+  res.json(await require('../services/alumniInterviewQuestionService').interviewQuestion(session, req.body.questionId));
+});
+
 exports.back = handle(async (req, res) => {
   const session = active(req);
   engine.back(session);
@@ -99,11 +117,10 @@ exports.back = handle(async (req, res) => {
 
 exports.review = handle(async (req, res) => {
   const session = active(req, false);
-  const privacy = session.answers.privacy || {};
   res.json(ownerSnapshot(session, {
     preview: {
-      public: legacyFields(redactStory(session.answers, privacy, false)),
-      college: legacyFields(redactStory(session.answers, privacy, true)),
+      public: require('../services/alumniJourneySummary').buildAudiencePreview(intakeService.storyForReview(session), false),
+      college: require('../services/alumniJourneySummary').buildAudiencePreview(intakeService.storyForReview(session), true),
     },
   }));
 });

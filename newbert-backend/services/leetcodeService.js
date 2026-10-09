@@ -3,6 +3,7 @@ const LEETCODE_GRAPHQL_URL = "https://leetcode.com/graphql";
 
 async function requestLeetcode(query, variables) {
   const response = await fetch(LEETCODE_GRAPHQL_URL, {
+    signal: AbortSignal.timeout(15000),
     method: "POST",
     headers: { "Content-Type": "application/json", Referer: "https://leetcode.com", "User-Agent": "Newbert" },
     body: JSON.stringify({ query, variables }),

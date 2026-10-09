@@ -6,6 +6,7 @@ const mixed = () => ({ type: mongoose.Schema.Types.Mixed, default: () => ({}) })
 // unique index must remain intact for signed-in alumni.
 const schema = new mongoose.Schema({
   tokenHash: { type: String, required: true, unique: true, select: false },
+  publicStory: { type: Boolean, default: false }, intakeConfirmed: { type: Boolean, default: false }, intake: { type: mongoose.Schema.Types.Mixed, default: null },
   answers: mixed(), rawAnswers: mixed(), extractedAnswers: mixed(), inactiveAnswers: mixed(),
   prefill: mixed(), pendingExtraction: { type: mongoose.Schema.Types.Mixed, default: null },
   history: { type: [mongoose.Schema.Types.Mixed], default: [] },

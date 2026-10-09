@@ -5,6 +5,7 @@ import useAuth from '../hook/useAuth';
 import API from '../Services/api';
 import { normalizeStoryPayload } from '../utils/alumniPayload';
 import QuestionRenderer from '../components/AlumniChat/QuestionRenderer';
+import AlumniIntake from '../components/AlumniChat/AlumniIntake';
 import AlumniReview, { PrivateEvidence } from '../components/AlumniChat/AlumniReview';
 import { AnswerValue } from '../components/AlumniChat/AnswerFields';
 import '../alumni-chat.css';
@@ -18,6 +19,7 @@ export default function AlumniOnboarding() {
   const { user, profile, isAuthenticated } = useAuth();
   const guest = !isAuthenticated;
   const scope = profile?.userId || user?.id || user?.email || 'guest';
+  if (isAuthenticated && profile?.memberType === 'JUNIOR') return <main className="alumni-chat-page"><div className="ac-shell"><h1>Alumni story interview</h1><p>Your account is a student account. The alumni interview becomes available after graduation.</p><Link className="ac-primary" to="/profile">Open my student profile</Link></div></main>;
   return <main className="alumni-chat-page"><div className="ac-shell">
     <Link className="ac-back" to="/alumni-wall">← Alumni Wall</Link>
     <Conversation key={guest ? 'guest' : scope} guest={guest} scope={scope} name={profile?.name || user?.name || 'there'}/>
@@ -48,6 +50,9 @@ function Conversation({ guest, scope, name }) {
     if (guest && response.data?.guestToken) localStorage.setItem(GUEST_KEY, response.data.guestToken);
     return response;
   }, [guest]);
+
+  const fetchRepositories = useCallback(username => request('get', `github-repos${username ? `?username=${encodeURIComponent(username)}` : ''}`), [request]);
+  const questionHelp = useCallback(questionId => request('post', 'question-help', { questionId }), [request]);
 
   useEffect(() => {
     alive.current = true;
@@ -108,7 +113,7 @@ function Conversation({ guest, scope, name }) {
   const completed = session?.completed || 0;
   const draftScope = guest ? localStorage.getItem(GUEST_KEY) || 'new-guest' : scope;
   return <>
-    <header className="ac-header"><div><span className="ac-wordmark">N</span><div><strong>Newbert Alumni Assistant</strong><small>Your story. One conversation.</small></div></div><span className="ac-private"><ShieldCheck size={14}/>Private until you publish</span></header>
+    <header className="ac-header"><div><span className="ac-wordmark">N</span><div><strong>Newbert Alumni Assistant</strong><small>Your story. One conversation.</small></div></div><span className="ac-private"><ShieldCheck size={14}/>Review before publishing</span></header>
     {error && <div className="ac-alert" role="alert">{error}<button onClick={reload} disabled={busy}>Reload saved story</button></div>}
     {notice && <div className="ac-notice" role="status">{notice}</div>}
     {loading ? <p className="ac-loading">Finding your saved story…</p> : view === 'welcome' ? <section className="ac-welcome">
@@ -127,13 +132,13 @@ function Conversation({ guest, scope, name }) {
               <Sparkles size={16} /> Good news:
             </p>
             <p className="text-xs text-slate-300 leading-relaxed">
-              I can automatically detect many details from your existing Newbert, GitHub and professional profiles. You only need to confirm them. Usually takes just a few minutes.
+              Start with the essentials, then add detail when you have time. Submitted answers are saved. You can type or speak, review AI suggestions, and select public GitHub projects after sharing your profile link.
             </p>
           </div>
         </>
       )}
       <p>Your experience can help juniors see what actually worked. Add only the details you are comfortable sharing.</p>
-      <div className="ac-welcome-points"><span><MessageSquare size={18}/>One question at a time</span><span><Check size={18}/>Save, leave and resume</span><span><ShieldCheck size={18}/>You choose what is shared</span></div>
+      <div className="ac-welcome-points"><span><MessageSquare size={18}/>One question at a time</span><span><Check size={18}/>Save, leave and resume</span><span><ShieldCheck size={18}/>Your answers become a public story</span></div>
       {completed > 0 && <p><strong>{session.progress}% complete</strong> · {completed} answers recorded</p>}
       {completed > 0 ? (
         <div className="flex gap-3">
@@ -152,15 +157,15 @@ function Conversation({ guest, scope, name }) {
       <p className="ac-note">{guest ? 'No account is needed. Your private editing key stays in this browser; return on this device to continue or change your story.' : 'Submitted answers save to your account. You can edit them before and after publication.'}</p>
     </section> : view === 'published' ? <section className="ac-welcome">
       <p className="ac-kicker">YOUR JOURNEY IS LIVE</p><h1>A clearer path<br/><em>for the next student.</em></h1>
-      <p>Your story is public with the visibility choices you made. It is labelled self-reported until independently verified.</p>
+      <p>Your story is public with the answers you confirmed. It is labelled self-reported until independently verified.</p>
       <div className="ac-actions"><Link className="ac-primary" to={`/alumni-wall/${session.publishedAlumniId}`}>View my alumni profile</Link><button className="ac-secondary" onClick={loadReview}>Edit my story</button><button onClick={() => setHideConfirm(true)}>Hide from Alumni Wall</button></div>
       {hideConfirm && <div className="ac-alert"><p>Hide your published story? Your saved answers remain available.</p><button onClick={hideStory}>Confirm hide</button><button onClick={() => setHideConfirm(false)}>Cancel</button></div>}
     </section> : <>
       <section className="ac-progress" aria-label="Conversation progress"><div><strong>{session?.progress || 0}% complete</strong><span>{completed} of {session?.total || 0} relevant questions</span></div><progress max="100" value={session?.progress || 0}/>
         <div className="ac-sections">{session?.sections.map(section => <button key={section.name} aria-current={question?.section === section.name ? 'step' : undefined} disabled={busy} onClick={() => { setEditing(session.questions.find(q => q.section === section.name && !Object.hasOwn(session.answers, q.id)) || session.questions.find(q => q.section === section.name)); setView('chat'); }}>{section.completed === section.total ? '✓ ' : ''}{section.name}</button>)}</div>
-        <button className="ac-review-link" onClick={loadReview} disabled={busy}>Review answers & privacy →</button>
+        <button className="ac-review-link" onClick={loadReview} disabled={busy}>Review my public story →</button>
       </section>
-      {session?.prefill && Object.keys(session.prefill).length > 0 ? (
+      {!session?.intakeConfirmed ? <AlumniIntake key={`intake:${session?.version}`} session={session} busy={busy} onImport={payload => mutate('intake', payload)} onConfirm={values => mutate('confirm-intake', { values })}/> : session?.prefill && Object.keys(session.prefill).length > 0 ? (
         <section className="ac-prefill">
           <div className="flex items-center gap-2 text-xs font-bold text-orange-400 uppercase tracking-wider mb-2">
             <Sparkles size={16} /> STEP 1 · AUTOMATIC PROFILE DETECTION
@@ -228,7 +233,7 @@ function Conversation({ guest, scope, name }) {
         : view === 'review' ? <AlumniReview session={session} preview={preview} busy={busy} onEdit={q => { setEditing(q); setView('chat'); }} onPublish={() => mutate('publish', { confirm: true })} onContinue={() => { setEditing(null); setView(session.currentQuestion ? 'chat' : 'review'); }}/>
           : question ? <>
             {completed > 0 && <details className="ac-transcript"><summary>Your saved conversation · {completed} answers</summary>{session.questions.filter(q => Object.hasOwn(session.answers, q.id)).map(q => <article key={q.id}><p><strong>Newbert:</strong> {q.text}</p><div className="ac-user-answer"><AnswerValue value={session.answers[q.id]}/></div><button onClick={() => setEditing(q)}>Edit this answer</button></article>)}</details>}
-            <QuestionRenderer key={`${question.id}:${session.version}`} question={question} session={session} scope={draftScope} privacyFields={data.privacyFields} audience={guest?'guest':'alumni'} busy={busy} returnToReview={Boolean(editing)} onAnswer={(id, value) => mutate('answer', { questionId: id, value }, Boolean(editing))} onExtract={(id, rawAnswer) => mutate('extract', { questionId: id, rawAnswer })} onConfirm={value => mutate('confirm-extraction', { value }, Boolean(editing))} onSkip={id => mutate('skip', { questionId: id }, Boolean(editing))} onBack={() => mutate('back')} onPracticeCheck={(id, value) => request('post', 'practice-check', { questionId: id, value })} onFetchRepos={(username) => request('get', `github-repos${username ? `?username=${encodeURIComponent(username)}` : ''}`)}/>
+            <QuestionRenderer key={`${question.id}:${session.version}`} question={question} session={session} scope={draftScope} privacyFields={data.privacyFields} audience={guest?'guest':'alumni'} busy={busy} returnToReview={Boolean(editing)} onAnswer={(id, value) => mutate('answer', { questionId: id, value }, Boolean(editing))} onExtract={(id, rawAnswer) => mutate('extract', { questionId: id, rawAnswer })} onConfirm={value => mutate('confirm-extraction', { value }, Boolean(editing))} onSkip={id => mutate('skip', { questionId: id }, Boolean(editing))} onBack={() => mutate('back')} onPracticeCheck={(id, value) => request('post', 'practice-check', { questionId: id, value })} onFetchRepos={fetchRepositories} onQuestionHelp={questionHelp}/>
             {!guest && question.section === 'Verification' && <PrivateEvidence/>}
           </> : <div className="ac-alert">This conversation needs the latest Newbert API. Reload this page after the backend update.</div>}
       <footer className="ac-footer"><p>{guest ? 'Submitted answers stay available through the private key saved in this browser.' : 'Your account keeps submitted answers.'} Use review to jump to any remaining required answer.</p><button disabled={busy} onClick={() => setRestart(true)}>Restart draft</button>{restart && <div className="ac-alert"><p>Start a fresh draft? This clears the saved answers. Your published story remains unchanged.</p><button disabled={busy} onClick={() => { setRestart(false); mutate('restart', { confirm: true }); }}>Restart my draft</button><button onClick={() => setRestart(false)}>Keep my answers</button></div>}</footer>

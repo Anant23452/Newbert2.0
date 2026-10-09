@@ -469,7 +469,7 @@ export function CategorySkillSelector({ value = [], onChange, detectedSkills = [
 // 6. Project Selector from Detected GitHub Repositories
 export function GithubProjectPicker({ value = [], onChange, repositories = [] }) {
   const [manualMode, setManualMode] = useState(false);
-  const [manualProject, setManualProject] = useState({ name: '', description: '', techStack: [], onResume: true, discussedInInterview: false });
+  const [manualProject, setManualProject] = useState({ name: '', description: '', techStack: [], onResume: false, discussedInInterview: false });
 
   const selectedProjects = Array.isArray(value) ? value : [];
 
@@ -485,7 +485,7 @@ export function GithubProjectPicker({ value = [], onChange, repositories = [] })
         techStack: repo.language ? [repo.language] : [],
         githubUrl: repo.url || `https://github.com/${repo.fullName || repo.name}`,
         liveUrl: repo.homepage || '',
-        onResume: true,
+        onResume: false,
         discussedInInterview: false,
         source: 'GITHUB'
       };
@@ -503,7 +503,7 @@ export function GithubProjectPicker({ value = [], onChange, repositories = [] })
     e.preventDefault();
     if (manualProject.name.trim()) {
       onChange([...selectedProjects, { ...manualProject, source: 'MANUAL' }]);
-      setManualProject({ name: '', description: '', techStack: [], onResume: true, discussedInInterview: false });
+      setManualProject({ name: '', description: '', techStack: [], onResume: false, discussedInInterview: false });
       setManualMode(false);
     }
   };
@@ -559,10 +559,19 @@ export function GithubProjectPicker({ value = [], onChange, repositories = [] })
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-1">
+                <label className="col-span-2 text-xs text-slate-300">What problem did this project solve?
+                  <textarea value={p.description || ''} maxLength={3000} rows={2} onChange={e => updateSelectedProject(idx, { description: e.target.value })}/>
+                </label>
+                <label className="col-span-2 text-xs text-slate-300">What did you personally implement?
+                  <textarea value={p.contribution || ''} maxLength={3000} rows={2} onChange={e => updateSelectedProject(idx, { contribution: e.target.value })}/>
+                </label>
+                <label className="col-span-2 text-xs text-slate-300">Individual or team project?
+                  <select value={p.ownership || ''} onChange={e => updateSelectedProject(idx, { ownership: e.target.value })}><option value="">Not specified</option><option value="INDIVIDUAL">Individual</option><option value="TEAM">Team</option></select>
+                </label>
                 <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
                   <input
                     type="checkbox"
-                    checked={p.onResume !== false}
+                    checked={p.onResume === true}
                     onChange={(e) => updateSelectedProject(idx, { onResume: e.target.checked })}
                     className="rounded border-slate-600 accent-orange-500"
                   />
@@ -613,7 +622,7 @@ export function GithubProjectPicker({ value = [], onChange, repositories = [] })
       {/* Manual Add Button & Form */}
       <div>
         {manualMode ? (
-          <form onSubmit={addManual} className="rounded-xl border border-slate-700 bg-slate-800 p-4 space-y-3">
+          <div className="rounded-xl border border-slate-700 bg-slate-800 p-4 space-y-3">
             <h4 className="text-sm font-bold text-white">Add Project Manually</h4>
             <input
               type="text"
@@ -639,9 +648,9 @@ export function GithubProjectPicker({ value = [], onChange, repositories = [] })
             />
             <div className="flex gap-2 justify-end">
               <button type="button" onClick={() => setManualMode(false)} className="rounded-lg px-3 py-1.5 text-xs text-slate-400 hover:text-white">Cancel</button>
-              <button type="submit" className="rounded-lg bg-orange-500 px-4 py-1.5 text-xs font-bold text-black">Save Project</button>
+              <button type="button" onClick={addManual} className="rounded-lg bg-orange-500 px-4 py-1.5 text-xs font-bold text-black">Add to answer</button>
             </div>
-          </form>
+          </div>
         ) : (
           <button
             type="button"

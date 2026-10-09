@@ -1,5 +1,17 @@
 # Alumni onboarding
 
+## October 9 interview improvements
+
+The interview now offers voice-to-text for short free-text answers and the natural-answer mode. Alumni choose English (India) or Hindi, start listening explicitly, edit the transcript, and submit it themselves. Browser speech recognition support varies and may use the browser vendor's remote speech service; the UI discloses this before starting. No audio recording is stored by Newbert. Unsupported browsers and denied microphone access retain text entry. Leaving a question aborts recognition.
+
+Projects and skills questions can read a PDF or text resume locally (5 MB, at most 15 PDF pages). The alumnus trims the extracted text to the relevant section, removes personal data and uses it as an editable draft. Only pressing Organise with AI sends the selected text to the existing backend extraction endpoint and Gemini. Suggestions still require explicit confirmation. Scanned PDFs require pasted text. This does not establish selection-time skills or identity.
+
+Signed-in alumni can separately upload a resume as private evidence (2 MB) at the existing Verification step. It remains pending and owner-only. Guests can use local resume-assisted answers but cannot store the original evidence document. LinkedIn is a self-reported link; GitHub and LeetCode checks represent current public data. No automatic verified status or document review dashboard is introduced.
+
+Project selection no longer assumes a repository was on a placement resume. The alumnus can describe the project and their own contribution, choose individual/team ownership, and confirm resume/interview use. Repository listings exclude private repositories. Natural text and input mode resume from a tab-scoped draft. Public journey summaries are composed from audience-filtered confirmed story fields and are shown in the owner review and public alumni detail. Private and college-only information cannot enter the public summary.
+
+Validation: backend conversation, publication, guest, resume-privacy and summary tests; frontend resume-input tests; production build. Actual speech recognition, microphone permission and visual layout need browser acceptance checks. The local in-app browser could not reach the preview during implementation, so automated API checks do not claim a successful visual or live microphone test.
+
 Open `/alumni/onboarding` from the Alumni Wall or send that link to a senior. A senior can complete, review and publish a self-reported story without creating an account. Signed-in seniors continue to use their account-backed story. Both use Newbert's existing theme and Alumni Wall. Guest mentorship requests and private evidence uploads are unavailable because there is no account inbox or verified owner.
 
 New members sign up, then visit `/join` for only a verified college and class year. The class year is interpreted at the July India academic boundary: a graduated class enters the senior story conversation; a current student opens Today immediately. Current students can later use the optional **Personalize my profile** prompt on Today to answer the earlier profile questions one at a time at `/profile/complete`. Answers may be skipped, and the student can return to Today at any time.

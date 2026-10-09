@@ -1,0 +1,20 @@
+const { test, after } = require('node:test');
+const assert = require('node:assert/strict');
+const { setup } = require('./helpers/alumniChatHarness');
+const h = setup();
+let server;
+after(() => server?.close());
+test('resume uploads remain pending, private and owner-only', async () => {
+  server = h.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  const base = `http://127.0.0.1:${server.address().port}/api/alumni-chat`;
+  const response = await fetch(`${base}/documents`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${h.token()}` }, body: JSON.stringify({ source: 'RESUME', filename: 'resume.pdf', base64: Buffer.from('%PDF-private resume').toString('base64') }) });
+  assert.equal(response.status, 201);
+  const result = await response.json();
+  assert.equal(result.document.source, 'RESUME');
+  assert.equal(result.document.status, 'PENDING');
+  const list = await fetch(`${base}/documents`, { headers: { Authorization: `Bearer ${h.token()}` } }).then(r => r.json());
+  assert.equal(list.documents[0].data, undefined);
+  const denied = await fetch(`${base}/documents/${result.document.id}`, { headers: { Authorization: `Bearer ${h.token(h.otherId)}` } });
+  assert.equal(denied.status, 404);
+});
