@@ -110,3 +110,22 @@ test('new published subjects register for existing notebooks and tutor without c
     await dynamic({},response(),()=>{});assert.equal(service.catalog.subjects.length,originalCount+1);
   } finally {service.catalog.subjects.splice(originalCount);delete service.catalog.sources.newbert;}
 });
+test('written practice distinguishes sourced PYQs and excludes model solutions from public data',()=>{
+  const body={subjectId:'test',url:`https://youtu.be/${videoId}`,title:'Practice lesson',unit:1,published:true,practice:[{_id:student,type:'numerical',question:'Find the result.',solution:'Private model answer',marks:7,isPYQ:true,exam:'AKTU BEE502',year:2024,sourceUrl:'https://example.com/paper.pdf'}]};
+  const lesson=service.validateLesson(body);
+  assert.equal(lesson.practice[0]._id,student);assert.equal(lesson.practice[0].year,2024);
+  const published=service.publicLesson(lesson);
+  assert(!JSON.stringify(published).includes('Private model answer'));assert.equal(published.practice[0].id,student);
+  assert.throws(()=>service.validateLesson({...body,practice:[{...body.practice[0],sourceUrl:''}]}));
+  assert.throws(()=>service.validateLesson({...body,practice:[{...body.practice[0],year:2999}]}));
+  assert.throws(()=>service.validateLesson({...body,practice:[body.practice[0],body.practice[0]]}));
+});
+test('written solutions require an answer and a matching published lesson question',async()=>{
+  let query;
+  mock.method(Lesson,'findOne',q=>{query=q;return chain({practice:[{_id:student,solution:'Worked solution'}]});});
+  const req={params:{id:mentor,questionId:student},body:{answer:'My calculation'}};
+  const res=await call(controller.practiceSolution,req);
+  assert.equal(res.code,200);assert.equal(query.published,true);assert.equal(res.body.solution,'Worked solution');
+  assert.equal((await call(controller.practiceSolution,{...req,body:{answer:' '}})).code,400);
+  assert.equal((await call(controller.practiceSolution,{...req,params:{...req.params,questionId:'333333333333333333333333'}})).code,404);
+});

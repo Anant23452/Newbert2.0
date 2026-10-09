@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowRight, BookOpen, Clock3, GraduationCap, Play, RotateCcw, Search } from "lucide-react";
+import { ArrowRight, BookOpen, Clock3, Play, RotateCcw, Search } from "lucide-react";
 import useAuth from "../hook/useAuth";
 import useStudyProgress from "../hook/useStudyProgress";
 import { channelUrl, lectureKey, lessonHref, studyCourses, studyHref } from "../data/studyCatalog";
@@ -24,7 +24,7 @@ export default function StudyStudio() {
   const courses = studyCourses.filter((c) => c.lessons.length > 0 && (filter === "all" || (filter === "for-me" ? c.branch === "all" || c.branch === relatedBranch : c.branch === filter)) && `${c.title} ${c.audience}`.toLowerCase().includes(query.toLowerCase()));
   const recentCourse = recent && studyCourses.find((c) => c.id === recent.key.split(":")[1]);
   return <main className="studio-page"><div className="studio-shell">
-    <header className="studio-hero"><div><p className="studio-eyebrow">NEWBERT / STUDY STUDIO</p><h1>Watch. Work it out.<br/><span>Make it yours.</span></h1><p>Your lectures, notes and revision in one place. Pick up where you stopped, and come back to the ideas that need another pass.</p><div className="studio-hero-links"><a href={channelUrl} target="_blank" rel="noreferrer">From the Newbert channel ↗</a><Link to="/notes">Semester notes library <ArrowRight size={15}/></Link></div></div><div className="studio-learning-art" aria-hidden="true"><span className="studio-art-label">YOUR LEARNING LOOP</span><div><Play size={25}/><span>Understand</span></div><div><BookOpen size={25}/><span>Make a note</span></div><div><RotateCcw size={25}/><span>Recall it</span></div></div></header>
+    <header className="studio-hero"><div><p className="studio-eyebrow">NEWBERT / STUDY STUDIO</p><h1>Watch. Work it out.<br/><span>Make it yours.</span></h1><p>Your lectures, notes and revision in one place. Pick up where you stopped, and come back to the ideas that need another pass.</p><div className="studio-hero-links"><a href={channelUrl} target="_blank" rel="noreferrer">From the Newbert channel ↗</a></div></div><div className="studio-learning-art" aria-hidden="true"><span className="studio-art-label">YOUR LEARNING LOOP</span><div><Play size={25}/><span>Understand</span></div><div><BookOpen size={25}/><span>Make a note</span></div><div><RotateCcw size={25}/><span>Recall it</span></div></div></header>
     <section className="studio-summary" aria-label="Your learning progress"><div><strong>{studyCourses.length}</strong><span>subject collections</span></div><div><strong>{studyCourses.reduce((sum,c) => sum+c.lessons.length,0)}</strong><span>channel lessons & revision sessions</span></div><div><strong>{lectures.filter((r) => r.completed).length}</strong><span>lessons you marked complete</span></div><div><strong>{due.length}</strong><span>recall sessions due</span></div></section>
     {progress.error && <div className="studio-notice" role="alert">{progress.error}<button onClick={progress.retry}>Retry account progress</button></div>}
     <section className="studio-return-grid">
@@ -36,9 +36,8 @@ export default function StudyStudio() {
         const done = course.lessons.filter((l)=>lectures.some((r)=>r.key===lectureKey(course.id,l.videoId)&&r.completed)).length;
         const units = [...new Set(course.lessons.filter((l)=>l.unit).map((l)=>l.unit))];
         return <Link className="studio-course-card" key={course.id} to={lessonHref(course.id)}><div className={`studio-course-cover cover-${index%4}`}><img src={`https://i.ytimg.com/vi/${course.lessons[0].videoId}/hqdefault.jpg`} alt="" loading="lazy"/><span><Play size={17}/>{course.lessons.length} lessons</span><b>{course.audience}</b></div><div className="studio-course-copy"><h3>{course.title}</h3><p>Available: {units.length === 1 ? `Unit ${units[0]}` : `Units ${units.join(", ")}`}{course.lessons.some(l=>!l.unit) ? " + archived revision" : ""}</p><div className="studio-course-meta"><span><Clock3 size={13}/>~{Math.round(course.lessons.reduce((s,l)=>s+l.minutes,0)/60*10)/10} hours</span><span>{done}/{course.lessons.length} done</span></div><progress aria-label={`${course.title} completion`} value={done} max={course.lessons.length}/><span className="studio-course-cta">{done ? "Continue subject" : "Open classroom"}<ArrowRight size={16}/></span></div></Link>;
-      })}</div>{!courses.length&&<div className="studio-empty"><Search size={28}/><h3>No matching subjects yet</h3><p>Try another search, or use the semester notes library below.</p><button onClick={()=>{setQuery("");setFilter("all");}}>Show all subjects</button></div>}
+      })}</div>{!courses.length&&<div className="studio-empty"><Search size={28}/><h3>No matching subjects yet</h3><p>Try another subject name or choose a different branch.</p><button onClick={()=>{setQuery("");setFilter("all");}}>Show all subjects</button></div>}
     </section>
-    <Link className="studio-library-link" to="/notes"><GraduationCap size={30}/><span><strong>Looking for your semester’s notes?</strong><small>Your branch outlines, published PDFs, previous-year questions, saved units and revision worksheets are all here.</small></span><ArrowRight size={20}/></Link>
     <p className="studio-footnote">Collections include the lectures currently published on the channel, ordered for study. Unit coverage is shown above; a collection is not a claim of complete syllabus coverage. Study progress is self-recorded.</p>
   </div></main>;
 }

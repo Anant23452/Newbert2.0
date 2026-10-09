@@ -34,10 +34,21 @@ function validateLesson(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) invalid('Provide lesson details.');
   const videoId = youtubeId(body.url), unit = Number(body.unit), order = Number(body.order || 0), minutes = Number(body.minutes || 0);
   if (![1,2,3,4,5].includes(unit) || !Number.isInteger(order) || order < 0 || order > 10000 || !Number.isFinite(minutes) || minutes < 0 || minutes > 1440 || typeof body.published !== 'boolean') invalid('Check unit, duration, order and publication status.');
-  const resources = body.resources || [], quiz = body.quiz || [];
+  const resources = body.resources || [], quiz = body.quiz || [], practice = body.practice || [];
+  if (!Array.isArray(practice) || practice.length > 20) invalid('Keep up to 20 written practice questions.');
   if (!Array.isArray(resources) || resources.length > 20 || !Array.isArray(quiz) || quiz.length > 10) invalid('Keep up to 20 resources and 10 quiz questions.');
+  const questionIds = new Set();
   return { subjectId:text(body.subjectId,60,true), videoId, unit, order, minutes, published:body.published, title:text(body.title,200,true), summary:text(body.summary || '',4000), mentorName:text(body.mentorName || '',100),
-    resources: resources.map(r=>{ if (!r || !['notes','practice','past-paper','other'].includes(r.kind)) invalid('Choose a resource type.'); return {title:text(r.title,150,true),url:publicUrl(r.url),kind:r.kind}; }),
+    resources: resources.map(r=>{ if (!r || !['notes','practice','past-paper','other'].includes(r.kind) || (r.format && !['pdf','link'].includes(r.format))) invalid('Choose a resource type and format.'); return {title:text(r.title,150,true),url:publicUrl(r.url),kind:r.kind,format:r.format || 'link'}; }),
+    practice: practice.map(q=>{
+      if(!q || !['short','long','numerical'].includes(q.type) || typeof q.isPYQ !== 'boolean') invalid('Choose a practice question type and source.');
+      if(q._id && (!/^[a-f\d]{24}$/i.test(String(q._id)) || questionIds.has(String(q._id)))) invalid('Practice question identifiers must be valid and unique.');
+      if(q._id) questionIds.add(String(q._id));
+      const marks=Number(q.marks || 0), year=Number(q.year || 0);
+      if(!Number.isInteger(marks) || marks<0 || marks>100) invalid('Marks must be between 0 and 100.');
+      if(q.isPYQ && (!Number.isInteger(year) || year<2000 || year>new Date().getFullYear())) invalid('Provide a valid exam year for previous-year questions.');
+      return {...(q._id && {_id:String(q._id)}),type:q.type,question:text(q.question,3000,true),solution:text(q.solution,6000,true),marks,isPYQ:q.isPYQ,exam:text(q.exam || '',150,q.isPYQ),year:q.isPYQ?year:0,sourceUrl:q.isPYQ?publicUrl(q.sourceUrl):''};
+    }),
     quiz: quiz.map(q=>{ if (!q || !Array.isArray(q.options) || q.options.length !== 4 || !Number.isInteger(q.correct) || q.correct < 0 || q.correct > 3) invalid('Each question needs four options and a correct answer.'); return {question:text(q.question,1000,true),options:q.options.map(o=>text(o,500,true)),correct:q.correct,explanation:text(q.explanation,2000,true)}; }) };
 }
 function baselineLesson(videoId, subjectId) {
@@ -45,5 +56,5 @@ function baselineLesson(videoId, subjectId) {
   return subject && courses.find(c=>c.id === subject.lectureCollection)?.lessons.find(l=>l.videoId === videoId);
 }
 function isLegacyVideo(videoId) { return courses.some(c=>c.lessons.some(l=>l.videoId === videoId)); }
-function publicLesson(lesson) { return {...lesson,quiz:(lesson.quiz || []).map(q=>({question:q.question,options:q.options}))}; }
+function publicLesson(lesson) { return {...lesson,quiz:(lesson.quiz || []).map(q=>({question:q.question,options:q.options})),practice:(lesson.practice || []).map(q=>({id:String(q._id),type:q.type,question:q.question,marks:q.marks,isPYQ:q.isPYQ,exam:q.exam,year:q.year,sourceUrl:q.sourceUrl}))}; }
 module.exports = { catalog, courses, invalid, text, youtubeId, validateSubject, validateLesson, baselineLesson, isLegacyVideo, publicLesson };

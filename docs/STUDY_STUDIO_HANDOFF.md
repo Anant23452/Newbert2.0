@@ -5,19 +5,21 @@
 - Academic year inference from graduation year with the July India session boundary.
 - Profile branch detection, branch navigation, semester and curriculum selection.
 - All existing bundled lectures, original lecture URLs, and notebook keys.
-- Personal timestamp notes, unit notes, completion, recall and tutor tools.
+- Personal timestamp notes, unit notes, completion and recall. The simplified classroom no longer shows the AI tutor or concept-lab panels; stored notes and the existing tutor backend remain intact.
 - Existing notes library and administration.
 - Empty subjects are hidden from student shelves, not deleted from the syllabus.
 
 ## New student features
 
 - Published database lessons appear in the existing branch/year/semester/subject/unit hierarchy.
-- Under each video: Ask a mentor, Notes & resources, Practice.
+- Under each video: Lesson notes, collapsible chapter practice, and collapsible mentor doubts. The classroom uses one column with personal notebook/recall and subject details collapsed below it.
 - Questions attach to an editable timestamp; class discussion or private-to-staff visibility.
 - Question owners can resolve or reopen their questions.
 - Mentor replies are labelled separately from AI assistance.
-- Resources have a title, type and public HTTPS link.
+- Resources have a title, type, format and public HTTPS link. PDF notes and PDF slide exports open in an inline reader with fullscreen and original/download controls. Drive file links are converted to preview URLs. Hosts that block embedding require the original link fallback; non-PDF resources remain links.
 - Admin-written quizzes have explanations after server grading. Answer keys are not sent in the public catalog.
+- Written chapter practice supports short answers, long answers and numerical problems. Answers are drafted on the student's device and submitted to reveal the model solution on the same page. Written answers are self-reviewed rather than automatically graded.
+- Previous-year questions require an exam name, year and original paper URL. Newbert does not manufacture PYQs; admins add the real questions and worked solutions in the lesson editor.
 - `/study/my-doubts` shows the student's questions and replies; videos can open inside the page at the question time.
 
 ## Administration
@@ -26,7 +28,7 @@
 - Choose branch, year, semester, scheme and subject. Existing empty syllabus subjects remain available here.
 - Create a custom subject with five unit headings, or use an existing subject.
 - Paste a single YouTube video link and fetch metadata, then review/edit the lesson details.
-- Attach resource links, set lesson ordering and mentor display name, and optionally add up to ten quiz questions.
+- Attach PDF/resource links, set lesson ordering and mentor display name, and optionally add up to ten multiple-choice and twenty written practice questions.
 - Save draft, preview or publish. Editing a bundled lecture creates an override without changing its video/notebook identifier.
 - Unpublish returns a lesson to draft; existing student notes are retained.
 - Duplicate links within the same subject require editing the existing lesson.
@@ -40,6 +42,8 @@ No new packages or file storage service are needed. MongoDB stores subjects, les
 - `ADMIN_EMAILS`: existing admin allowlist, comma-separated.
 - `MENTOR_EMAILS`: optional separate mentor allowlist, comma-separated.
 - `YOUTUBE_API_KEY`: optional server-only YouTube Data API v3 key. Enable YouTube Data API v3 in the key's Google Cloud project.
+
+No additional key is needed for inline PDF notes or written/PYQ practice. Notes must use public file links. Export PPT slides to PDF before attaching them; automatic PPT conversion and file-upload storage are outside this implementation.
 
 Without a YouTube API key, import uses YouTube oEmbed for title/channel name and thumbnail; the admin enters summary/duration. With a key, the backend retrieves description, duration and embedding status. Publishing rechecks video availability. Region restrictions or later YouTube changes can still affect playback.
 
@@ -59,5 +63,7 @@ Before production release, run an authenticated staging walkthrough:
 6. Submit correct/incorrect quiz answers and check explanations.
 7. Unpublish the lesson, verify it disappears and existing notes remain stored. Republish and verify notes resume.
 8. Test year/branch defaults for a real profile and mobile layout.
+9. Attach a public PDF/Drive file, read it under the video, use fullscreen and close it. Check the original-link fallback for hosts that deny embedding.
+10. Add short/numerical/long questions and a sourced PYQ. Confirm solutions are absent from the catalog, answer inside the lesson, compare the returned model solution, and reload to check the local draft. Verify editing the lesson preserves existing practice question identifiers.
 
 Local build and automated tests do not confirm live Render/Vercel deployment or production credentials. This work has not been deployed.

@@ -3,14 +3,15 @@ import { Link } from 'react-router-dom';
 import API from '../Services/api';
 import { timeLabel } from '../utils/studyTools';
 import '../study-content.css';
+import LessonNotes from './LessonNotes';
+import LessonPractice from './LessonPractice';
 
-export default function LessonLearningTools({ lesson, authenticated, controller, position }) {
-  const [tab, setTab] = useState('doubts');
+export default function LessonLearningTools({ lesson, authenticated, controller, position, scope }) {
+  const [doubtsOpened,setDoubtsOpened]=useState(false),[practiceOpened,setPracticeOpened]=useState(false);
   return <section className="study-learning-tools">
-    <nav aria-label="Lesson learning tools">{[['doubts','Ask a mentor'],['resources','Notes & resources'],['quiz','Practice']].map(([id,label])=><button key={id} aria-pressed={tab===id} onClick={()=>setTab(id)}>{label}</button>)}</nav>
-    {tab==='doubts'&&<LessonDoubts videoId={lesson.videoId} authenticated={authenticated} onSeek={seconds=>controller.current?.seek(seconds)} currentTime={()=>Math.floor(controller.current?.time() ?? position?.current ?? 0)}/>}
-    {tab==='resources'&&<div className="study-tool-body"><h2>Keep the lesson materials close.</h2>{lesson.mentorName&&<p>Lesson mentor: {lesson.mentorName}</p>}{lesson.summary&&<p className="study-summary">{lesson.summary}</p>}{lesson.resources?.length ? <div className="study-resource-grid">{lesson.resources.map((r,i)=><a key={i} href={r.url} target="_blank" rel="noopener noreferrer"><small>{r.kind.replace('-',' ')}</small><strong>{r.title}</strong><span>Open resource ↗</span></a>)}</div> : <p>No resources attached to this lesson yet. Your personal notebook remains available above.</p>}</div>}
-    {tab==='quiz'&&<LessonQuiz key={lesson._id || lesson.videoId} lesson={lesson} authenticated={authenticated}/>}
+    <LessonNotes key={lesson.videoId} lesson={lesson}/>
+    <details className="lesson-fold" onToggle={e=>{if(e.currentTarget.open)setPracticeOpened(true);}}><summary>Practice this chapter <span>{(lesson.quiz?.length || 0)+(lesson.practice?.length || 0)} questions</span></summary>{practiceOpened&&<><LessonPractice lesson={lesson} authenticated={authenticated} scope={scope}/>{Boolean(lesson.quiz?.length)&&<LessonQuiz key={lesson._id || lesson.videoId} lesson={lesson} authenticated={authenticated}/>}</>}</details>
+    <details className="lesson-fold" onToggle={e=>{if(e.currentTarget.open)setDoubtsOpened(true);}}><summary>Ask a doubt</summary>{doubtsOpened&&<LessonDoubts videoId={lesson.videoId} authenticated={authenticated} onSeek={seconds=>controller.current?.seek(seconds)} currentTime={()=>Math.floor(controller.current?.time() ?? position?.current ?? 0)}/>}</details>
   </section>;
 }
 export function DoubtCard({ doubt, onResolve, onSeek, replyAction }) {
@@ -31,7 +32,7 @@ function LessonDoubts({ videoId, authenticated, currentTime, onSeek }) {
   const ask=async e=>{e.preventDefault();setBusy(true);setError('');try {const {data}=await API.post(`/study/videos/${videoId}/doubts`,{text,seconds:Number(seconds),visibility});setDoubts(items=>[data.doubt,...items]);setText('');} catch(e) {setError(e.response?.data?.message || 'Question was not sent. Your text is still here.');} finally {setBusy(false);}};
   const resolve=async d=>{setBusy(true);try {const {data}=await API.patch(`/study/doubts/${d.id}`,{resolved:!d.resolved});setDoubts(items=>items.map(item=>item.id===d.id?data.doubt:item));} catch(e) {setError(e.response?.data?.message || 'Status could not be changed.');} finally {setBusy(false);}};
   const visible=doubts.filter(d=>filter==='all'||filter==='mine'&&d.isMine||filter==='unanswered'&&!d.replies.length||filter==='answered'&&d.replies.length);
-  return <div className="study-tool-body"><h2>Ask about the moment that needs explaining.</h2><p>Mentor replies appear here. AI study help remains separately labelled in the unit tutor.</p>
+  return <div className="study-tool-body"><h2>Ask your mentor</h2><p>Attach your question to the video moment you need help with.</p>
     {authenticated ? <form onSubmit={ask} className="study-form"><fieldset disabled={busy}><div className="study-row"><button type="button" className="studio-secondary" onClick={()=>setSeconds(currentTime())}>Use current video time</button><label>Timestamp (seconds)<input type="number" min="0" max="86400" required value={seconds} onChange={e=>setSeconds(e.target.value)}/></label></div><label>Your question<textarea required maxLength={2000} rows={3} value={text} onChange={e=>setText(e.target.value)} placeholder="What have you tried, and where are you stuck?"/></label><label>Who can see it?<select value={visibility} onChange={e=>setVisibility(e.target.value)}><option value="public">Class discussion</option><option value="private">Private to mentor</option></select></label><button className="studio-primary" disabled={!text.trim()}>{busy?'Sending…':'Ask mentor'}</button></fieldset></form> : <p><Link to="/profile">Sign in</Link> to ask a mentor and track replies.</p>}
     {error&&<p role="alert" className="studio-notice">{error}<button disabled={busy} onClick={load}>Retry loading questions</button></p>}
     <div className="studio-filters">{[['all','All'],['unanswered','Unanswered'],['answered','Answered'],['mine','My questions']].map(([id,label])=><button key={id} aria-pressed={filter===id} onClick={()=>setFilter(id)}>{label}</button>)}</div>

@@ -9,8 +9,9 @@ const schema = new mongoose.Schema({
   mentorName: { type: String, default: '', maxlength: 100 },
   order: { type: Number, default: 0 },
   published: { type: Boolean, default: false },
-  resources: { type: [{ title: String, url: String, kind: String }], default: [] },
+  resources: { type: [{ title: String, url: String, kind: String, format: String }], default: [] },
   quiz: { type: [{ question: String, options: [String], correct: Number, explanation: String }], default: [] },
+  practice: { type: [{ type: String, question: String, solution: String, marks: Number, isPYQ: Boolean, exam: String, year: Number, sourceUrl: String }], default: [] },
 }, { timestamps: true });
 schema.index({ subjectId: 1, videoId: 1 }, { unique: true });
 module.exports = mongoose.model('StudyLesson', schema);

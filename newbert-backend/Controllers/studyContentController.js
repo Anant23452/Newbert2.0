@@ -83,3 +83,10 @@ exports.grade = handle(async(req,res)=>{
   const results = lesson.quiz.map((q,i)=>({correct:q.correct,explanation:q.explanation,passed:answers[i] === q.correct}));
   res.json({score:results.filter(r=>r.passed).length,total:results.length,results});
 });
+exports.practiceSolution = handle(async(req,res)=>{
+  s.text(req.body.answer,6000,true);
+  const lesson = await Lesson.findOne({_id:id(req.params.id),published:true}).lean();
+  const question = lesson?.practice?.find(q=>String(q._id)===id(req.params.questionId));
+  if(!question) return res.status(404).json({message:'Published practice question not found.'});
+  res.json({solution:question.solution,message:'Compare your steps with the model answer. Written answers are self-reviewed, not automatically graded.'});
+});

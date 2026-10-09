@@ -10,4 +10,5 @@ router.get('/my-doubts',auth,c.mine);
 router.get('/mentor/doubts',auth,requireStaff,c.inbox);
 router.post('/doubts/:id/replies',auth,requireStaff,c.reply);
 router.post('/lessons/:id/quiz',auth,c.grade);
+router.post('/lessons/:id/practice/:questionId',auth,c.practiceSolution);
 module.exports = router;
