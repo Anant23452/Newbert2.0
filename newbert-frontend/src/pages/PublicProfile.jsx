@@ -21,7 +21,7 @@ function PublicProfileContent({ userId }) {
     return () => { active = false; };
   }, [userId]);
   if (state.loading) return <PublicProfileLoading/>;
-  if (state.error) return <main className="min-h-screen bg-[#111827] p-10 text-white"><Link to="/leaderboard" className="text-orange-300">Back to Leaderboard</Link><p className="mt-8">{state.error}</p></main>;
+  if (state.error) return <main className="min-h-screen bg-[#0b0e0a] p-10 text-white"><Link to="/leaderboard" className="text-orange-300">Back to Leaderboard</Link><p className="mt-8">{state.error}</p></main>;
   const p = state.profile;
   return (
     <main className="min-h-screen bg-[#0b0e0a] px-5 py-12 text-white">

@@ -170,14 +170,14 @@ export default function MomentumSection({
               type="button"
               onClick={onRefreshStats}
               disabled={refreshing}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-[#172033] px-3 py-2 text-xs font-extrabold text-slate-300 hover:border-orange-400 hover:text-white transition disabled:cursor-wait disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-[#151a13] px-3 py-2 text-xs font-extrabold text-slate-300 hover:border-orange-400 hover:text-white transition disabled:cursor-wait disabled:opacity-60"
               title="Refresh Stats"
             >
               <RefreshCw size={13} className={refreshing ? "animate-spin text-orange-400" : "text-slate-400"} />
               <span>{refreshing ? "Refreshing activity..." : "Refresh Stats"}</span>
             </button>
           )}
-          <select value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value))} aria-label="Activity year" className="rounded-lg border border-white/15 bg-[#172033] px-3 py-2 text-sm font-extrabold text-white outline-none focus:border-orange-400">{yearOptions.map((year) => <option key={year}>{year}</option>)}</select>
+          <select value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value))} aria-label="Activity year" className="rounded-lg border border-white/15 bg-[#151a13] px-3 py-2 text-sm font-extrabold text-white outline-none focus:border-orange-400">{yearOptions.map((year) => <option key={year}>{year}</option>)}</select>
         </div>
       </div>
       {streakStatsVisible ? <div className="mt-6 grid gap-3 md:grid-cols-[1.35fr_1fr_1fr_1fr]">

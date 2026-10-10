@@ -86,5 +86,5 @@ function NotFound() {
 }
 
 function PageLoader() {
-  return <main className="grid min-h-[calc(100vh-4rem)] place-items-center bg-[#111827] px-5 text-center text-white"><div><div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-white/15 border-t-orange-400"/><p className="mt-4 text-sm font-bold text-slate-300">Loading Newbert...</p></div></main>;
+  return <main className="grid min-h-[calc(100vh-4rem)] place-items-center bg-[#0b0e0a] px-5 text-center text-white"><div><div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-white/15 border-t-orange-400"/><p className="mt-4 text-sm font-bold text-slate-300">Loading Newbert...</p></div></main>;
 }
