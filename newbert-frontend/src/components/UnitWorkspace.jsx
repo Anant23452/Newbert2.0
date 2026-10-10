@@ -11,8 +11,10 @@ import LecturePlayer from './LecturePlayer';
 
 
 import LessonLearningTools from './LessonLearningTools';
+import useAuth from '../hook/useAuth';
 
 export default function UnitWorkspace({branch,subject,unit,source,scope,authenticated}) {
+  const {user}=useAuth();
   const notebook=useLectureNotebook(academicUnitKey(branch.id,subject.id,unit.number),scope,authenticated);
   const {record,update}=notebook;
   const [params,setParams]=useSearchParams();
@@ -40,6 +42,7 @@ export default function UnitWorkspace({branch,subject,unit,source,scope,authenti
     <nav className="academic-unit-nav" aria-label="Units">{subject.units.map(u=><Link aria-current={u.number===unit.number?'page':undefined} to={academicSubjectHref(branch.id,subject.id,u.number)} key={u.number}><span>0{u.number}</span><strong>{u.title}</strong></Link>)}</nav>
 
     <div className="academic-workspace"><div className="academic-video-column">
+      {user?.isAdmin&&lesson&&<p><Link className="studio-secondary" to={`/admin/study?subject=${encodeURIComponent(subject.id)}&video=${encodeURIComponent(lesson.videoId)}`}>Edit lesson · notes & questions</Link></p>}
       {lesson?<><div className="academic-lesson-picker"><label htmlFor="unit-lecture">Published lecture</label><select id="unit-lecture" value={lesson.videoId} onChange={e=>setParams({unit:String(unit.number),lesson:e.target.value})}>{lessons.map(l=><option value={l.videoId} key={l.videoId}>{l.title} · ~{l.minutes} min</option>)}</select></div><UnitVideo key={`${scope}:${lesson.videoId}`} subject={subject} lesson={lesson} scope={scope} authenticated={authenticated}/></>:<section className="academic-no-video"><div className="academic-empty-screen" aria-hidden="true"><Play size={34}/><span>UNIT {unit.number}</span></div><p className="studio-eyebrow">YOUR WORKSPACE IS READY</p><h2>No Newbert video listed for this unit yet.</h2><p>Start with the syllabus and notes beside you. Published lessons will include their PDF notes and chapter practice here.</p><div className="studio-hero-links"><a className="studio-primary" href={source.url} target="_blank" rel="noreferrer">Read the official syllabus ↗</a><a className="studio-secondary" href={channelUrl} target="_blank" rel="noreferrer">Visit Newbert’s channel ↗</a></div></section>}
 
       <div className="academic-session-end"><div><h3>{record.completed?'A unit you’ve worked through.':'Finish with something you can explain.'}</h3><p>Use recall before moving on. You decide when this unit is complete.</p></div><button disabled={notebook.loading} className={record.completed?'studio-secondary':'studio-primary'} onClick={()=>update({completed:!record.completed})}><Check size={15}/>{record.completed?'Completed · undo':'Mark unit complete'}</button></div>

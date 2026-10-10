@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import API from '../Services/api';
 import useAuth from '../hook/useAuth';
 import { academicBranches } from '../utils/academicYear';
@@ -13,6 +13,8 @@ import '../study.css';
 import '../study-content.css';
 const emptyLesson={url:'',title:'',summary:'',minutes:0,mentorName:'',unit:1,order:0,published:false,resources:[],quiz:[],practice:[]};
 export default function AdminStudy() {
+  const [routeParams]=useSearchParams();
+  const routeOpened=useRef('');
   const {isAuthenticated}=useAuth();
   const content=useStudyCatalog();
   const [data,setData]=useState({subjects:[],lessons:[]}), [loading,setLoading]=useState(true), [error,setError]=useState(''), [message,setMessage]=useState(''), [busy,setBusy]=useState(false);
@@ -21,6 +23,18 @@ export default function AdminStudy() {
   const [subjectForm,setSubjectForm]=useState({title:'',code:'',id:'',units:Array(5).fill('')});
   const load=useCallback(async()=>{setLoading(true);setError('');try {const {data}=await API.get('/admin/study');setData(data);} catch(e) {setError(e.response?.data?.message || 'Content administration could not be loaded.');} finally {setLoading(false);}},[]);
   useEffect(()=>{if(isAuthenticated) void load(); else setLoading(false);},[isAuthenticated,load]);
+  const requestedSubject=routeParams.get('subject'), requestedVideo=routeParams.get('video');
+  useEffect(()=>{
+    const key=`${requestedSubject}:${requestedVideo}`;
+    if(loading || error || !isAuthenticated || !requestedSubject || !requestedVideo || routeOpened.current===key)return;
+    const target=[...academicCatalog.subjects,...data.subjects].find(s=>s.id===requestedSubject);
+    const lesson=data.lessons.find(l=>l.subjectId===requestedSubject&&l.videoId===requestedVideo) || studyCourses.find(c=>c.id===target?.lectureCollection)?.lessons.find(l=>l.videoId===requestedVideo);
+    routeOpened.current=key;
+    if(!target || !lesson){setError('This lesson could not be found. Choose a subject and lesson below.');return;}
+    setBranch(target.branches[0]);setYear(target.year);setSemester(target.semesters[0]);setScheme(target.scheme || 2022);setSubjectId(target.id);
+    setForm({...emptyLesson,...lesson,url:lesson.url || `https://www.youtube.com/watch?v=${lesson.videoId}`,resources:lesson.resources || [],quiz:lesson.quiz || [],practice:lesson.practice || []});
+    setEdit(true);setPreview({videoId:lesson.videoId,thumbnail:`https://i.ytimg.com/vi/${lesson.videoId}/hqdefault.jpg`});setMessage('Editing this lesson. Add or update notes, questions and answers, then publish your changes.');
+  },[loading,error,isAuthenticated,requestedSubject,requestedVideo,data]);
   const subjects=[...new Map([...academicCatalog.subjects,...data.subjects].map(s=>[s.id,s])).values()].filter(s=>s.branches.includes(branch)&&s.year===Number(year)&&s.semesters.includes(Number(semester))&&(Number(year)!==1||s.scheme===Number(scheme)));
   const subject=subjects.find(s=>s.id===subjectId);
   const baseline=studyCourses.find(c=>c.id===subject?.lectureCollection)?.lessons || [];
