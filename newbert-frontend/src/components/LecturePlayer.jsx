@@ -81,8 +81,9 @@ export default function LecturePlayer({ videoId, title, initialSeconds = 0, onPr
   };
   return <section className="studio-player" aria-label="Lecture player">
     <div className="studio-video" ref={host}/>
-    {error ? <div className="studio-player-message" role="alert"><p>{error}</p><button onClick={() => setRetry((n) => n + 1)}>Retry player</button></div> : !ready && <p className="studio-player-message" role="status">Connecting to YouTube…</p>}
-    <div className="studio-player-tools"><span>{timeLabel(time)}</span><button disabled={!ready} onClick={() => player.current.pauseVideo()}><Pause size={14}/>Pause to think</button><button disabled={!ready} aria-pressed={loop} onClick={toggleLoop}><RotateCcw size={14}/>{loop ? "Stop 30s loop" : "Loop last 30s"}</button><button disabled={!ready} onClick={() => player.current.playVideo()}><Play size={14}/>Play</button><a href={`https://www.youtube.com/watch?v=${videoId}`} target="_blank" rel="noreferrer">YouTube <ExternalLink size={13}/></a></div>
+    {error ? <div className="studio-player-message" role="alert"><p>{error}</p><button type="button" onClick={() => setRetry((n) => n + 1)}>Retry player</button></div> : !ready && <p className="studio-player-message" role="status">Connecting to YouTube…</p>}
+    <div className="studio-player-tools"><span>{timeLabel(time)}</span><button type="button" disabled={!ready} onClick={() => player.current.pauseVideo()}><Pause size={14}/>Pause to think</button><button type="button" disabled={!ready} aria-pressed={loop} onClick={toggleLoop}><RotateCcw size={14}/>{loop ? "Stop 30s loop" : "Loop last 30s"}</button><button type="button" disabled={!ready} onClick={() => player.current.playVideo()}><Play size={14}/>Play</button><a href={`https://www.youtube.com/watch?v=${videoId}`} target="_blank" rel="noreferrer">YouTube <ExternalLink size={13}/></a></div>
     {loop && <p className="studio-loop-status" role="status">Repeating {timeLabel(loopStart.current)}–{timeLabel(loopStart.current + 30)}. Stop the loop when the idea clicks.</p>}
   </section>;
 }
+
