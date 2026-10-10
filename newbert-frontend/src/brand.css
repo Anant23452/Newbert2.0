@@ -6,7 +6,7 @@
 .site-nav a[aria-current="page"] { color:#c4e85e; border-color:#c4e85e; background:#c4e85e0c; }
 .site-nav nav a { position:relative; transition:color .18s,background .18s; }
 .site-nav nav a:hover { color:#ffac69; border-color:#ffac69; background:#ffac690c; }
-:root[data-theme="night"] .app-shell :is(.studio-page,.academic-page) { --s-bg:#0b0e0a; --s-card:#151a13; --s-line:#30392a; --s-green:#c4e85e; --s-accent:#c4e85e; }
+:root[data-theme="night"] .app-shell :is(.studio-page,.academic-page) { --s-bg:#0b0e0a; --s-card:#151a13; --s-soft:#202917; --s-line:#30392a; --s-green:#c4e85e; --s-accent:#c4e85e; }
 :root[data-theme="night"] .app-shell .bg-teal-600 { background:#c4e85e; color:#18210c; }
 :root[data-theme="night"] .app-shell :is(.text-teal-300,.text-teal-600,.text-teal-700) { color:#c4e85e; }
 .profile-appearance { display:flex; align-items:center; justify-content:flex-end; gap:16px; padding:16px 24px; font-size:12px; }
@@ -46,3 +46,4 @@
 :root[data-theme] .app-shell :is(.bg-orange-400,.bg-orange-500,.bg-orange-600,.bg-teal-600,.bg-teal-700):not([role="alert"]):not([role="alert"] *) { color:#18210c!important; }
 :root[data-theme] .app-shell :is(.text-orange-200,.text-orange-300,.text-orange-400,.text-orange-500,.text-orange-600,.text-orange-700):is(a,button):hover { color:#ffac69!important; }
 :root[data-theme] .app-shell :is(.bg-orange-400,.bg-orange-500,.bg-orange-600):is(a,button):hover { color:#18210c!important; }
+:root[data-theme="night"] .app-shell :is(.bg-teal-50,.bg-teal-100,[class~="bg-[#2b211f]"]):not([role="alert"]):not([role="alert"] *) { background-color:#202917!important; }
