@@ -2,6 +2,8 @@ import Navbar from './components/Navbar';
 import Routing from './Routing';
 import { ThemeContext } from './Context/ThemeContext';
 import './brand.css';
+import './member-light.css';
+import useAuth from './hook/useAuth';
 import AuthModal from './components/AuthModel';
 import ProfileSyncStatus from './components/ProfileSyncStatus';
 import ActivityRefresh from './components/ActivityRefresh';
@@ -12,6 +14,7 @@ import { useEffect, useState } from 'react';
 
 
 function App() {
+  const { isAuthenticated } = useAuth();
   const [theme, setTheme] = useState(() => localStorage.getItem('newbert-theme') || 'night');
   const [authOpen, setAuthOpen] = useState(false);
 
@@ -21,7 +24,7 @@ function App() {
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggle: () => setTheme(current => current === 'day' ? 'night' : 'day') }}><div className="app-shell">
+    <ThemeContext.Provider value={{ theme, toggle: () => setTheme(current => current === 'day' ? 'night' : 'day') }}><div className={`app-shell${isAuthenticated ? ' member-shell' : ''}`}>
       <ActivityRefresh/>
       <Navbar onSignIn={() => setAuthOpen(true)}/>
       <ProfileSyncStatus/>
