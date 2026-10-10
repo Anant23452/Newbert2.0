@@ -3,6 +3,8 @@
 :root[data-theme="day"] .member-shell > main { background:linear-gradient(120deg,#edf2e5,#f6f0e3)!important; color:#243024!important; }
 :root[data-theme="day"] .member-shell .site-nav { background:#edf2e5f5!important; border-color:#c6d1bc; }
 :root[data-theme="day"] .member-shell .site-nav :is(.text-white,.text-slate-300) { color:#243024; }
+:root[data-theme="day"] .member-shell .site-nav a[aria-current="page"] { color:#426627!important; border-color:#426627; }
+:root[data-theme="day"] .member-shell .site-nav :is(a,button):hover { color:#99501d!important; }
 :root[data-theme="day"] .member-shell .site-nav-menu,
 :root[data-theme="day"] .member-shell .site-nav details > div { background:#f6f0e3!important; color:#243024; }
 :root[data-theme="day"] .member-shell :is(.today-page,.home-study-review) {
