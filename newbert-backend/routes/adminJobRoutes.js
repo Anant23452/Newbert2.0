@@ -11,6 +11,7 @@ const studyContent = require('../Controllers/studyContentController');
 router.get('/study', studyContent.adminList);
 router.post('/study/subjects', studyContent.subject);
 router.post('/study/import-video', studyContent.importVideo);
+router.post('/study/generate-draft', studyContent.generateDraft);
 router.put('/study/lessons', studyContent.saveLesson);
 const noteResources = require("../Controllers/noteResourceController");
 router.get("/notes", noteResources.listAdmin);

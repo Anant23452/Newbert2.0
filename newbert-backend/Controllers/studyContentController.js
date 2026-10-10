@@ -27,6 +27,15 @@ exports.catalog = handle(async(req,res)=>{
 exports.adminList = handle(async(req,res)=>res.json({subjects:await Subject.find().lean(),lessons:await Lesson.find().sort({order:1}).lean()}));
 exports.subject = handle(async(req,res)=>res.status(201).json({subject:await Subject.create(s.validateSubject(req.body))}));
 exports.importVideo = handle(async(req,res)=>res.json({video:await fetchVideo(req.body.url)}));
+const draftRequests = new Map();
+exports.generateDraft = handle(async(req,res)=>{
+  const key = String(req.auth.id), now = Date.now();
+  for(const [id,at] of draftRequests) if(now-at>60000) draftRequests.delete(id);
+  if(draftRequests.has(key)) return res.status(429).json({message:'Wait a minute before generating another draft.'});
+  draftRequests.set(key,now);
+  const { createDraft } = require('../services/studyDraftService');
+  res.set('Cache-Control','no-store').json({draft:await createDraft(req.body || {})});
+});
 exports.saveLesson = handle(async(req,res)=>{
   const values = s.validateLesson(req.body);
   if (!s.catalog.subjects.some(sub=>sub.id === values.subjectId) && !await Subject.exists({id:values.subjectId})) s.invalid('Choose an existing subject.');
