@@ -83,7 +83,7 @@ export default function Courses() {
   const targetRole = recommendedData?.context?.goal || catalogData.context?.goal || "Software Engineer";
 
   return (
-    <main className="min-h-screen bg-[#0b1220] px-4 py-10 text-white md:px-6 md:py-14">
+    <main className="min-h-screen bg-[#0b0e0a] px-4 py-10 text-white md:px-6 md:py-14">
       <div className="mx-auto max-w-6xl space-y-10">
         {/* Page Header */}
         <header className="max-w-3xl">
@@ -195,7 +195,7 @@ export default function Courses() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by topic, skill, or provider..."
-                className="w-full rounded-xl border border-white/10 bg-[#111c2e] py-2.5 pl-9 pr-4 text-xs text-white placeholder-slate-500 outline-none focus:border-orange-400 md:w-72"
+                className="w-full rounded-xl border border-white/10 bg-[#151a13] py-2.5 pl-9 pr-4 text-xs text-white placeholder-slate-500 outline-none focus:border-orange-400 md:w-72"
               />
             </div>
           </div>
@@ -256,7 +256,7 @@ export default function Courses() {
 function StrategicCourseCard({ badge, badgeColor, item, onWhy }) {
   const { course, match } = item;
   return (
-    <article className="flex flex-col justify-between rounded-2xl border border-orange-400/20 bg-[#111c2e] p-5 shadow-xl transition hover:border-orange-400/50">
+    <article className="flex flex-col justify-between rounded-2xl border border-orange-400/20 bg-[#151a13] p-5 shadow-xl transition hover:border-orange-400/50">
       <div>
         <div className="flex items-start justify-between gap-2">
           <span className={`rounded-md px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${badgeColor}`}>
@@ -315,7 +315,7 @@ function StrategicCourseCard({ badge, badgeColor, item, onWhy }) {
 function CatalogCourseCard({ item, onWhy }) {
   const { course, match } = item;
   return (
-    <article className="flex flex-col justify-between rounded-xl border border-white/5 bg-[#111c2e] p-5 transition hover:border-white/20">
+    <article className="flex flex-col justify-between rounded-xl border border-white/5 bg-[#151a13] p-5 transition hover:border-white/20">
       <div>
         <div className="flex items-start justify-between gap-3">
           <div>

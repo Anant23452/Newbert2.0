@@ -1,5 +1,7 @@
 import Navbar from './components/Navbar';
 import Routing from './Routing';
+import { ThemeContext } from './Context/ThemeContext';
+import './brand.css';
 import AuthModal from './components/AuthModel';
 import ProfileSyncStatus from './components/ProfileSyncStatus';
 import ActivityRefresh from './components/ActivityRefresh';
@@ -19,13 +21,13 @@ function App() {
   }, [theme]);
 
   return (
-    <div className="app-shell">
+    <ThemeContext.Provider value={{ theme, toggle: () => setTheme(current => current === 'day' ? 'night' : 'day') }}><div className="app-shell">
       <ActivityRefresh/>
-      <Navbar theme={theme} onThemeToggle={() => setTheme((current) => current === 'day' ? 'night' : 'day')} onSignIn={() => setAuthOpen(true)}/>
+      <Navbar onSignIn={() => setAuthOpen(true)}/>
       <ProfileSyncStatus/>
       <Routing/>
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} onExplore={() => window.scrollTo({ top: 0, behavior: 'smooth' })}/>
-    </div>
+    </div></ThemeContext.Provider>
   )
 }
 

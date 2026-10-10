@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { ChevronDown, Menu, Moon, Sun, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { ChevronDown, Menu, X } from "lucide-react";
 import useAuth from "../hook/useAuth";
+import API from "../Services/api";
 import logo from "../assets/newbert2.png";
 
 const links = [
@@ -16,14 +17,25 @@ const links = [
   { to: "/mentorship", label: "Mentorship" },
 ];
 
-export default function Navbar({ theme, onThemeToggle, onSignIn }) {
+export default function Navbar({ onSignIn }) {
   const [open, setOpen] = useState(false);
   const { profile, user, loading } = useAuth();
   const identity = profile || user;
   const navigate = useNavigate();
+  const location = useLocation();
+  const [hasPlan, setHasPlan] = useState(null);
+  useEffect(() => {
+    let current = true;
+    setHasPlan(null);
+    if (!profile?.userId) return;
+    const refresh = () => API.get("/plans/me").then(({data}) => { if(current) setHasPlan(Boolean(data.plan)); }).catch(() => { if(current) setHasPlan(null); });
+    void refresh();
+    window.addEventListener('newbert-plan-changed',refresh);
+    return () => { current = false; window.removeEventListener('newbert-plan-changed',refresh); };
+  }, [profile?.userId, location.pathname]);
 
   return (
-    <header className="site-nav sticky top-0 z-50 border-b border-slate-800/80 bg-[#0b1322]/95 backdrop-blur-md">
+    <header className="site-nav sticky top-0 z-50 border-b border-slate-800/80 bg-[#0b0e0a]/95 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label="Newbert home">
@@ -57,7 +69,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
           ))}
           <details className="relative" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false; }} onKeyDown={(event) => { if (event.key === "Escape") { event.currentTarget.open = false; event.currentTarget.querySelector("summary")?.focus(); } }}>
             <summary className="flex cursor-pointer list-none items-center gap-1 rounded-md px-3 py-2 text-sm font-semibold text-slate-300 hover:text-white">Explore <ChevronDown size={15}/></summary>
-            <div className="absolute left-0 top-full mt-2 grid w-56 gap-1 rounded-lg border border-white/15 bg-[#171c26] p-2 shadow-xl">
+            <div className="absolute left-0 top-full mt-2 grid w-56 gap-1 rounded-lg border border-white/15 bg-[#151a13] p-2 shadow-xl">
               {links.filter((link) => !["/", "/alumni-wall", "/roadmap", "/jobs"].includes(link.to)).map((link) => <NavLink key={link.to} to={link.to} onClick={(event) => { event.currentTarget.closest("details").open = false; }} className={({ isActive }) => `rounded px-3 py-2 text-sm ${isActive ? "bg-orange-400/10 text-orange-300" : "text-slate-300 hover:bg-white/5"}`}>{link.label}</NavLink>)}
               {user?.isAdmin && <Link to="/admin/notes" className="border-t border-white/10 px-3 py-2 text-sm text-orange-300" onClick={(event) => { event.currentTarget.closest("details").open = false; }}>Admin Notes</Link>}
             </div>
@@ -66,18 +78,6 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
 
         {/* Right Section: Theme Toggle, Profile/Avatar, Admin Links, Build My Plan */}
         <div className="flex items-center gap-2.5 xl:gap-3 shrink-0">
-          <button
-            onClick={onThemeToggle}
-            className="theme-toggle"
-            aria-label={`Switch to ${theme === "day" ? "night" : "day"} theme`}
-            title={`Switch to ${theme === "day" ? "night" : "day"} theme`}
-          >
-            <span aria-hidden="true" className="theme-toggle-icon">
-              {theme === "day" ? <Moon size={16}/> : <Sun size={16}/>}
-            </span>
-            <span className="hidden sm:inline">{theme === "day" ? "Night" : "Day"}</span>
-          </button>
-
           {identity ? (
             <button
               onClick={() => navigate(profile?.onboardingCompleted ? "/profile" : "/complete-profile")}
@@ -117,13 +117,13 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
             </div>
           )}
 
-          {/* Desktop single top-right orange CTA */}
-          <button
+          {/* Offer plan creation only when no plan exists. */}
+          {(!identity || hasPlan === false) && <button
             onClick={() => navigate("/roadmap")}
-            className="hidden lg:inline-flex items-center justify-center rounded-md bg-orange-500 px-3 py-1.5 text-xs xl:px-4 xl:py-2 xl:text-sm font-bold text-[#0b1322] shadow-sm transition hover:bg-orange-400"
+            className="hidden lg:inline-flex items-center justify-center rounded-md bg-orange-500 px-3 py-1.5 text-xs xl:px-4 xl:py-2 xl:text-sm font-bold text-[#0b0e0a] shadow-sm transition hover:bg-orange-400"
           >
             Build my plan
-          </button>
+          </button>}
 
           {/* Mobile / Tablet Hamburger Toggle */}
           <button
@@ -142,7 +142,7 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
       {open && (
         <nav
           id="primary-navigation"
-          className="site-nav-menu border-t border-slate-800 bg-[#0e1828] px-5 py-4 lg:hidden"
+          className="site-nav-menu border-t border-slate-800 bg-[#10150e] px-5 py-4 lg:hidden"
           aria-label="Mobile navigation"
         >
           <div className="mx-auto flex max-w-6xl flex-col gap-1.5">
@@ -210,15 +210,15 @@ export default function Navbar({ theme, onThemeToggle, onSignIn }) {
               </div>
             )}
 
-            <button
+            {(!identity || hasPlan === false) && <button
               onClick={() => {
                 setOpen(false);
                 navigate("/roadmap");
               }}
-              className="mt-2 rounded-md bg-orange-500 px-3 py-2 text-center text-sm font-bold text-[#0b1322] hover:bg-orange-400"
+              className="mt-2 rounded-md bg-orange-500 px-3 py-2 text-center text-sm font-bold text-[#0b0e0a] hover:bg-orange-400"
             >
               Build my plan
-            </button>
+            </button>}
           </div>
         </nav>
       )}

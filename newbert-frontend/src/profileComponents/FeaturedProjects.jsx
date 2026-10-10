@@ -120,7 +120,7 @@ export default function FeaturedProjects({ profile, onEdit, onProfileUpdated }) 
       whileInView="visible"
       viewport={{ once: true, amount: 0.1 }}
       variants={reveal}
-      className="scroll-mt-32 mt-6 rounded-2xl border border-white/10 bg-[#111c2e] p-5 md:p-6"
+      className="scroll-mt-32 mt-6 rounded-2xl border border-white/10 bg-[#151a13] p-5 md:p-6"
     >
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
@@ -370,7 +370,7 @@ function AllProjectsModal({ isOpen, onClose, projects, onToggleFeatured, onDelet
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-3xl rounded-2xl border border-white/10 bg-[#111c2e] p-6 text-white shadow-2xl"
+          className="relative w-full max-w-3xl rounded-2xl border border-white/10 bg-[#151a13] p-6 text-white shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -476,7 +476,7 @@ function ProjectDetailsDrawer({ project, onClose }) {
           exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 28, stiffness: 260 }}
           onMouseDown={(e) => e.stopPropagation()}
-          className="ml-auto h-full w-full max-w-md overflow-y-auto bg-[#111c2e] p-6 text-white"
+          className="ml-auto h-full w-full max-w-md overflow-y-auto bg-[#151a13] p-6 text-white"
         >
           <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
             <div>

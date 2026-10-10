@@ -139,7 +139,7 @@ export default function LeaderboardMetrics() {
 
   if (!isAuthenticated) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[#0b1220] px-5 text-center text-white">
+      <main className="grid min-h-screen place-items-center bg-[#0b0e0a] px-5 text-center text-white">
         <div className="max-w-md rounded-2xl border border-white/10 bg-[#111927] p-8 shadow-2xl">
           <h1 className="text-3xl font-black">Leaderboard</h1>
           <p className="mt-3 text-sm text-slate-300">
@@ -157,7 +157,7 @@ export default function LeaderboardMetrics() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0b1220] px-4 py-10 text-white sm:px-6 md:py-14">
+    <main className="min-h-screen bg-[#0b0e0a] px-4 py-10 text-white sm:px-6 md:py-14">
       <div className="mx-auto max-w-5xl space-y-12">
         {/* ─────────────────────────────────────────────────────────────
             1. HERO / LEADERBOARD HEADER

@@ -6,7 +6,7 @@
 
 :root {
   font-family: "Manrope", system-ui, sans-serif;
-  color: #182230;
+  color: #151a13;
   background: #f7f8fa;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -24,15 +24,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .app-shell { min-height: 100vh; background: #f7f8fa; }
 
 /* The product keeps its existing utility styles; these variables make each route react to the global mode. */
-:root[data-theme="night"] { color-scheme: dark; background: #101827; }
-:root[data-theme="night"] body { background: #101827; color: #e5edf8; }
-:root[data-theme="night"] html, :root[data-theme="night"] .app-shell { background: #101827; }
-:root[data-theme="night"] .site-nav { border-color: #2b3a50; background: rgba(16, 24, 39, .95); }
+:root[data-theme="night"] { color-scheme: dark; background: #0b0e0a; }
+:root[data-theme="night"] body { background: #0b0e0a; color: #e5edf8; }
+:root[data-theme="night"] html, :root[data-theme="night"] .app-shell { background: #0b0e0a; }
+:root[data-theme="night"] .site-nav { border-color: #30392a; background: rgba(16, 24, 39, .95); }
 :root[data-theme="night"] .site-nav .text-slate-900, :root[data-theme="night"] .site-nav .text-slate-700, :root[data-theme="night"] .site-nav .text-slate-600 { color: #e5edf8; }
 :root[data-theme="night"] .site-nav .border-slate-200, :root[data-theme="night"] .site-nav .border-slate-300 { border-color: #3a4a63; }
-:root[data-theme="night"] .site-nav .bg-white { background-color: #182235; }
+:root[data-theme="night"] .site-nav .bg-white { background-color: #151a13; }
 :root[data-theme="night"] .site-nav .hover\\:bg-slate-50:hover { background-color: #25334a; }
-:root[data-theme="night"] .site-nav-menu { border-color: #2b3a50; background: #182235; }
+:root[data-theme="night"] .site-nav-menu { border-color: #30392a; background: #151a13; }
 :root[data-theme="night"] .site-nav-menu .text-slate-700 { color: #d9e4f3; }
 :root[data-theme="night"] .site-nav-menu .hover\\:bg-slate-50:hover { background-color: #25334a; }
 
@@ -50,22 +50,22 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* Shared night-mode foundation for all product screens that use the standard design tokens. */
-:root[data-theme="night"] .app-shell > main:not(.home-page):not(.resume-ai-page):not(.courses-page):not(.notes-page):not(.profile-page):not(.today-page) { background: #101827; color: #e5edf8; min-height: calc(100vh - 4rem); }
-:root[data-theme="night"] .app-shell .surface { border-color: #2b3a50; background: #182235; box-shadow: none; }
+:root[data-theme="night"] .app-shell > main:not(.home-page):not(.resume-ai-page):not(.courses-page):not(.notes-page):not(.profile-page):not(.today-page) { background: #0b0e0a; color: #e5edf8; min-height: calc(100vh - 4rem); }
+:root[data-theme="night"] .app-shell .surface { border-color: #30392a; background: #151a13; box-shadow: none; }
 :root[data-theme="night"] .app-shell .text-slate-950, :root[data-theme="night"] .app-shell .text-slate-900, :root[data-theme="night"] .app-shell .text-slate-800 { color: #f1f5f9; }
 :root[data-theme="night"] .app-shell .text-slate-700 { color: #d9e4f3; }
 :root[data-theme="night"] .app-shell .text-slate-600 { color: #aab9ce; }
 :root[data-theme="night"] .app-shell .text-slate-500 { color: #8ba0bc; }
-:root[data-theme="night"] .app-shell .border-slate-100, :root[data-theme="night"] .app-shell .border-slate-200, :root[data-theme="night"] .app-shell .border-slate-300 { border-color: #33445d; }
-:root[data-theme="night"] .app-shell .divide-slate-100 > :not([hidden]) ~ :not([hidden]), :root[data-theme="night"] .app-shell .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-color: #33445d; }
-:root[data-theme="night"] .app-shell .bg-white, :root[data-theme="night"] .app-shell .bg-slate-50 { background-color: #182235; }
-:root[data-theme="night"] .app-shell .bg-slate-100 { background-color: #202d42; }
+:root[data-theme="night"] .app-shell .border-slate-100, :root[data-theme="night"] .app-shell .border-slate-200, :root[data-theme="night"] .app-shell .border-slate-300 { border-color: #30392a; }
+:root[data-theme="night"] .app-shell .divide-slate-100 > :not([hidden]) ~ :not([hidden]), :root[data-theme="night"] .app-shell .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-color: #30392a; }
+:root[data-theme="night"] .app-shell .bg-white, :root[data-theme="night"] .app-shell .bg-slate-50 { background-color: #151a13; }
+:root[data-theme="night"] .app-shell .bg-slate-100 { background-color: #20271c; }
 :root[data-theme="night"] .app-shell .bg-amber-50 { background-color: #3b3020; }
 :root[data-theme="night"] .app-shell .border-amber-200 { border-color: #72592b; }
 :root[data-theme="night"] .app-shell .text-amber-900, :root[data-theme="night"] .app-shell .text-amber-800 { color: #fde68a; }
 :root[data-theme="night"] .app-shell .bg-teal-50 { background-color: #123c3d; }
 :root[data-theme="night"] .app-shell .border-teal-200 { border-color: #1c6261; }
-:root[data-theme="night"] .app-shell .control { border-color: #3a4a63; background: #101827; color: #e5edf8; }
+:root[data-theme="night"] .app-shell .control { border-color: #3a4a63; background: #0b0e0a; color: #e5edf8; }
 :root[data-theme="night"] .app-shell .control::placeholder { color: #7387a3; }
 
 @keyframes homeDrift {
@@ -97,15 +97,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .home-cloud-one { top: 30%; left: 8%; }.home-cloud-two { top: 18%; right: 25%; transform: scale(.65); }
 :root[data-theme="day"] .home-hero { background: #30323b; }
 :root[data-theme="day"] .home-page { background: #24262d; }
-:root[data-theme="day"] .home-page .bg-\[\#20231f\] { background-color: #30323b; }
-:root[data-theme="day"] .home-page .bg-\[\#171918\] { background-color: #24262d; }
+:root[data-theme="day"] .home-page .bg-\[\#151a13\] { background-color: #30323b; }
+:root[data-theme="day"] .home-page .bg-\[\#0b0e0a\] { background-color: #24262d; }
 :root[data-theme="day"] .home-page .bg-orange-500 { background-color: #fb923c; }
 :root[data-theme="night"] .home-orb { transform: translateY(6rem) translateX(1rem) scale(.72); background: #dbeafe; box-shadow: 0 0 42px 7px rgba(191,219,254,.25); }
 :root[data-theme="night"] .home-cloud { opacity: 0; }
 
 :root[data-theme="day"] .resume-ai-page { background: #eef7f6; color: #172b2d; }
-:root[data-theme="day"] .resume-ai-page .bg-\[\#20231f\] { background-color: #ffffff; }
-:root[data-theme="day"] .resume-ai-page .bg-\[\#171918\] { background-color: #f7fcfb; }
+:root[data-theme="day"] .resume-ai-page .bg-\[\#151a13\] { background-color: #ffffff; }
+:root[data-theme="day"] .resume-ai-page .bg-\[\#0b0e0a\] { background-color: #f7fcfb; }
 :root[data-theme="day"] .resume-ai-page .text-white, :root[data-theme="day"] .resume-ai-page .text-slate-200 { color: #172b2d; }
 :root[data-theme="day"] .resume-ai-page .text-slate-400 { color: #527174; }
 :root[data-theme="day"] .resume-ai-page .text-slate-500, :root[data-theme="day"] .resume-ai-page .text-slate-600 { color: #6c8588; }
@@ -113,34 +113,34 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 :root[data-theme="day"] .resume-ai-page .bg-white\/\[\.03\], :root[data-theme="day"] .resume-ai-page .bg-white\/\[\.05\] { background-color: #ffffff; }
 :root[data-theme="day"] .resume-ai-page input, :root[data-theme="day"] .resume-ai-page textarea { color: #172b2d; }
 
-:root[data-theme="night"] .courses-page { background: #101827; color: #e5edf8; }
-:root[data-theme="night"] .courses-page .surface { border-color: #2b3a50; background: #182235; box-shadow: none; }
+:root[data-theme="night"] .courses-page { background: #0b0e0a; color: #e5edf8; }
+:root[data-theme="night"] .courses-page .surface { border-color: #30392a; background: #151a13; box-shadow: none; }
 :root[data-theme="night"] .courses-page .text-slate-950, :root[data-theme="night"] .courses-page .text-slate-900, :root[data-theme="night"] .courses-page .text-slate-800 { color: #f1f5f9; }
 :root[data-theme="night"] .courses-page .text-slate-600 { color: #aab9ce; }
 :root[data-theme="night"] .courses-page .text-slate-500 { color: #8ba0bc; }
-:root[data-theme="night"] .courses-page .border-slate-200, :root[data-theme="night"] .courses-page .border-slate-100, :root[data-theme="night"] .courses-page .border-slate-300 { border-color: #33445d; }
-:root[data-theme="night"] .courses-page .bg-slate-50, :root[data-theme="night"] .courses-page .bg-slate-100 { background-color: #202d42; }
+:root[data-theme="night"] .courses-page .border-slate-200, :root[data-theme="night"] .courses-page .border-slate-100, :root[data-theme="night"] .courses-page .border-slate-300 { border-color: #30392a; }
+:root[data-theme="night"] .courses-page .bg-slate-50, :root[data-theme="night"] .courses-page .bg-slate-100 { background-color: #20271c; }
 :root[data-theme="night"] .courses-page .bg-teal-50 { background-color: #123c3d; }
 :root[data-theme="night"] .courses-page .border-teal-200 { border-color: #1c6261; }
-:root[data-theme="night"] .courses-page .control { border-color: #3a4a63; background: #101827; color: #e5edf8; }
+:root[data-theme="night"] .courses-page .control { border-color: #3a4a63; background: #0b0e0a; color: #e5edf8; }
 
 :root[data-theme="day"] .notes-page { background: #eef7f6; color: #172b2d; }
-:root[data-theme="day"] .notes-page .bg-\[\#20231f\], :root[data-theme="day"] .notes-page .bg-\[\#171918\] { background-color: #ffffff; }
+:root[data-theme="day"] .notes-page .bg-\[\#151a13\], :root[data-theme="day"] .notes-page .bg-\[\#0b0e0a\] { background-color: #ffffff; }
 :root[data-theme="day"] .notes-page .text-white, :root[data-theme="day"] .notes-page .text-slate-200, :root[data-theme="day"] .notes-page .text-slate-300 { color: #172b2d; }
 :root[data-theme="day"] .notes-page .text-slate-400 { color: #527174; }
 :root[data-theme="day"] .notes-page .text-slate-500 { color: #6c8588; }
 :root[data-theme="day"] .notes-page .border-white\/10, :root[data-theme="day"] .notes-page .border-white\/15 { border-color: #cfe0df; }
 :root[data-theme="day"] .notes-page .bg-white\/10 { background-color: #dbe9e7; }
 
-:root[data-theme="night"] .profile-page { background: #101827; color: #e5edf8; }
-:root[data-theme="night"] .profile-page .surface { border-color: #2b3a50; background: #182235; box-shadow: none; }
+:root[data-theme="night"] .profile-page { background: #0b0e0a; color: #e5edf8; }
+:root[data-theme="night"] .profile-page .surface { border-color: #30392a; background: #151a13; box-shadow: none; }
 :root[data-theme="night"] .profile-page .text-slate-950, :root[data-theme="night"] .profile-page .text-slate-900, :root[data-theme="night"] .profile-page .text-slate-800 { color: #f1f5f9; }
 :root[data-theme="night"] .profile-page .text-slate-600 { color: #aab9ce; }
 :root[data-theme="night"] .profile-page .text-slate-500 { color: #8ba0bc; }
-:root[data-theme="night"] .profile-page .border-slate-200, :root[data-theme="night"] .profile-page .border-slate-300 { border-color: #33445d; }
-:root[data-theme="night"] .profile-page .bg-white, :root[data-theme="night"] .profile-page .bg-slate-50 { background-color: #182235; }
-:root[data-theme="night"] .profile-page .bg-slate-100 { background-color: #202d42; }
-:root[data-theme="night"] .profile-page .control { border-color: #3a4a63; background: #101827; color: #e5edf8; }
+:root[data-theme="night"] .profile-page .border-slate-200, :root[data-theme="night"] .profile-page .border-slate-300 { border-color: #30392a; }
+:root[data-theme="night"] .profile-page .bg-white, :root[data-theme="night"] .profile-page .bg-slate-50 { background-color: #151a13; }
+:root[data-theme="night"] .profile-page .bg-slate-100 { background-color: #20271c; }
+:root[data-theme="night"] .profile-page .control { border-color: #3a4a63; background: #0b0e0a; color: #e5edf8; }
 
 /* Newbert's shared accent system: warm orange replaces the earlier teal palette across every screen. */
 .app-shell .bg-teal-700 { background-color: #f97316; }

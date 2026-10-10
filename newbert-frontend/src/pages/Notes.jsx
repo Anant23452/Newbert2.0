@@ -9,7 +9,7 @@ import { youtubeId } from "../utils/studyTools";
 import "../study.css";
 
 export default function Notes() {
-  return <main className="notes-page min-h-screen bg-[#171918] px-5 py-12 text-white"><div className="mx-auto max-w-6xl">
+  return <main className="notes-page min-h-screen bg-[#0b0e0a] px-5 py-12 text-white"><div className="mx-auto max-w-6xl">
     <header className="border-b border-white/10 pb-8"><Link to="/study" className="text-sm font-bold text-orange-400">← Study Studio</Link><h1 className="mt-3 text-3xl font-extrabold">Your semester notes library.</h1><p className="mt-3 text-sm leading-6 text-slate-400">Subject outlines, revision practice, and published resources for AKTU students.</p><Link to="/study" className="mt-5 inline-block rounded bg-orange-400 px-4 py-3 text-sm font-bold text-slate-950">Open Newbert lectures & personal notebooks →</Link></header>
     <section className="mt-8 grid gap-5 md:grid-cols-3">{Object.entries(branches).map(([id, branch]) => <Link key={id} to={`/notes/${id}`} className="rounded-lg border border-white/10 p-6 transition hover:border-orange-400"><p className="text-sm font-bold text-orange-400">{branch.code}</p><h2 className="mt-4 text-xl font-bold">{branch.label}</h2><p className="mt-3 text-sm leading-6 text-slate-400">{branch.description}</p><p className="mt-6 text-sm text-orange-300">{branch.semesters.length} semester outlines · Open branch</p></Link>)}</section>
     <p className="mt-8 max-w-3xl text-sm leading-6 text-slate-400">Resources are published unit by unit. Check the syllabus version on each resource against your academic session. Unpublished units still include a revision worksheet.</p>
@@ -48,7 +48,7 @@ export function BranchNotes() {
     const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
     const a = document.createElement("a"); a.href = url; a.download = `${subject.id}-unit-${unitIndex + 1}-worksheet.txt`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
-  return <main className="notes-page min-h-screen bg-[#171918] px-5 py-10 text-white"><div className="mx-auto max-w-6xl">
+  return <main className="notes-page min-h-screen bg-[#0b0e0a] px-5 py-10 text-white"><div className="mx-auto max-w-6xl">
     <Link to="/notes" className="text-sm font-bold text-orange-300">All branches</Link>
     <header className="mt-5 border-b border-white/10 pb-6"><h1 className="text-3xl font-extrabold">{branch.label}</h1><p className="mt-3 text-sm text-slate-400">{progress.isAuthenticated ? "Your saved units and completed study are stored in your Newbert account." : "Guest progress is saved on this browser. Sign in for account-based progress."}</p></header>
     {(progress.error || resourceError) && <div role="alert" className="mt-4 border border-orange-400/30 p-4 text-sm"><p>{progress.error || resourceError}</p><button onClick={() => { if (progress.error) void progress.retry(); if (resourceError) void loadResources(); }} className="mt-2 inline-flex items-center gap-2 text-orange-300"><RefreshCw size={15}/>Retry</button></div>}

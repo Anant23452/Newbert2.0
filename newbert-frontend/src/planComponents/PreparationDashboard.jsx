@@ -111,7 +111,7 @@ export default function PreparationDashboard({
     : safeList(plan.preparationGaps).filter((g) => g.gapType === "ready");
 
   return (
-    <main className="min-h-screen bg-[#0b1220] px-4 py-8 text-white sm:px-6 lg:py-12">
+    <main className="min-h-screen bg-[#0b0e0a] px-4 py-8 text-white sm:px-6 lg:py-12">
       <div className="mx-auto max-w-6xl space-y-6">
         {plan.recalculated && (
           <Notice tone="emerald">Strategy refreshed. Completed milestones and previous history were preserved.</Notice>

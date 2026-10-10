@@ -86,7 +86,7 @@ export default function ResumeAi() {
     const a = document.createElement("a"); a.href = url; a.download = "reviewed-resume.txt"; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   const canAnalyze = !reading && original.trim().length >= 40 && description.trim().length >= 30;
-  return <main className="resume-ai-page min-h-screen bg-[#171918] px-5 py-10 text-white"><div className="mx-auto max-w-6xl">
+  return <main className="resume-ai-page min-h-screen bg-[#0b0e0a] px-5 py-10 text-white"><div className="mx-auto max-w-6xl">
     <header className="max-w-3xl"><p className="text-sm font-bold text-orange-400">Resume intelligence</p><h1 className="mt-3 text-3xl font-extrabold">Make your experience relevant to the role.</h1><p className="mt-3 text-sm leading-6 text-slate-400">Review your real resume against a job description, edit your draft, and prepare with relevant alumni.</p></header>
     <ol className="mt-8 grid grid-cols-3 border-y border-white/10">{["Your resume and role", "Review and tailor", "Senior interview prep"].map((label, i) => <li key={label} className={`min-w-0 px-3 py-4 text-sm font-bold ${stage === i + 1 ? "border-b-2 border-orange-400 text-orange-300" : "text-slate-400"}`}>{i + 1}. {label}</li>)}</ol>
     {error && <p role="alert" className="mt-5 border border-orange-400/30 p-4 text-sm text-orange-200">{error}</p>}

@@ -1,0 +1,22 @@
+/* Shared Newbert palette. Orange actions and semantic warning colours remain. */
+:root[data-theme="night"] .app-shell { background:#0b0e0a; color:#f1f3e9; }
+:root[data-theme="night"] .app-shell > main { background-color:#0b0e0a!important; }
+:root[data-theme="night"] .app-shell .site-nav { background:rgba(11,14,10,.96); border-color:#30392a; }
+:root[data-theme="night"] .app-shell .site-nav-menu { background:#10150e; border-color:#30392a; }
+.site-nav a[aria-current="page"] { color:#c4e85e; border-color:#c4e85e; background:#c4e85e0c; }
+.site-nav nav a { position:relative; transition:color .18s,background .18s; }
+.site-nav nav a:hover { color:#d4f17e; background:#c4e85e0c; }
+:root[data-theme="night"] .app-shell :is(.studio-page,.academic-page) { --s-bg:#0b0e0a; --s-card:#151a13; --s-line:#30392a; --s-green:#c4e85e; --s-accent:#c4e85e; }
+:root[data-theme="night"] .app-shell .bg-teal-600 { background:#c4e85e; color:#18210c; }
+:root[data-theme="night"] .app-shell :is(.text-teal-300,.text-teal-600,.text-teal-700) { color:#c4e85e; }
+.profile-appearance { display:flex; align-items:center; justify-content:flex-end; gap:16px; padding:16px 24px; font-size:12px; }
+.profile-appearance button { padding:8px 12px; border:1px solid #67765a; border-radius:6px; }
+.home-study-review { border-top:1px solid var(--today-line); padding:24px 0; }
+.home-study-review h3 { font-size:22px; font-weight:700; margin:20px 0; }
+.home-study-actions { display:flex; flex-wrap:wrap; gap:16px; align-items:center; }
+.home-study-actions a { display:flex; gap:8px; align-items:center; font-size:12px; color:var(--today-muted); }
+.home-study-actions button { background:#c4e85e; color:#18210c; padding:10px 14px; font-size:12px; font-weight:700; border-radius:5px; }
+.home-study-review .study-form { color:var(--today-ink); }
+.home-study-review .study-quiz-option { background:var(--today-surface); border-color:var(--today-line); }
+.home-study-review { --s-bg:#0b0e0a; --s-card:#151a13; --s-line:#30392a; --s-ink:#f1f3e9; --s-muted:#afb5a9; --s-accent:#c4e85e; --s-green:#c4e85e; }
+@media(prefers-reduced-motion:reduce) { .site-nav nav a { transition:none; } }

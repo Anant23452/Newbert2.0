@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, BriefcaseBusiness, CalendarClock, Check, CheckCheck, Flag, RefreshCw, ScanLine, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, BriefcaseBusiness, CalendarClock, CheckCheck, Flag, RefreshCw, ScanLine, Sparkles } from "lucide-react";
 import API from "../Services/api";
+import HomeStudyReview from "../components/HomeStudyReview";
 import TodayFocus from "../components/TodayFocus";
 import TodayMomentum from "../components/TodayMomentum";
 import TodayJourney, { TodayProgress } from "../components/TodayJourney";
@@ -37,11 +38,10 @@ function TodayWorkspace({ profile, syncState }) {
   const selectionKey = `newbert-today:${profile.userId}:${day}:task`;
   const [selected, setSelected] = useState(() => readSaved(selectionKey, ""));
   const selectTask = (key) => { setSelected(key); saveLocal(selectionKey, key); };
-  const [minutes, setMinutes] = useState(() => {
+  const [minutes] = useState(() => {
     const saved = readSaved(preferenceKey, 25);
     return [15, 25, 45].includes(saved) ? saved : 25;
   });
-  const [savedPreference, setSavedPreference] = useState(true);
   const load = useCallback(async (signal) => {
     setError("");
     try { const result = await API.get("/profiles/today", { signal }); setData(result.data); return true; }
@@ -81,19 +81,18 @@ function TodayWorkspace({ profile, syncState }) {
       <div className="today-hero-copy"><p className="today-eyebrow">Your direction. Your pace.</p><h1>Hi, {profile.name?.trim().split(/\s+/)[0] || "there"}<span>.</span></h1>
         <div className="today-target"><Flag size={17}/><span>{exploring ? "Finding your direction" : profile.targetRole}{!exploring && profile.targetCompany && <small>at {profile.targetCompany}</small>}</span><Link to="/profile" aria-label="Edit your career target">Edit <ArrowRight size={13}/></Link></div>
         <p className="today-identity">{[profile.college, profile.branch, profile.graduationYear].filter(Boolean).join(" · ")}</p>
-        <div className="today-checkin"><span>Make space for</span><div role="group" aria-label="Time available today">{[15, 25, 45].map((value) => <button key={value} aria-pressed={minutes === value} onClick={() => { setMinutes(value); selectTask(""); setSavedPreference(saveLocal(preferenceKey, value)); }}>{value}<small> min</small>{minutes === value && <Check size={13}/>}</button>)}</div></div>
-        <p className="today-checkin-note">{savedPreference ? "Your next step adapts to your time. Saved for today on this device." : "Your time choice works here, but this browser couldn’t save it."}</p>
+
       </div>
       {data ? <TodayProgress plans={plans}/> : <div className="today-hero-placeholder"><Flag size={40}/><p>{loading ? "Gathering your progress…" : "Your progress will appear when we reconnect."}</p></div>}
     </section>
-    {profile.memberType === 'JUNIOR' && !profile.profileDetailsCompleted && <section className="surface mt-5 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-orange-300/30 p-5"><div><p className="text-xs font-extrabold uppercase tracking-wider text-orange-600">Make this more yours</p><h2 className="mt-1 text-lg font-extrabold">Add your branch and goals when you are ready</h2><p className="mt-1 text-sm text-slate-600">You can already use Newbert. A short conversation helps tailor comparisons and your plan.</p></div><button className="rounded-lg bg-orange-500 px-4 py-3 text-sm font-extrabold text-[#171918]" onClick={() => setDetailPromptOpen(true)}>Personalize my profile →</button></section>}
-    {detailPromptOpen && <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/70 p-5" role="dialog" aria-modal="true" aria-label="Complete your student profile"><div className="w-full max-w-md rounded-2xl bg-[#182235] p-6 text-white shadow-2xl"><p className="text-xs font-bold uppercase tracking-wider text-orange-300">Your next step</p><h2 className="mt-3 text-2xl font-extrabold">Let Newbert know your direction.</h2><p className="mt-3 text-sm leading-7 text-slate-300">Answer one question at a time about your branch, skills, projects and goals. You can skip or stop whenever you like.</p><div className="mt-6 flex flex-wrap gap-3"><Link to="/profile/complete" className="rounded-lg bg-orange-500 px-4 py-3 text-sm font-extrabold text-[#171918]" onClick={() => setDetailPromptOpen(false)}>Start the conversation</Link><button onClick={() => setDetailPromptOpen(false)} className="rounded-lg border border-white/25 px-4 py-3 text-sm font-bold">Maybe later</button></div></div></div>}
+    {profile.memberType === 'JUNIOR' && !profile.profileDetailsCompleted && <section className="surface mt-5 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-orange-300/30 p-5"><div><p className="text-xs font-extrabold uppercase tracking-wider text-orange-600">Make this more yours</p><h2 className="mt-1 text-lg font-extrabold">Add your branch and goals when you are ready</h2><p className="mt-1 text-sm text-slate-600">You can already use Newbert. A short conversation helps tailor comparisons and your plan.</p></div><button className="rounded-lg bg-orange-500 px-4 py-3 text-sm font-extrabold text-[#0b0e0a]" onClick={() => setDetailPromptOpen(true)}>Personalize my profile →</button></section>}
+    {detailPromptOpen && <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/70 p-5" role="dialog" aria-modal="true" aria-label="Complete your student profile"><div className="w-full max-w-md rounded-2xl bg-[#151a13] p-6 text-white shadow-2xl"><p className="text-xs font-bold uppercase tracking-wider text-orange-300">Your next step</p><h2 className="mt-3 text-2xl font-extrabold">Let Newbert know your direction.</h2><p className="mt-3 text-sm leading-7 text-slate-300">Answer one question at a time about your branch, skills, projects and goals. You can skip or stop whenever you like.</p><div className="mt-6 flex flex-wrap gap-3"><Link to="/profile/complete" className="rounded-lg bg-orange-500 px-4 py-3 text-sm font-extrabold text-[#0b0e0a]" onClick={() => setDetailPromptOpen(false)}>Start the conversation</Link><button onClick={() => setDetailPromptOpen(false)} className="rounded-lg border border-white/25 px-4 py-3 text-sm font-bold">Maybe later</button></div></div></div>}
     {error && <div role="alert" className="today-error"><p>{error}</p><button onClick={() => load()}><RefreshCw size={16}/>Retry</button></div>}
     <div role="status" aria-live="polite">{notice && <div key={notice} className="today-success"><CheckCheck size={20}/><p>{notice}</p></div>}</div>
     {loading ? <div role="status" className="today-loading"><RefreshCw size={20} className="animate-spin"/>Loading your priorities…</div> : data && <>
       <section className="today-stats" aria-label="Your progress"><Stat icon={CheckCheck} value={data.completedThisWeek} label="Tasks finished" detail="Last 7 days"/><Stat icon={Flag} value={data.activePlans} label="Active skill plans" detail="Your preparation"/><Stat icon={BriefcaseBusiness} value={data.applications} label="Applications" detail="In progress or offered"/><Stat icon={ScanLine} value={data.awaitingReview} label="Awaiting review" detail="Submitted evidence"/></section>
       <section className="today-workspace">
-        <div className="today-main-column"><TodayJourney plans={plans} selectedPlan={task?.planId} onSelect={(id) => { const next = tasks.find((item) => item.planId === id); if (next) selectTask(taskKey(next)); }}/>
+        <div className="today-main-column"><HomeStudyReview study={data.continueStudying} scope={profile.userId}/><TodayJourney plans={plans} selectedPlan={task?.planId} onSelect={(id) => { const next = tasks.find((item) => item.planId === id); if (next) selectTask(taskKey(next)); }}/>
           <TodayFocus tasks={tasks} task={task} onSelect={(item) => selectTask(taskKey(item))} minutes={minutes} userId={profile.userId} busy={busy} onComplete={complete} activePlans={data.activePlans} syncing={Boolean(syncState.running.length)}/>
         </div>
         <aside className="today-side-column"><TodayMomentum profile={profile}/>

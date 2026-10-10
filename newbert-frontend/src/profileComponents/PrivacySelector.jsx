@@ -13,7 +13,7 @@ export default function PrivacySelector({
   const Icon = loading ? Loader2 : normalizedValue === "private" ? Lock : Eye;
   const isDisabled = disabled || loading;
   const tone = dark
-    ? "border-white/15 bg-[#0b1220] text-slate-200 focus:border-orange-400"
+    ? "border-white/15 bg-[#0b0e0a] text-slate-200 focus:border-orange-400"
     : "border-slate-300 bg-white text-slate-700 focus:border-orange-500";
 
   return (

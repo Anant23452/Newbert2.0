@@ -39,7 +39,7 @@ function LessonDoubts({ videoId, authenticated, currentTime, onSeek }) {
     {loading?<p role="status">Loading questions…</p>:error?null:visible.length?visible.map(d=><DoubtCard key={d.id} doubt={d} onResolve={busy?undefined:resolve} onSeek={onSeek}/>):<p>No questions in this view yet.</p>}
   </div>;
 }
-function LessonQuiz({ lesson, authenticated }) {
+export function LessonQuiz({ lesson, authenticated }) {
   const quiz=lesson.quiz || [];
   const [answers,setAnswers]=useState({}), [result,setResult]=useState(null), [error,setError]=useState(''), [busy,setBusy]=useState(false);
   const submit=async e=>{e.preventDefault();setBusy(true);setError('');try {const {data}=await API.post(`/study/lessons/${lesson._id}/quiz`,{answers:quiz.map((_,i)=>answers[i])});setResult(data);} catch(e) {setError(e.response?.data?.message || 'Practice could not be checked.');} finally {setBusy(false);}};

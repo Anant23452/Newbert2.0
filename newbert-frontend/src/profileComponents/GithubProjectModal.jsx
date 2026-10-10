@@ -136,7 +136,7 @@ export default function GithubProjectModal({ isOpen, onClose, onProjectAdded, co
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ duration: 0.2 }}
-          className="relative w-full max-w-2xl rounded-2xl border border-white/10 bg-[#111c2e] p-6 text-white shadow-2xl"
+          className="relative w-full max-w-2xl rounded-2xl border border-white/10 bg-[#151a13] p-6 text-white shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

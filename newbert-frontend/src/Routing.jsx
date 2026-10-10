@@ -82,7 +82,7 @@ function Routing() {
 export default function AppRouting() { return <StudyCatalogProvider><Routing/></StudyCatalogProvider>; }
 
 function NotFound() {
-  return <main className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-3xl place-items-center px-5 py-16 text-center"><div><p className="eyebrow">404</p><h1 className="mt-3 text-3xl font-extrabold text-slate-950">This page is not part of Newbert yet.</h1><p className="mt-3 text-sm leading-6 text-slate-600">The link may be outdated, or the page may have moved.</p><Link to="/" className="mt-7 inline-block bg-orange-500 px-5 py-3 text-sm font-extrabold text-[#171918] hover:bg-orange-400">Go to home</Link></div></main>;
+  return <main className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-3xl place-items-center px-5 py-16 text-center"><div><p className="eyebrow">404</p><h1 className="mt-3 text-3xl font-extrabold text-slate-950">This page is not part of Newbert yet.</h1><p className="mt-3 text-sm leading-6 text-slate-600">The link may be outdated, or the page may have moved.</p><Link to="/" className="mt-7 inline-block bg-orange-500 px-5 py-3 text-sm font-extrabold text-[#0b0e0a] hover:bg-orange-400">Go to home</Link></div></main>;
 }
 
 function PageLoader() {

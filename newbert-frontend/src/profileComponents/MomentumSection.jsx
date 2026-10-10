@@ -123,7 +123,7 @@ export default function MomentumSection({
     return currentMonth - previousTotal;
   }, [days]);
 
-  if (compact) return <section className="overflow-hidden rounded-lg bg-[#111c2e] text-white shadow-[0_18px_50px_rgba(0,0,0,.18)]">
+  if (compact) return <section className="overflow-hidden rounded-lg bg-[#151a13] text-white shadow-[0_18px_50px_rgba(0,0,0,.18)]">
     <div className="flex flex-wrap items-start justify-between gap-4 px-5 pt-5 md:px-6 md:pt-6">
       <div>
         <p className="text-xs font-extrabold uppercase tracking-widest text-orange-400">Activity</p>
@@ -135,14 +135,14 @@ export default function MomentumSection({
             type="button"
             onClick={onRefreshStats}
             disabled={refreshing}
-            className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-[#0b1220] px-2.5 py-1.5 text-xs font-extrabold text-slate-300 hover:border-orange-400 hover:text-white transition disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-[#0b0e0a] px-2.5 py-1.5 text-xs font-extrabold text-slate-300 hover:border-orange-400 hover:text-white transition disabled:cursor-wait disabled:opacity-60"
             title="Refresh Stats"
           >
             <RefreshCw size={12} className={refreshing ? "animate-spin text-orange-400" : "text-slate-400"} />
             <span>{refreshing ? "Refreshing activity..." : "Refresh Stats"}</span>
           </button>
         )}
-        <select value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value))} aria-label="Activity year" className="rounded-md border border-white/15 bg-[#0b1220] px-3 py-2 text-xs font-extrabold text-white outline-none focus:border-orange-400">{yearOptions.map((year) => <option key={year}>{year}</option>)}</select>
+        <select value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value))} aria-label="Activity year" className="rounded-md border border-white/15 bg-[#0b0e0a] px-3 py-2 text-xs font-extrabold text-white outline-none focus:border-orange-400">{yearOptions.map((year) => <option key={year}>{year}</option>)}</select>
       </div>
     </div>
     <div className="mt-5 grid grid-cols-2 gap-px bg-white/10 lg:grid-cols-4">
@@ -157,7 +157,7 @@ export default function MomentumSection({
     </div>
   </section>;
 
-  return <section className="overflow-hidden rounded-2xl border border-orange-400/20 bg-[#101827] text-white shadow-[0_18px_50px_rgba(2,6,23,.22)]">
+  return <section className="overflow-hidden rounded-2xl border border-orange-400/20 bg-[#0b0e0a] text-white shadow-[0_18px_50px_rgba(2,6,23,.22)]">
     <div className="border-b border-white/10 p-5 md:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -210,7 +210,7 @@ function Tooltip({ day, x, y }) {
 
   return (
     <div
-      className="pointer-events-none fixed z-[100] w-64 rounded-xl border border-white/20 bg-[#0b1220]/95 p-3.5 backdrop-blur-md shadow-2xl"
+      className="pointer-events-none fixed z-[100] w-64 rounded-xl border border-white/20 bg-[#0b0e0a]/95 p-3.5 backdrop-blur-md shadow-2xl"
       style={{
         left: Math.min(x + 14, window.innerWidth - 270),
         top: Math.max(12, y - 180),
@@ -258,5 +258,5 @@ function Tooltip({ day, x, y }) {
 }
 
 function Metric({ label, value, detail }) { return <div className="rounded-xl border border-white/10 bg-white/[.04] p-4"><p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">{label}</p><p className="mt-3 text-xl font-black text-white">{value}</p><p className="mt-1 text-xs text-slate-400">{detail}</p></div>; }
-function CompactMetric({ label, value }) { return <div className="bg-[#0e1828] px-4 py-3"><p className="text-[10px] font-bold uppercase text-slate-500">{label}</p><p className="mt-1 text-lg font-black text-white">{value}</p></div>; }
+function CompactMetric({ label, value }) { return <div className="bg-[#10150e] px-4 py-3"><p className="text-[10px] font-bold uppercase text-slate-500">{label}</p><p className="mt-1 text-lg font-black text-white">{value}</p></div>; }
 function PrivateNotice({ text }) { return <p className="mt-5 rounded-xl border border-white/10 bg-white/5 p-5 text-sm font-bold text-slate-300">{text}</p>; }

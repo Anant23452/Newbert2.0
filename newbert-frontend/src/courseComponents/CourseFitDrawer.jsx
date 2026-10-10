@@ -55,7 +55,7 @@ export default function CourseFitDrawer({ item, onClose, onPlanAdded }) {
           exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 28, stiffness: 260 }}
           onMouseDown={(e) => e.stopPropagation()}
-          className="ml-auto h-full w-full max-w-lg overflow-y-auto bg-[#111c2e] p-6 text-white shadow-2xl"
+          className="ml-auto h-full w-full max-w-lg overflow-y-auto bg-[#151a13] p-6 text-white shadow-2xl"
         >
           {/* Header */}
           <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">

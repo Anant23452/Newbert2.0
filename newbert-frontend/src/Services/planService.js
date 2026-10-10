@@ -7,6 +7,7 @@ export async function getMyPlan() {
 
 export async function generatePlan(target, confirmReplace = false) {
   const { data } = await API.post("/plans/generate", { target, confirmReplace });
+  window.dispatchEvent(new Event('newbert-plan-changed'));
   return data.plan;
 }
 

@@ -24,7 +24,7 @@ function PublicProfileContent({ userId }) {
   if (state.error) return <main className="min-h-screen bg-[#111827] p-10 text-white"><Link to="/leaderboard" className="text-orange-300">Back to Leaderboard</Link><p className="mt-8">{state.error}</p></main>;
   const p = state.profile;
   return (
-    <main className="min-h-screen bg-[#0b1220] px-5 py-12 text-white">
+    <main className="min-h-screen bg-[#0b0e0a] px-5 py-12 text-white">
       <div className="mx-auto max-w-5xl">
         <div className="flex items-center justify-between">
           <Link to="/leaderboard" className="inline-flex items-center gap-1.5 text-sm font-extrabold text-orange-400 hover:text-orange-300 transition">
@@ -196,7 +196,7 @@ function PublicFeaturedProjects({ projects }) {
   );
 }
 
-function PublicProfileLoading() { return <main className="min-h-screen bg-[#0b1220] px-5 py-12"><div className="mx-auto max-w-5xl animate-pulse space-y-6"><div className="h-52 rounded-2xl bg-white/10"/><div className="h-96 rounded-2xl bg-white/10"/><div className="grid grid-cols-2 gap-4 sm:grid-cols-4">{[1, 2, 3, 4].map((item) => <div key={item} className="aspect-square rounded-xl bg-white/10"/>)}</div></div></main>; }
+function PublicProfileLoading() { return <main className="min-h-screen bg-[#0b0e0a] px-5 py-12"><div className="mx-auto max-w-5xl animate-pulse space-y-6"><div className="h-52 rounded-2xl bg-white/10"/><div className="h-96 rounded-2xl bg-white/10"/><div className="grid grid-cols-2 gap-4 sm:grid-cols-4">{[1, 2, 3, 4].map((item) => <div key={item} className="aspect-square rounded-xl bg-white/10"/>)}</div></div></main>; }
 function Section({ title, children }) { return <section className="rounded-2xl border border-white/10 bg-[#111927] p-6 shadow-md"><h2 className="text-xs font-black uppercase tracking-widest text-orange-400">{title}</h2><div className="mt-4">{children}</div></section>; }
 function Integration({ connected, lines }) { if (!connected) return <p className="text-sm text-slate-400">Not connected</p>; return <div className="space-y-1">{lines.map((line) => <p key={line} className="text-sm font-semibold text-slate-300">{line}</p>)}</div>; }
 function Stat({ label, value }) { return <div className="rounded-xl border border-white/10 bg-white/5 p-4"><p className="text-xs font-bold text-slate-400">{label}</p><p className="mt-1 text-base font-extrabold text-white">{value}</p></div>; }

@@ -175,7 +175,7 @@ export default function TargetStrategyForm({
   const suggestions = SUGGESTED_COMPANIES[target.companyCategory] || SUGGESTED_COMPANIES.product;
 
   return (
-    <main className="min-h-screen bg-[#0b1220] px-4 py-10 text-white sm:px-6">
+    <main className="min-h-screen bg-[#0b0e0a] px-4 py-10 text-white sm:px-6">
       <div className="mx-auto max-w-5xl">
         <div className="flex items-center gap-2 text-xs font-black uppercase text-orange-300">
           <Target className="h-4 w-4" /> Target Strategy Selection

@@ -112,7 +112,7 @@ export default function SkillsNewbertUnderstands({
   return (
     <section
       id="skills"
-      className="scroll-mt-32 mt-6 rounded-2xl border border-white/10 bg-[#111c2e] p-5 md:p-6 text-white"
+      className="scroll-mt-32 mt-6 rounded-2xl border border-white/10 bg-[#151a13] p-5 md:p-6 text-white"
     >
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
@@ -340,7 +340,7 @@ function SkillEvidenceDrawer({
           exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 28, stiffness: 260 }}
           onMouseDown={(e) => e.stopPropagation()}
-          className="ml-auto h-full w-full max-w-md overflow-y-auto bg-[#111c2e] p-6 text-white"
+          className="ml-auto h-full w-full max-w-md overflow-y-auto bg-[#151a13] p-6 text-white"
         >
           <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
             <div>
@@ -513,7 +513,7 @@ function AddSkillModal({
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#111c2e] p-6 text-white shadow-2xl"
+          className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#151a13] p-6 text-white shadow-2xl"
         >
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <h3 className="text-lg font-black text-white">Add Skill Manually</h3>
@@ -536,7 +536,7 @@ function AddSkillModal({
                 value={inputValue}
                 onChange={(e) => onInputChange(e.target.value)}
                 placeholder="e.g. Docker, PostgreSQL, Go, Redis"
-                className="mt-1 w-full rounded-lg border border-white/15 bg-[#0b1220] px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-orange-400 focus:outline-none"
+                className="mt-1 w-full rounded-lg border border-white/15 bg-[#0b0e0a] px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-orange-400 focus:outline-none"
                 autoFocus
               />
               <p className="mt-1 text-[11px] text-slate-500">
