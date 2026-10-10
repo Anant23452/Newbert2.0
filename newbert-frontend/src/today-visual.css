@@ -1,0 +1,56 @@
+/* Logged-in workspace only; navigation and destination pages keep their styles. */
+.today-page, :root[data-theme="night"] .today-page {
+  --today-line:#293028; --today-muted:#afb5a9; --today-accent:#c4e85e;
+  --today-surface:#151a13; --today-ink:#f1f3e9; --today-track:#2c3525;
+  --today-card:#0d100c; --today-soft:#202917; --today-green:#8cbaaa;
+  background:#0b0e0a; color:var(--today-ink);
+  background-image:radial-gradient(ellipse at 85% 0%,#bce35409,transparent 45%);
+}
+.today-page .today-hero { border:0; border-radius:0; background:transparent; border-bottom:1px solid var(--today-line); padding-bottom:24px; }
+.today-page .today-hero-copy { padding:22px 0; }
+.today-page .today-hero h1 { font-size:clamp(34px,4vw,58px); margin:14px 0 24px; }
+.today-page .today-progress-art { background:transparent; min-height:280px; padding:24px 10px; }
+.today-page .today-progress-art::before { display:none; }
+.today-path-summary { align-self:flex-start; padding-left:25px; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+.today-path-summary > span { font-size:11px; color:var(--today-muted); letter-spacing:.04em; }
+.today-path-summary > span:first-child { width:100%; }
+.today-path-summary strong { font-size:42px; font-weight:750; line-height:1; }
+.today-path-summary small { font-size:20px; color:var(--today-muted); }
+.today-path-art { width:100%; overflow:visible; margin:10px 0 18px; }
+.today-path-track,.today-path-fill { fill:none; stroke-width:2; stroke-linecap:round; }
+.today-path-track { stroke:var(--today-track); }
+.today-path-fill { stroke:var(--today-accent); animation:today-path-draw 1.2s ease-out both; }
+.today-path-node circle { fill:#0b0e0a; stroke:var(--today-track); stroke-width:2; }
+.today-path-node.reached circle { stroke:var(--today-accent); fill:var(--today-soft); }
+.today-path-node text { font-size:11px; fill:var(--today-muted); }
+.today-path-node.reached text { fill:var(--today-ink); }
+.today-path-node .today-path-halo { fill:none; stroke-width:1; opacity:.4; animation:today-node-arrive 1.2s ease-out both; transform-box:fill-box; transform-origin:center; }
+.today-path-action { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--today-accent); }
+.today-page .today-journey,.today-page .today-focus,.today-page .today-momentum,.today-page .today-deadlines { background:transparent; border:0; border-radius:0; padding:24px 0; border-top:1px solid var(--today-line); }
+.today-page .today-workspace { gap:48px; }
+.today-page .today-plan-grid { grid-template-columns:1fr; }
+.today-page .today-plan { border:0; border-bottom:1px solid var(--today-line); border-radius:0; padding:16px 8px; }
+.today-page .today-plan:hover { background:var(--today-surface); }
+.today-page .today-plan-track > span,.today-page .today-bar-github,.today-page .today-week-legend i { background:var(--today-accent); }
+.today-page .today-primary { background:var(--today-accent); color:#152008; transition:transform .2s,background .2s; }
+.today-page .today-primary:hover { background:#d4f17e; transform:translateY(-2px); }
+.today-page .today-ring-value { stroke:var(--today-accent); }
+.today-page .today-session { border:0; border-radius:0; border-top:1px solid var(--today-line); }
+.today-page .today-session-copy { padding-left:0; }
+.today-page .today-timer { background:transparent; }
+.today-page .today-study { border:0; border-radius:0; background:var(--today-surface); border-left:2px solid var(--today-accent); }
+.today-page .today-explore a { border-color:var(--today-line); }
+.today-page .today-explore a:hover { color:var(--today-accent); }
+.today-page .today-task-number,.today-page .today-checkin button { border-radius:3px; }
+.today-page .today-main-column,.today-page .today-side-column { gap:10px; }
+.today-page .today-stats strong { color:var(--today-ink); }
+.today-page .today-focus-empty { margin-top:18px; padding-left:0; border:0; }
+.today-page .today-focus-empty > svg { margin-bottom:14px; }
+.today-page .today-hero,.today-page .today-workspace { animation:today-workspace-arrive .6s ease-out both; }
+.today-page .today-workspace { animation-delay:.08s; }
+@keyframes today-path-draw { from { stroke-dashoffset:100; } to { stroke-dashoffset:0; } }
+@keyframes today-node-arrive { from { transform:scale(.5); opacity:0; } to { transform:scale(1); opacity:.4; } }
+@keyframes today-workspace-arrive { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@media(max-width:800px) { .today-page .today-workspace { grid-template-columns:1fr; gap:20px; } }
+@media(max-width:560px) { .today-page .today-hero { grid-template-columns:1fr; } .today-page .today-progress-art { min-height:230px; padding:15px 0; } .today-page .today-timer { border-left:0; } .today-page .today-session-copy { padding-left:12px; } }
+@media(prefers-reduced-motion:reduce) { .today-page *, .today-page *::before { animation:none!important; transition:none!important; } }

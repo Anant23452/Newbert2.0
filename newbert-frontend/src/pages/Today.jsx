@@ -6,6 +6,7 @@ import TodayFocus from "../components/TodayFocus";
 import TodayMomentum from "../components/TodayMomentum";
 import TodayJourney, { TodayProgress } from "../components/TodayJourney";
 import "../today.css";
+import "../today-visual.css";
 import useAuth from "../hook/useAuth";
 import { updateImprovementTask } from "../Services/improvementPlanService";
 import { activityWeek } from "../utils/todayActivity";
@@ -77,7 +78,7 @@ function TodayWorkspace({ profile, syncState }) {
   return <main className="today-page min-h-screen px-5 py-10 text-slate-900"><div className="mx-auto max-w-6xl">
     <header className="today-topline"><p><span className="today-live-dot"/>YOUR TODAY <span className="today-date">{dateLabel} · IST</span></p><Link to="/profile">My profile <ArrowRight size={15}/></Link></header>
     <section className="today-hero" aria-label="Your personal daily overview">
-      <div className="today-hero-copy"><p className="today-eyebrow">A little intention. Real progress.</p><h1>{profile.name?.trim().split(/\s+/)[0] || "Hey"},<br/>let’s move you forward<span>.</span></h1>
+      <div className="today-hero-copy"><p className="today-eyebrow">Your direction. Your pace.</p><h1>Hi, {profile.name?.trim().split(/\s+/)[0] || "there"}<span>.</span></h1>
         <div className="today-target"><Flag size={17}/><span>{exploring ? "Finding your direction" : profile.targetRole}{!exploring && profile.targetCompany && <small>at {profile.targetCompany}</small>}</span><Link to="/profile" aria-label="Edit your career target">Edit <ArrowRight size={13}/></Link></div>
         <p className="today-identity">{[profile.college, profile.branch, profile.graduationYear].filter(Boolean).join(" · ")}</p>
         <div className="today-checkin"><span>Make space for</span><div role="group" aria-label="Time available today">{[15, 25, 45].map((value) => <button key={value} aria-pressed={minutes === value} onClick={() => { setMinutes(value); selectTask(""); setSavedPreference(saveLocal(preferenceKey, value)); }}>{value}<small> min</small>{minutes === value && <Check size={13}/>}</button>)}</div></div>
