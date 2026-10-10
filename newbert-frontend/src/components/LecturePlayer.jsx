@@ -22,6 +22,8 @@ function youtubeApi() {
 export default function LecturePlayer({ videoId, title, initialSeconds = 0, onProgress, onTime, controller }) {
   const host = useRef(null);
   const player = useRef(null);
+  const localController = useRef(null);
+  const playerController = controller || localController;
   const handlers = useRef({ onProgress, onTime });
   handlers.current = { onProgress, onTime };
   const [start] = useState(initialSeconds);
@@ -53,7 +55,7 @@ export default function LecturePlayer({ videoId, title, initialSeconds = 0, onPr
             clearTimeout(readyTimeout); setError("");
             event.target.getIframe().title = title;
             setReady(true);
-            controller.current = { seek: (seconds) => { looping.current = false; setLoop(false); event.target.seekTo(seconds, true); event.target.playVideo(); }, pause: () => event.target.pauseVideo(), time: () => event.target.getCurrentTime() };
+            playerController.current = { seek: (seconds) => { looping.current = false; setLoop(false); event.target.seekTo(seconds, true); event.target.playVideo(); }, pause: () => event.target.pauseVideo(), time: () => event.target.getCurrentTime() };
             interval = setInterval(() => {
               const p = player.current;
               if (!p?.getCurrentTime) return;
@@ -67,12 +69,12 @@ export default function LecturePlayer({ videoId, title, initialSeconds = 0, onPr
             if (!active || ![0, 1, 2].includes(event.data)) return;
             handlers.current.onProgress?.({ positionSeconds: event.target.getCurrentTime(), durationSeconds: event.target.getDuration() });
           },
-          onError: () => { clearTimeout(readyTimeout); if (active) { setReady(false); controller.current = null; setError("This lecture could not play here. Open it on YouTube, or retry the player."); } },
+          onError: () => { clearTimeout(readyTimeout); if (active) { setReady(false); playerController.current = null; setError("This lecture could not play here. Open it on YouTube, or retry the player."); } },
         },
       });
     }).catch(() => { if (active) setError("YouTube could not connect. Your notes and recall tools are still available."); });
-    return () => { active = false; clearTimeout(readyTimeout); clearInterval(interval); controller.current = null; player.current?.destroy?.(); player.current = null; };
-  }, [videoId, title, start, retry, controller]);
+    return () => { active = false; clearTimeout(readyTimeout); clearInterval(interval); playerController.current = null; player.current?.destroy?.(); player.current = null; };
+  }, [videoId, title, start, retry, playerController]);
   const toggleLoop = () => {
     const next = !looping.current; looping.current = next; setLoop(next);
     if (next) { loopStart.current = Math.max(0, player.current.getCurrentTime() - 30); player.current.seekTo(loopStart.current, true); player.current.playVideo(); }
