@@ -17,6 +17,10 @@
 .home-study-actions a { display:flex; gap:8px; align-items:center; font-size:12px; color:var(--today-muted); }
 .home-study-actions button { background:#c4e85e; color:#18210c; padding:10px 14px; font-size:12px; font-weight:700; border-radius:5px; }
 .home-study-review .study-form { color:var(--today-ink); }
+.home-chapter-recall { margin-top:24px; }
+.home-chapter-recall h4 { margin:12px 0 20px; font-size:17px; line-height:1.6; }
+.home-chapter-recall label { display:block; font-size:12px; }
+.home-chapter-recall textarea { display:block; width:100%; margin-top:10px; padding:12px; background:var(--today-surface); border:1px solid var(--today-line); color:var(--today-ink); border-radius:5px; }
 .home-study-review .study-quiz-option { background:var(--today-surface); border-color:var(--today-line); }
 .home-study-review { --s-bg:#0b0e0a; --s-card:#151a13; --s-line:#30392a; --s-ink:#f1f3e9; --s-muted:#afb5a9; --s-accent:#c4e85e; --s-green:#c4e85e; }
 @media(prefers-reduced-motion:reduce) { .site-nav nav a { transition:none; } }
