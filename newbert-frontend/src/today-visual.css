@@ -6,6 +6,7 @@
   background:#0b0e0a; color:var(--today-ink);
   background-image:radial-gradient(ellipse at 85% 0%,#bce35409,transparent 45%);
 }
+:root[data-theme] .app-shell > main.today-page { background-color:#0b0e0a; color:var(--today-ink); background-image:radial-gradient(ellipse at 85% 0%,#bce35409,transparent 45%); }
 .today-page .today-hero { border:0; border-radius:0; background:transparent; border-bottom:1px solid var(--today-line); padding-bottom:24px; }
 .today-page .today-hero-copy { padding:22px 0; }
 .today-page .today-hero h1 { font-size:clamp(34px,4vw,58px); margin:14px 0 24px; }
