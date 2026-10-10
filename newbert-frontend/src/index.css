@@ -50,7 +50,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* Shared night-mode foundation for all product screens that use the standard design tokens. */
-:root[data-theme="night"] .app-shell > main:not(.home-page):not(.resume-ai-page):not(.courses-page):not(.notes-page):not(.profile-page) { background: #101827; color: #e5edf8; min-height: calc(100vh - 4rem); }
+:root[data-theme="night"] .app-shell > main:not(.home-page):not(.resume-ai-page):not(.courses-page):not(.notes-page):not(.profile-page):not(.today-page) { background: #101827; color: #e5edf8; min-height: calc(100vh - 4rem); }
 :root[data-theme="night"] .app-shell .surface { border-color: #2b3a50; background: #182235; box-shadow: none; }
 :root[data-theme="night"] .app-shell .text-slate-950, :root[data-theme="night"] .app-shell .text-slate-900, :root[data-theme="night"] .app-shell .text-slate-800 { color: #f1f5f9; }
 :root[data-theme="night"] .app-shell .text-slate-700 { color: #d9e4f3; }
