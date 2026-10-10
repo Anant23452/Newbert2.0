@@ -83,6 +83,23 @@ test("AI failure returns deterministic draft and honest warning", async () => {
   assert.ok(result.data.requiredSkills.includes("React"));
 });
 
+test('job extraction requests JSON with enough time for a complete draft',async()=>{
+  let request;
+  const result=await analyzeRawJobPost(completeJd,{generate:async options=>{request=options;return JSON.stringify(completeAiValue());}});
+  assert.equal(request.json,true);
+  assert.equal(request.timeoutMs,60000);
+  assert.equal(result.data.aiAnalysisAvailable,true);
+});
+test('quota and invalid drafts retain fallback with specific safe diagnostics',async()=>{
+  const quota=await analyzeRawJobPost(completeJd,{generate:async()=>{const e=new Error('secret provider payload');e.code='AI_PROVIDER_LIMIT';throw e;}});
+  assert.equal(quota.data.analysisErrorCode,'AI_PROVIDER_LIMIT');
+  assert.match(quota.data.analysisWarning,/quota/i);
+  assert(!quota.data.analysisWarning.includes('secret'));
+  const invalid=await analyzeRawJobPost(completeJd,{generate:async()=>'{"unrelated":true}'});
+  assert.equal(invalid.data.analysisErrorCode,'AI_INVALID_RESPONSE');
+  assert.equal(invalid.data.aiAnalysisAvailable,false);
+});
+
 test("reviewed admin requirements override refreshed AI values", () => {
   const refreshed = deterministicJdFallback({ title: "Engineer", description: "React is required. Minimum CGPA is 8.0." });
   const merged = mergeAdminRequirements(refreshed, { requiredSkills: ["TypeScript"], preferredSkills: [], criticalSkills: [], optionalSkills: [], csFundamentals: [], minimumCgpa: 7.25, allowedBranches: ["IT"], graduationYears: [2027] }, { title: "Engineer", company: "Example", description: "React is required. Minimum CGPA is 8.0." });

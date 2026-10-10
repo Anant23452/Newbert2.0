@@ -342,12 +342,21 @@ async function analyzeRawJobPostV3(rawText, options = {}) {
   const text = String(rawText || "").slice(0, 20000);
   const fallback = rawFallbackV3(text, options.sourceUrl);
   const generate = options.generate || generateAI;
-  if (!options.generate && !process.env.GEMINI_API_KEY) return { data: { ...fallback, aiAnalysisAvailable: false, analysisWarning: "AI analysis could not be completed. You can retry or continue filling the job manually." }, source: "deterministic" };
+  const failed = (code, message) => ({data:{...fallback,aiAnalysisAvailable:false,analysisErrorCode:code,analysisWarning:`AI analysis could not be completed. ${message} You can retry or continue filling the job manually.`},source:'deterministic'});
+  if (!options.generate && !process.env.GEMINI_API_KEY?.trim()) return failed('AI_NOT_CONFIGURED','The backend Gemini key is not configured.');
   try {
-    const parsed = parse(await generate({ prompt: buildRawJobPostPrompt(text), task: "raw-job-extraction", timeoutMs: 20000 }));
-    if (!parsed) throw new Error("Invalid AI JSON");
+    const parsed = parse(await generate({ prompt: buildRawJobPostPrompt(text), task: "raw-job-extraction", timeoutMs: 60000, json:true }));
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !parsed.basic || typeof parsed.basic !== 'object' || Array.isArray(parsed.basic)) {
+      const error = new Error('Invalid job extraction response'); error.code='AI_INVALID_RESPONSE'; throw error;
+    }
     return { data: { ...normalizeExtractedJobDataV3(parsed, fallback, { rawText: text, source: "gemini", sourceUrl: options.sourceUrl }), aiAnalysisAvailable: true, analysisWarning: null }, source: "gemini" };
-  } catch { return { data: { ...fallback, aiAnalysisAvailable: false, analysisWarning: "AI analysis could not be completed. You can retry or continue filling the job manually." }, source: "deterministic" }; }
+  } catch(error) {
+    const code=error.code || 'AI_PROCESSING_ERROR';
+    const messages={AI_NOT_CONFIGURED:'The backend Gemini key is not configured.',AI_PROVIDER_AUTH:'Gemini rejected the backend credentials; check the Render API key and its restrictions.',AI_PROVIDER_LIMIT:'Gemini quota or rate limit was reached.',AI_TIMEOUT:'Gemini took too long to respond.',AI_MODEL_UNAVAILABLE:'The configured Gemini model is unavailable.',AI_INVALID_RESPONSE:'Gemini returned an incomplete or unreadable job draft.',AI_PROCESSING_ERROR:'The returned job draft could not be processed.'};
+    // Log only safe diagnostic codes, never the provider response, API key or pasted JD.
+    console.error('[Newbert AI:raw-job-extraction]',{code});
+    return failed(code,messages[code] || 'Gemini is temporarily unavailable.');
+  }
 }
 
 module.exports = { analyzeJobDescription, analyzeRawJobPost: analyzeRawJobPostV3, compatibilityFields, deterministicJdFallback, draftFromAnalysis, mergeAdminRequirements, normalizeExtractedJobData: normalizeExtractedJobDataV3, normalizeStructuredAnalysis, parse, rawJdHash };

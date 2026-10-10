@@ -22,12 +22,13 @@ function getClient() {
   return client;
 }
 
-async function generateText({ prompt, model, timeoutMs = DEFAULT_TIMEOUT_MS, responseJsonSchema }) {
+async function generateText({ prompt, model, timeoutMs = DEFAULT_TIMEOUT_MS, responseJsonSchema, videoUrl, json = false }) {
   const response = await getClient().models.generateContent({
     model: model || process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL,
-    contents: prompt,
+    contents: videoUrl ? [{role:'user',parts:[{fileData:{fileUri:videoUrl,mimeType:'video/mp4'}},{text:prompt}]}] : prompt,
     config: {
       temperature: 0.2,
+      ...(json && {responseMimeType:'application/json'}),
       ...(responseJsonSchema && { responseMimeType: 'application/json', responseJsonSchema }),
       httpOptions: { timeout: timeoutMs },
     },

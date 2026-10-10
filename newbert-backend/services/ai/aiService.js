@@ -39,13 +39,13 @@ function normalizeProviderError(error) {
   return new AIServiceError("AI_PROVIDER_ERROR", "Newbert AI is temporarily unavailable. Please try again.");
 }
 
-async function generateAI({ prompt, model, timeoutMs, responseJsonSchema }) {
+async function generateAI({ prompt, model, timeoutMs, responseJsonSchema, videoUrl, json }) {
   if (!prompt || typeof prompt !== "string") {
     throw new AIServiceError("AI_INVALID_PROMPT", "Newbert AI could not prepare this request.", 500);
   }
 
   try {
-    return await generateText({ prompt, model, timeoutMs, responseJsonSchema });
+    return await generateText({ prompt, model, timeoutMs, responseJsonSchema, videoUrl, json });
   } catch (error) {
     throw normalizeProviderError(error);
   }
