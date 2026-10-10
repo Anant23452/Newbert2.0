@@ -1,11 +1,11 @@
-/* Shared Newbert palette. Orange actions and semantic warning colours remain. */
+/* Green at rest; warm orange appears on interaction. Semantic errors stay red. */
 :root[data-theme="night"] .app-shell { background:#0b0e0a; color:#f1f3e9; }
 :root[data-theme="night"] .app-shell > main { background-color:#0b0e0a!important; }
 :root[data-theme="night"] .app-shell .site-nav { background:rgba(11,14,10,.96); border-color:#30392a; }
 :root[data-theme="night"] .app-shell .site-nav-menu { background:#10150e; border-color:#30392a; }
 .site-nav a[aria-current="page"] { color:#c4e85e; border-color:#c4e85e; background:#c4e85e0c; }
 .site-nav nav a { position:relative; transition:color .18s,background .18s; }
-.site-nav nav a:hover { color:#d4f17e; background:#c4e85e0c; }
+.site-nav nav a:hover { color:#ffac69; border-color:#ffac69; background:#ffac690c; }
 :root[data-theme="night"] .app-shell :is(.studio-page,.academic-page) { --s-bg:#0b0e0a; --s-card:#151a13; --s-line:#30392a; --s-green:#c4e85e; --s-accent:#c4e85e; }
 :root[data-theme="night"] .app-shell .bg-teal-600 { background:#c4e85e; color:#18210c; }
 :root[data-theme="night"] .app-shell :is(.text-teal-300,.text-teal-600,.text-teal-700) { color:#c4e85e; }
@@ -24,3 +24,25 @@
 .home-study-review .study-quiz-option { background:var(--today-surface); border-color:var(--today-line); }
 .home-study-review { --s-bg:#0b0e0a; --s-card:#151a13; --s-line:#30392a; --s-ink:#f1f3e9; --s-muted:#afb5a9; --s-accent:#c4e85e; --s-green:#c4e85e; }
 @media(prefers-reduced-motion:reduce) { .site-nav nav a { transition:none; } }
+.app-shell :is(.today-primary,.studio-primary,.home-study-actions button):hover { background:#ffac69!important; color:#1a160f!important; }
+.app-shell :is(a,button):not(:disabled):hover { --s-accent:#ffac69; }
+.app-shell :is(a,button):not(:disabled):not(.today-primary):not(.studio-primary):hover { color:#ffac69; }
+.app-shell :is(a,button)[class*="bg-lime-"]:not(:disabled):hover { background-color:#ffac69!important; color:#1a160f!important; }
+.app-shell :is(a,button)[class*="border-lime-"]:not(:disabled):hover { border-color:#ffac69; }
+/* Shared accent rules exclude explicit alerts. Keep error/warning semantics intact. */
+.app-shell :is(.bg-orange-400,.bg-orange-500,.bg-orange-600,.bg-teal-600,.bg-teal-700):not([role="alert"]):not([role="alert"] *) { background-color:#c4e85e!important; color:#18210c!important; }
+.app-shell :is(.bg-orange-400,.bg-orange-500,.bg-orange-600,.bg-teal-600,.bg-teal-700):is(a,button):hover { background-color:#ffac69!important; color:#18210c!important; }
+.app-shell :is(.text-orange-200,.text-orange-300,.text-orange-400,.text-orange-500,.text-orange-600,.text-orange-700,.text-teal-300,.text-teal-600,.text-teal-700):not([role="alert"]):not([role="alert"] *) { color:#4c6b1d!important; }
+:root[data-theme="night"] .app-shell :is(.text-orange-200,.text-orange-300,.text-orange-400,.text-orange-500,.text-orange-600,.text-orange-700,.text-teal-300,.text-teal-600,.text-teal-700):not([role="alert"]):not([role="alert"] *) { color:#c4e85e!important; }
+.app-shell :is([class~="bg-orange-400/10"],[class~="bg-orange-500/10"],[class~="bg-orange-400/20"],[class~="bg-orange-500/20"]):not([role="alert"]):not([role="alert"] *) { background-color:#c4e85e14!important; }
+.app-shell :is(.border-orange-400,.border-orange-500,[class~="border-orange-400/30"],[class~="border-orange-400/40"]):not([role="alert"]):not([role="alert"] *) { border-color:#a3c95070!important; }
+.app-shell :is(a,button):not(:disabled):hover { color:#ffac69!important; }
+.app-shell :is(a,button):not(:disabled):hover :is(.text-orange-300,.text-orange-400,.text-orange-500) { color:#ffac69!important; }
+.app-shell :is(.bg-orange-400,.bg-orange-500,.bg-orange-600,.today-primary,.studio-primary,.home-study-actions button):is(a,button):hover { color:#18210c!important; }
+.app-shell :is(.fill-orange-400,.fill-orange-500) { fill:#c4e85e; }
+:root[data-theme="night"] .profile-activity-github { background:#526333; }
+:root[data-theme="night"] .profile-activity-leetcode { background:#8eaf42; }
+:root[data-theme="night"] .profile-activity-both { background:#c4e85e; }
+:root[data-theme] .app-shell :is(.bg-orange-400,.bg-orange-500,.bg-orange-600,.bg-teal-600,.bg-teal-700):not([role="alert"]):not([role="alert"] *) { color:#18210c!important; }
+:root[data-theme] .app-shell :is(.text-orange-200,.text-orange-300,.text-orange-400,.text-orange-500,.text-orange-600,.text-orange-700):is(a,button):hover { color:#ffac69!important; }
+:root[data-theme] .app-shell :is(.bg-orange-400,.bg-orange-500,.bg-orange-600):is(a,button):hover { color:#18210c!important; }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, BriefcaseBusiness, CalendarClock, CheckCheck, Flag, RefreshCw, ScanLine, Sparkles } from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, CalendarClock, CheckCheck, Flag, RefreshCw, ScanLine, Sparkles } from "lucide-react";
 import API from "../Services/api";
 import HomeStudyReview from "../components/HomeStudyReview";
 import TodayFocus from "../components/TodayFocus";
@@ -12,7 +12,6 @@ import useAuth from "../hook/useAuth";
 import { updateImprovementTask } from "../Services/improvementPlanService";
 import { activityWeek } from "../utils/todayActivity";
 import { deadlineLabel, readSaved, recommendTask, saveLocal, taskKey } from "../utils/todayPersonalization";
-import { studyHref } from "../data/studyCatalog";
 
 const destinations = [
   ["/roadmap", "My Plan", "Continue your preparation"], ["/jobs", "Jobs", "Explore roles and saved applications"],
@@ -70,9 +69,6 @@ function TodayWorkspace({ profile, syncState }) {
   const task = tasks.find((item) => taskKey(item) === selected) || recommendTask(tasks, minutes);
   const plans = data?.planProgress ?? [];
   const exploring = !profile.targetRole || profile.targetRole === "Still exploring";
-  const branch = /civil/i.test(profile.branch) ? "civil" : /electrical/i.test(profile.branch) ? "electrical" : /information|computer/i.test(profile.branch) ? "information-technology" : null;
-  const study = data?.continueStudying?.key;
-  const studyUrl = study ? studyHref(study) : branch ? `/study?branch=${branch}` : "/study";
   const dateLabel = new Date().toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", weekday: "long", day: "numeric", month: "long" });
 
   return <main className="today-page min-h-screen px-5 py-10 text-slate-900"><div className="mx-auto max-w-6xl">
@@ -85,8 +81,8 @@ function TodayWorkspace({ profile, syncState }) {
       </div>
       {data ? <TodayProgress plans={plans}/> : <div className="today-hero-placeholder"><Flag size={40}/><p>{loading ? "Gathering your progress…" : "Your progress will appear when we reconnect."}</p></div>}
     </section>
-    {profile.memberType === 'JUNIOR' && !profile.profileDetailsCompleted && <section className="surface mt-5 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-orange-300/30 p-5"><div><p className="text-xs font-extrabold uppercase tracking-wider text-orange-600">Make this more yours</p><h2 className="mt-1 text-lg font-extrabold">Add your branch and goals when you are ready</h2><p className="mt-1 text-sm text-slate-600">You can already use Newbert. A short conversation helps tailor comparisons and your plan.</p></div><button className="rounded-lg bg-orange-500 px-4 py-3 text-sm font-extrabold text-[#0b0e0a]" onClick={() => setDetailPromptOpen(true)}>Personalize my profile →</button></section>}
-    {detailPromptOpen && <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/70 p-5" role="dialog" aria-modal="true" aria-label="Complete your student profile"><div className="w-full max-w-md rounded-2xl bg-[#151a13] p-6 text-white shadow-2xl"><p className="text-xs font-bold uppercase tracking-wider text-orange-300">Your next step</p><h2 className="mt-3 text-2xl font-extrabold">Let Newbert know your direction.</h2><p className="mt-3 text-sm leading-7 text-slate-300">Answer one question at a time about your branch, skills, projects and goals. You can skip or stop whenever you like.</p><div className="mt-6 flex flex-wrap gap-3"><Link to="/profile/complete" className="rounded-lg bg-orange-500 px-4 py-3 text-sm font-extrabold text-[#0b0e0a]" onClick={() => setDetailPromptOpen(false)}>Start the conversation</Link><button onClick={() => setDetailPromptOpen(false)} className="rounded-lg border border-white/25 px-4 py-3 text-sm font-bold">Maybe later</button></div></div></div>}
+    {profile.memberType === 'JUNIOR' && !profile.profileDetailsCompleted && <section className="surface mt-5 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-lime-300/30 p-5"><div><p className="text-xs font-extrabold uppercase tracking-wider text-lime-600">Make this more yours</p><h2 className="mt-1 text-lg font-extrabold">Add your branch and goals when you are ready</h2><p className="mt-1 text-sm text-slate-600">You can already use Newbert. A short conversation helps tailor comparisons and your plan.</p></div><button className="rounded-lg bg-lime-500 px-4 py-3 text-sm font-extrabold text-[#0b0e0a]" onClick={() => setDetailPromptOpen(true)}>Personalize my profile →</button></section>}
+    {detailPromptOpen && <div className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/70 p-5" role="dialog" aria-modal="true" aria-label="Complete your student profile"><div className="w-full max-w-md rounded-2xl bg-[#151a13] p-6 text-white shadow-2xl"><p className="text-xs font-bold uppercase tracking-wider text-lime-300">Your next step</p><h2 className="mt-3 text-2xl font-extrabold">Let Newbert know your direction.</h2><p className="mt-3 text-sm leading-7 text-slate-300">Answer one question at a time about your branch, skills, projects and goals. You can skip or stop whenever you like.</p><div className="mt-6 flex flex-wrap gap-3"><Link to="/profile/complete" className="rounded-lg bg-lime-500 px-4 py-3 text-sm font-extrabold text-[#0b0e0a]" onClick={() => setDetailPromptOpen(false)}>Start the conversation</Link><button onClick={() => setDetailPromptOpen(false)} className="rounded-lg border border-white/25 px-4 py-3 text-sm font-bold">Maybe later</button></div></div></div>}
     {error && <div role="alert" className="today-error"><p>{error}</p><button onClick={() => load()}><RefreshCw size={16}/>Retry</button></div>}
     <div role="status" aria-live="polite">{notice && <div key={notice} className="today-success"><CheckCheck size={20}/><p>{notice}</p></div>}</div>
     {loading ? <div role="status" className="today-loading"><RefreshCw size={20} className="animate-spin"/>Loading your priorities…</div> : data && <>
@@ -97,7 +93,6 @@ function TodayWorkspace({ profile, syncState }) {
         </div>
         <aside className="today-side-column"><TodayMomentum profile={profile}/>
           <section className="today-deadlines"><div className="today-section-heading"><h2><CalendarClock size={19}/>Don’t miss your window</h2></div><p className="today-section-note">Application deadlines from your saved jobs.</p>{data.upcoming.length ? data.upcoming.map((job) => <Link key={job.id} to="/jobs" className="today-deadline"><span className="today-deadline-date"><strong>{new Date(job.deadline).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric" })}</strong><small>{new Date(job.deadline).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", month: "short" })}</small></span><span><strong>{job.title}</strong><small>{job.company}</small><em>{deadlineLabel(job.deadline)}</em></span><ArrowRight size={16}/></Link>) : <div className="today-sidebar-empty"><CalendarClock size={24}/><p>No upcoming deadlines on your saved jobs.</p><Link to="/jobs">Explore jobs <ArrowRight size={14}/></Link></div>}</section>
-          <section className="today-study"><BookOpen size={23}/><div><p className="today-eyebrow">Keep the thread</p><h2>Continue learning</h2><p>{study ? "Pick up your most recent unfinished lesson or unit." : "Build your foundations alongside placement preparation."}</p><Link to={studyUrl}>{study ? "Resume learning" : "Open Study Studio"}<ArrowRight size={15}/></Link></div></section>
         </aside>
       </section>
     </>}
