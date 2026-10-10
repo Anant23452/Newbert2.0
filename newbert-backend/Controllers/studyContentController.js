@@ -26,7 +26,7 @@ exports.catalog = handle(async(req,res)=>{
 });
 exports.adminList = handle(async(req,res)=>res.json({subjects:await Subject.find().lean(),lessons:await Lesson.find().sort({order:1}).lean()}));
 exports.subject = handle(async(req,res)=>res.status(201).json({subject:await Subject.create(s.validateSubject(req.body))}));
-exports.importVideo = handle(async(req,res)=>res.json({video:await fetchVideo(req.body.url)}));
+exports.importVideo = handle(async(req,res)=>{const video=await fetchVideo(req.body.url);res.json({video:{...video,suggestedUnit:require('../services/lectureUnit').lectureUnit(video.title)}});});
 const draftRequests = new Map();
 exports.generateDraft = handle(async(req,res)=>{
   const key = String(req.auth.id), now = Date.now();

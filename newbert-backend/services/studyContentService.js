@@ -33,6 +33,8 @@ function validateSubject(body) {
 function validateLesson(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) invalid('Provide lesson details.');
   const videoId = youtubeId(body.url), unit = Number(body.unit), order = Number(body.order || 0), minutes = Number(body.minutes || 0);
+  const suggested = require('./lectureUnit').lectureUnit(body.title);
+  if (suggested && suggested !== unit && body.unitConfirmed !== true) invalid(`The video title says Unit ${suggested}, but Unit ${unit} is selected. Correct the unit or explicitly confirm this assignment.`);
   if (![1,2,3,4,5].includes(unit) || !Number.isInteger(order) || order < 0 || order > 10000 || !Number.isFinite(minutes) || minutes < 0 || minutes > 1440 || typeof body.published !== 'boolean') invalid('Check unit, duration, order and publication status.');
   const resources = body.resources || [], quiz = body.quiz || [], practice = body.practice || [];
   if (!Array.isArray(practice) || practice.length > 20) invalid('Keep up to 20 written practice questions.');
