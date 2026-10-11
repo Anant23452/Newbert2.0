@@ -3,6 +3,7 @@ import Routing from './Routing';
 import { ThemeContext } from './Context/ThemeContext';
 import './brand.css';
 import './member-light.css';
+import './public-home.css';
 import useAuth from './hook/useAuth';
 import AuthModal from './components/AuthModel';
 import ProfileSyncStatus from './components/ProfileSyncStatus';

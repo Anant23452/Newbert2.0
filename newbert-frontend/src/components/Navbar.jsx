@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, Moon, Sun, X } from "lucide-react";
+import { ThemeContext } from "../Context/ThemeContext";
 import useAuth from "../hook/useAuth";
 import API from "../Services/api";
 import logo from "../assets/newbert2.png";
@@ -18,6 +19,7 @@ const links = [
 ];
 
 export default function Navbar({ onSignIn }) {
+  const { theme, toggle } = useContext(ThemeContext);
   const [open, setOpen] = useState(false);
   const { profile, user, loading } = useAuth();
   const identity = profile || user;
@@ -78,6 +80,7 @@ export default function Navbar({ onSignIn }) {
 
         {/* Right Section: Theme Toggle, Profile/Avatar, Admin Links, Build My Plan */}
         <div className="flex items-center gap-2.5 xl:gap-3 shrink-0">
+          {!identity && <button type="button" onClick={toggle} className="theme-toggle" aria-label={`Switch to ${theme === 'day' ? 'dark' : 'light'} appearance`}><span aria-hidden="true">{theme === 'day' ? <Moon size={16}/> : <Sun size={16}/>}</span><span className="hidden sm:inline">{theme === 'day' ? 'Dark' : 'Light'}</span></button>}
           {identity ? (
             <button
               onClick={() => navigate(profile?.onboardingCompleted ? "/profile" : "/complete-profile")}
