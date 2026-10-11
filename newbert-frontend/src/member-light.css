@@ -44,3 +44,5 @@
 :root[data-theme="day"] .member-shell :is(.profile-page,.leaderboard-page) :is([class~="bg-[#0e1626]"],[class~="bg-[#1b273d]"],[class~="bg-[#1a2438]"]) { background-color:#e2ead8!important; }
 :root[data-theme="day"] .member-shell .leaderboard-page .bg-gradient-to-b { background-image:linear-gradient(to bottom,#d5e1c7,#f6f0e3)!important; box-shadow:0 -4px 18px #42662712; }
 :root[data-theme="day"] .member-shell .leaderboard-page a:hover { background-color:#e7eddf!important; }
+:root[data-theme="day"] .member-shell .profile-page [class~="bg-[#0b0e0a]/95"] { background-color:#e2ead8f5!important; }
+:root[data-theme="day"] .member-shell :is(.profile-page,.leaderboard-page) :is(.text-slate-50,.text-slate-100,.text-gray-100,.text-gray-200) { color:#243024!important; }
