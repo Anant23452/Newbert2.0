@@ -48,6 +48,7 @@
 :root[data-theme] .app-shell :is(.bg-orange-400,.bg-orange-500,.bg-orange-600):is(a,button):hover { color:#18210c!important; }
 :root[data-theme="night"] .app-shell :is(.bg-teal-50,.bg-teal-100,[class~="bg-[#2b211f]"]):not([role="alert"]):not([role="alert"] *) { background-color:#202917!important; }
 .navbar-search-row { max-width:1280px; margin:auto; padding:0 24px 10px; }
+.profile-page nav[aria-label="Profile sections"] { top:112px; }
 .navbar-search { display:flex; gap:10px; align-items:center; position:relative; max-width:640px; margin:auto; padding:8px 12px; border:1px solid #526333; border-radius:7px; color:#c4e85e; background:#151a13; }
 .navbar-search input { width:100%; min-width:0; background:transparent; color:#f1f3e9; outline:none; font-size:13px; }
 .navbar-search input::placeholder { color:#afb5a9; }
