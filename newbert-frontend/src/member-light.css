@@ -32,3 +32,12 @@
 :root[data-theme="day"] .member-shell .today-bar-github { background:#426627; }
 :root[data-theme="day"] .member-shell .today-plan-track > span { background:#426627; }
 :root[data-theme="day"] .member-shell .profile-appearance { color:#243024; }
+/* Profile and Leaderboard have nested panels with their own dark surface classes. */
+:root[data-theme="day"] .member-shell :is(.profile-page,.leaderboard-page) :is([class~="bg-[#0d1727]"],[class~="bg-[#10150e]"],[class~="bg-[#101b2e]"],[class~="bg-[#111927]"],[class~="bg-[#141d2e]"],[class~="bg-[#2b211f]"]) { background-color:#e2ead8!important; color:#243024; }
+:root[data-theme="day"] .member-shell :is(.profile-page,.leaderboard-page) :is([class~="bg-white/[.03]"],[class~="bg-white/[.04]"],[class~="bg-white/[.045]"],[class~="bg-white/[.05]"],[class~="bg-white/[.06]"],[class~="bg-white/[.07]"],[class~="bg-white/[.08]"]) { background-color:#e2ead8!important; }
+:root[data-theme="day"] .member-shell :is(.profile-page,.leaderboard-page) :is([class~="border-white/10"],[class~="border-white/15"],[class~="border-white/20"],[class~="border-white/25"],[class~="divide-white/10"]) { border-color:#bdcbb0!important; }
+:root[data-theme="day"] .member-shell :is(.profile-page,.leaderboard-page) :is(.text-emerald-200,.text-emerald-300,.text-emerald-400) { color:#27634c!important; }
+:root[data-theme="day"] .member-shell :is(.profile-page,.leaderboard-page) :is(.text-red-200,.text-red-300,.text-red-400) { color:#a62c2c!important; }
+:root[data-theme="day"] .member-shell :is(.profile-page,.leaderboard-page) :is(.text-amber-200,.text-amber-300,.text-amber-400) { color:#79530e!important; }
+:root[data-theme="day"] .member-shell :is(.profile-page,.leaderboard-page) :is(input,textarea)::placeholder { color:#64715e; opacity:1; }
+:root[data-theme="day"] .member-shell :is(.profile-page,.leaderboard-page) :is(.bg-orange-400,.bg-orange-500) :is(.text-white,.text-slate-200,.text-slate-300) { color:#fff9ee!important; }
