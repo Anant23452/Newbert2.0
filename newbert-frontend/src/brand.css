@@ -47,3 +47,22 @@
 :root[data-theme] .app-shell :is(.text-orange-200,.text-orange-300,.text-orange-400,.text-orange-500,.text-orange-600,.text-orange-700):is(a,button):hover { color:#ffac69!important; }
 :root[data-theme] .app-shell :is(.bg-orange-400,.bg-orange-500,.bg-orange-600):is(a,button):hover { color:#18210c!important; }
 :root[data-theme="night"] .app-shell :is(.bg-teal-50,.bg-teal-100,[class~="bg-[#2b211f]"]):not([role="alert"]):not([role="alert"] *) { background-color:#202917!important; }
+.navbar-search-row { max-width:1280px; margin:auto; padding:0 24px 10px; }
+.navbar-search { display:flex; gap:10px; align-items:center; position:relative; max-width:640px; margin:auto; padding:8px 12px; border:1px solid #526333; border-radius:7px; color:#c4e85e; background:#151a13; }
+.navbar-search input { width:100%; min-width:0; background:transparent; color:#f1f3e9; outline:none; font-size:13px; }
+.navbar-search input::placeholder { color:#afb5a9; }
+.navbar-search:focus-within { border-color:#c4e85e; }
+.navbar-search-results { position:absolute; top:calc(100% + 8px); left:0; right:0; max-height:min(460px,65vh); overflow-y:auto; background:#151a13; border:1px solid #526333; border-radius:8px; box-shadow:0 12px 32px #0004; color:#f1f3e9; }
+.navbar-search-results > p { padding:12px; font-size:12px; color:#afb5a9; }
+.navbar-search-results a { display:flex; gap:12px; align-items:flex-start; padding:12px; border-top:1px solid #30392a; }
+.navbar-search-results a:hover,.navbar-search-results a:focus-visible { background:#202917; }
+.navbar-search-kind { font-size:10px; min-width:48px; color:#c4e85e; padding-top:3px; }
+.navbar-search-results strong { display:block; font-size:13px; }
+.navbar-search-results small { display:block; font-size:11px; margin-top:4px; color:#afb5a9; }
+:root[data-theme="day"] .navbar-search,:root[data-theme="day"] .navbar-search-results { background:#f6f0e3; border-color:#b8c6aa; color:#243024; }
+:root[data-theme="day"] .navbar-search input { color:#243024; }
+:root[data-theme="day"] .navbar-search-results :is(p,small),:root[data-theme="day"] .navbar-search input::placeholder { color:#52614e; }
+:root[data-theme="day"] .navbar-search-kind { color:#426627; }
+:root[data-theme="day"] .navbar-search-results a { border-color:#c6d1bc; }
+:root[data-theme="day"] .navbar-search-results a:hover { background:#e2ead8; }
+@media(max-width:560px) { .navbar-search-row { padding:0 16px 8px; } .navbar-search input { font-size:12px; } }

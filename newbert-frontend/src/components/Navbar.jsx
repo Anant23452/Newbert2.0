@@ -5,6 +5,7 @@ import { ThemeContext } from "../Context/ThemeContext";
 import useAuth from "../hook/useAuth";
 import API from "../Services/api";
 import logo from "../assets/newbert2.png";
+import NavbarSearch from './NavbarSearch';
 
 const links = [
   { to: "/", label: "Today" },
@@ -141,6 +142,7 @@ export default function Navbar({ onSignIn }) {
         </div>
       </div>
 
+      <NavbarSearch/>
       {/* Mobile / Tablet Drawer Menu */}
       {open && (
         <nav

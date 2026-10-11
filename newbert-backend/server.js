@@ -39,6 +39,7 @@ app.use(express.json({ limit: "512kb" }));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/profiles", require("./routes/profileRoutes"));
 app.use("/api/colleges", require("./routes/collegeRoutes"));
+app.use('/api/search', require('./routes/searchRoutes'));
 app.use("/api/jobs", require("./routes/jobRoutes"));
 app.use("/api/courses", require("./routes/courseRoutes"));
 app.use('/api/study', require('./routes/studyRoutes'));
