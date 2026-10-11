@@ -46,3 +46,4 @@
 :root[data-theme="day"] .member-shell .leaderboard-page a:hover { background-color:#e7eddf!important; }
 :root[data-theme="day"] .member-shell .profile-page [class~="bg-[#0b0e0a]/95"] { background-color:#e2ead8f5!important; }
 :root[data-theme="day"] .member-shell :is(.profile-page,.leaderboard-page) :is(.text-slate-50,.text-slate-100,.text-gray-100,.text-gray-200) { color:#243024!important; }
+:root[data-theme="day"] .member-shell .leaderboard-page .bg-gradient-to-b > span { color:#426627!important; filter:none; }
