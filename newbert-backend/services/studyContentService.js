@@ -58,5 +58,5 @@ function baselineLesson(videoId, subjectId) {
   return subject && courses.find(c=>c.id === subject.lectureCollection)?.lessons.find(l=>l.videoId === videoId);
 }
 function isLegacyVideo(videoId) { return courses.some(c=>c.lessons.some(l=>l.videoId === videoId)); }
-function publicLesson(lesson) { return {...lesson,quiz:(lesson.quiz || []).map(q=>({question:q.question,options:q.options})),practice:(lesson.practice || []).map(q=>({id:String(q._id),type:q.type,question:q.question,marks:q.marks,isPYQ:q.isPYQ,exam:q.exam,year:q.year,sourceUrl:q.sourceUrl}))}; }
+function publicLesson(lesson, authenticated = true) { return {...lesson,resources:authenticated ? lesson.resources : [],quiz:(lesson.quiz || []).map(q=>({question:q.question,options:q.options})),practice:(lesson.practice || []).map(q=>({id:String(q._id),type:q.type,question:q.question,marks:q.marks,isPYQ:q.isPYQ,exam:q.exam,year:q.year,sourceUrl:authenticated ? q.sourceUrl : undefined}))}; }
 module.exports = { catalog, courses, invalid, text, youtubeId, validateSubject, validateLesson, baselineLesson, isLegacyVideo, publicLesson };

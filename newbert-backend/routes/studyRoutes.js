@@ -2,7 +2,7 @@ const router = require('express').Router();
 const auth = require('../middleWare/authMiddleware');
 const { requireStaff } = require('../middleWare/studyStaff');
 const c = require('../Controllers/studyContentController');
-router.get('/catalog',c.catalog);
+router.get('/catalog',auth.optionalAuth,c.catalog);
 router.get('/videos/:videoId/doubts',auth.optionalAuth,c.questions);
 router.post('/videos/:videoId/doubts',auth,c.ask);
 router.patch('/doubts/:id',auth,c.resolve);

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import API from "../Services/api";
 import useAuth from "../hook/useAuth";
 
-export default function AuthModal({ isOpen, onClose, onExplore }) {
+export default function AuthModal({ isOpen, onClose, onExplore, returnTo }) {
   const navigate = useNavigate();
   const { completeAuthentication } = useAuth();
   const [mode, setMode] = useState("login");
@@ -18,6 +18,7 @@ export default function AuthModal({ isOpen, onClose, onExplore }) {
   const complete = async ({ data }) => {
     const savedProfile = await completeAuthentication(data);
     onClose();
+    if(savedProfile?.onboardingCompleted && returnTo?.startsWith("/") && !returnTo.startsWith("//")){navigate(returnTo,{replace:true});return;}
     navigate(window.location.pathname === "/alumni/onboarding" ? "/alumni/onboarding" : !savedProfile?.onboardingCompleted ? "/join" : savedProfile.memberType === "SENIOR" ? "/alumni/onboarding" : "/", { replace: true });
   };
   const emailAuth = async (event) => { event.preventDefault(); setError(""); setLoading(true); try { const { data } = await API.post(`/auth/${mode === "register" ? "register" : "login"}`, mode === "register" ? { name, email, password } : { email, password }); await complete({ data }); } catch (err) { setError(err.response?.data?.message || "Unable to sign in. Please try again."); } finally { setLoading(false); } };

@@ -20,9 +20,10 @@ function doubtView(d, viewer, staff) {
   return {id:String(d._id),videoId:d.videoId,author:d.author,text:d.text,seconds:d.seconds,visibility:d.visibility,resolved:d.resolved,replies:d.replies,createdAt:d.createdAt,updatedAt:d.updatedAt,isMine:String(d.userId) === String(viewer),canReply:staff};
 }
 exports.catalog = handle(async(req,res)=>{
+  res.set('Cache-Control','private, no-store');
   const lessons = await Lesson.find().select('-__v').lean();
   const subjects = await Subject.find({id:{$in:lessons.filter(l=>l.published).map(l=>l.subjectId)}}).select('-__v -_id').lean();
-  res.json({subjects,lessons:lessons.filter(l=>l.published).map(s.publicLesson),overrides:lessons.map(l=>({subjectId:l.subjectId,videoId:l.videoId}))});
+  res.json({subjects,lessons:lessons.filter(l=>l.published).map(l=>s.publicLesson(l,Boolean(req.auth))),overrides:lessons.map(l=>({subjectId:l.subjectId,videoId:l.videoId}))});
 });
 exports.adminList = handle(async(req,res)=>res.json({subjects:await Subject.find().lean(),lessons:await Lesson.find().sort({order:1}).lean()}));
 exports.subject = handle(async(req,res)=>res.status(201).json({subject:await Subject.create(s.validateSubject(req.body))}));

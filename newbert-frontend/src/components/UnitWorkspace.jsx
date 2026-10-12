@@ -49,7 +49,7 @@ export default function UnitWorkspace({branch,subject,unit,source,scope,authenti
       {unit.number<5&&<Link className="studio-next-lesson" to={academicSubjectHref(branch.id,subject.id,unit.number+1)}><span><small>NEXT UNIT</small><strong>{subject.units[unit.number].title}</strong></span><ArrowRight size={20}/></Link>}
     </div><details id="unit-tools" className="academic-notes-column lesson-personal-tools"><summary>My personal notes & recall</summary>
       <section className="studio-notebook"><div className="studio-notebook-tabs" role="group" aria-label="Unit notebook tabs">{[['notes','My notes',Plus],['recall','Recall',RotateCcw]].map(([id,label,icon])=>{const Icon=icon;return <button key={id} aria-pressed={tab===id} onClick={()=>setTab(id)}><Icon size={15}/>{label}</button>;})}</div>
-      <div className="academic-notebook-status"><span role="status">{notebook.status}</span><button aria-label="Download unit notebook" onClick={exportNotes}><Download size={16}/></button></div>
+      <div className="academic-notebook-status"><span role="status">{notebook.status}</span><button aria-label="Download unit notebook" onClick={()=>authenticated ? exportNotes() : window.dispatchEvent(new Event("newbert-notes-sign-in"))}><Download size={16}/></button></div>
       {notebook.error&&<div className="studio-notice" role="alert">{notebook.error}<button onClick={notebook.retry}>Retry</button></div>}
 
 

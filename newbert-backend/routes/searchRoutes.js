@@ -1,4 +1,5 @@
 const router = require('express').Router();
+router.use(require('../middleWare/authMiddleware'));
 const Profile = require('../Models/Profile');
 const Alumni = require('../Models/Alumni');
 const StudyLesson = require('../Models/StudyLesson');

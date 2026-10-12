@@ -43,7 +43,7 @@ app.use('/api/search', require('./routes/searchRoutes'));
 app.use("/api/jobs", require("./routes/jobRoutes"));
 app.use("/api/courses", require("./routes/courseRoutes"));
 app.use('/api/study', require('./routes/studyRoutes'));
-app.get("/api/notes/resources", require("./Controllers/noteResourceController").list);
+app.get("/api/notes/resources", require('./middleWare/authMiddleware'), require("./Controllers/noteResourceController").list);
 app.use("/api/admin", require("./routes/adminJobRoutes"));
 app.use("/api/alumni", require("./routes/alumniRoutes"));
 app.use('/api/alumni-chat', require('./routes/alumniChatRoutes'));

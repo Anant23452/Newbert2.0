@@ -1,0 +1,1 @@
+export default function NotesLogin(){return <section className="notes-access studio-notice"><h2>Sign in to read and download notes</h2><p>Your lesson notes will be available after login.</p><button type="button" className="studio-primary" onClick={()=>window.dispatchEvent(new Event('newbert-notes-sign-in'))}>Sign in</button></section>;}

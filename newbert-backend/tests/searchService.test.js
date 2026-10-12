@@ -7,6 +7,13 @@ test('search accepts bounded literal names and rejects short or non-string input
   assert.ok(searchPattern('C++').test('C++'));assert.equal(searchPattern('.*').test('Anant'),false);
   assert.equal(searchPattern('a'.repeat(100)).source.length,80);
 });
+test('guest lesson metadata excludes note links and paper URLs',()=>{
+ const {publicLesson}=require('../services/studyContentService');
+ const lesson={resources:[{url:'https://example.com/notes.pdf'}],practice:[{_id:'q1',sourceUrl:'https://example.com/paper.pdf'}]};
+ assert.deepEqual(publicLesson(lesson,false).resources,[]);
+ assert.equal(publicLesson(lesson,false).practice[0].sourceUrl,undefined);
+ assert.equal(publicLesson(lesson,true).resources[0].url,lesson.resources[0].url);
+});
 test('search returns only public identity fields and excludes draft lectures',async()=>{
  const Profile=require('../Models/Profile'), Alumni=require('../Models/Alumni'), Subject=require('../Models/StudySubject'), Lesson=require('../Models/StudyLesson');
  const originals=[Profile.aggregate,Alumni.find,Subject.find,Lesson.find];

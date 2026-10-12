@@ -22,7 +22,7 @@ const links = [
 export default function Navbar({ onSignIn }) {
   const { theme, toggle } = useContext(ThemeContext);
   const [open, setOpen] = useState(false);
-  const { profile, user, loading } = useAuth();
+  const { profile, user, loading, isAuthenticated } = useAuth();
   const identity = profile || user;
   const navigate = useNavigate();
   const location = useLocation();
@@ -142,7 +142,7 @@ export default function Navbar({ onSignIn }) {
         </div>
       </div>
 
-      <NavbarSearch/>
+      {isAuthenticated && <NavbarSearch/>}
       {/* Mobile / Tablet Drawer Menu */}
       {open && (
         <nav

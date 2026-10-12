@@ -18,6 +18,8 @@ function App() {
   const { isAuthenticated } = useAuth();
   const [theme, setTheme] = useState(() => localStorage.getItem('newbert-theme') || 'night');
   const [authOpen, setAuthOpen] = useState(false);
+  const [authReturn,setAuthReturn]=useState(null);
+  useEffect(()=>{const open=()=>{setAuthReturn(window.location.pathname+window.location.search);setAuthOpen(true);};window.addEventListener("newbert-notes-sign-in",open);return()=>window.removeEventListener("newbert-notes-sign-in",open);},[]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -27,10 +29,10 @@ function App() {
   return (
     <ThemeContext.Provider value={{ theme, toggle: () => setTheme(current => current === 'day' ? 'night' : 'day') }}><div className={`app-shell${isAuthenticated ? ' member-shell' : ''}`}>
       <ActivityRefresh/>
-      <Navbar onSignIn={() => setAuthOpen(true)}/>
+      <Navbar onSignIn={() => {setAuthReturn(null);setAuthOpen(true);}}/>
       <ProfileSyncStatus/>
       <Routing/>
-      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} onExplore={() => window.scrollTo({ top: 0, behavior: 'smooth' })}/>
+      <AuthModal returnTo={authReturn} isOpen={authOpen} onClose={() => setAuthOpen(false)} onExplore={() => window.scrollTo({ top: 0, behavior: 'smooth' })}/>
     </div></ThemeContext.Provider>
   )
 }

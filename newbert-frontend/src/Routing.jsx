@@ -1,3 +1,4 @@
+import NotesLogin from "./components/NotesLogin";
 import React, { lazy, Suspense } from 'react'
 import { Link, Navigate, Routes, Route, useLocation } from 'react-router-dom';
 import useAuth from './hook/useAuth';
@@ -38,6 +39,7 @@ const CareerDNA = lazy(() => import('./pages/CareerDNA'));
 function Routing() {
   const { profile, loading, isAuthenticated, error, refreshProfile, logout } = useAuth();
   const location = useLocation();
+  if(!isAuthenticated && location.pathname.startsWith('/notes'))return <main className="notes-page min-h-screen px-5 py-12"><NotesLogin/></main>;
   const requiresSetup = isAuthenticated && !['/join', '/complete-profile', '/alumni/onboarding'].includes(location.pathname) && !location.pathname.startsWith('/admin/');
   if (loading && isAuthenticated) return <PageLoader/>;
   if (requiresSetup && !profile && error) return <main className="mx-auto max-w-2xl px-5 py-16"><p role="alert">{error}</p><button onClick={() => refreshProfile().catch(() => {})} className="mt-4 mr-4 text-orange-500">Retry profile</button><button onClick={logout}>Sign out</button></main>;
