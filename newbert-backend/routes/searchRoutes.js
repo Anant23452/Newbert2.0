@@ -11,6 +11,8 @@ const { searchPattern } = require('../services/searchService');
 const courses = require('../data/studyVideos.json');
 
 router.get('/', async (req,res,next) => {
+  // Search results belong to the signed-in session and must not be cached.
+  res.set('Cache-Control', 'private, no-store');
   const pattern=searchPattern(req.query.q);
   if(!pattern)return res.json({results:[]});
   try {

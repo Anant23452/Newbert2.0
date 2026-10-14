@@ -25,9 +25,16 @@ test('search returns only public identity fields and excludes draft lectures',as
   ]});
   Alumni.find=()=>chain([]);Subject.find=()=>chain([]);
   Lesson.find=()=>chain([{subjectId:'ee3-bee501',videoId:'PrwsICCz3EQ',unit:2,title:'Anant draft',published:false}]);
-  const router=require('../routes/searchRoutes');let response;
-  await router.stack.find(l=>l.route).route.stack[0].handle({query:{q:'Anant'}},{json:value=>{response=value;}},error=>{throw error;});
+  const router=require('../routes/searchRoutes');let response;const headers={};
+  await router.stack.find(l=>l.route).route.stack[0].handle({query:{q:'Anant'}},{set:(name,value)=>{headers[name]=value;},json:value=>{response=value;}},error=>{throw error;});
+  assert.equal(headers['Cache-Control'],'private, no-store');
   assert.deepEqual(response.results,[{type:'Student',title:'Anant',detail:'Example College',url:'/profile/public-user'}]);
   assert.equal(JSON.stringify(response).includes('never-return'),false);
  }finally{[Profile.aggregate,Alumni.find,Subject.find,Lesson.find]=originals;}
+});
+test('invalid search input avoids database queries and disables caching',async()=>{
+ const router=require('../routes/searchRoutes');let response;const headers={};
+ await router.stack.find(l=>l.route).route.stack[0].handle({query:{q:['Anant','other']}},{set:(name,value)=>{headers[name]=value;},json:value=>{response=value;}},error=>{throw error;});
+ assert.deepEqual(response,{results:[]});
+ assert.equal(headers['Cache-Control'],'private, no-store');
 });
