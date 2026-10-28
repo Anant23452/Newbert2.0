@@ -45,7 +45,6 @@ test("search handles prefixes, abbreviations, cities, and punctuation-heavy alia
       ["rec", "rec-ambedkar-nagar"],
       ["REC", "rec-ambedkar-nagar"],
       ["rec ambedkar", "rec-ambedkar-nagar"],
-      ["ambedkar", "rec-ambedkar-nagar"],
       ["ambedkar nagar", "rec-ambedkar-nagar"],
       ["Rajkiya Engineering College, (REC), Ambedkar Nagar", "rec-ambedkar-nagar"],
       ["banda", "rec-banda"],
@@ -57,10 +56,18 @@ test("search handles prefixes, abbreviations, cities, and punctuation-heavy alia
       ["MIT Meerut", "mit-meerut"],
       ["meerut", "mit-meerut"],
       ["MIT", "mit-meerut"],
+      ["AITD", "aitd-kanpur"],
+      ["AITD Kanpur", "aitd-kanpur"],
+      ["AITH Kanpur", "aitd-kanpur"],
+      ["Dr. Ambedkar Institute of Technology for Divyangjan", "aitd-kanpur"],
+      ["Dr. Ambedkar Institute of Technology for Handicapped, Kanpur", "aitd-kanpur"],
     ];
     for (const [query, expectedId] of cases) {
       assert.equal((await searchColleges(query))[0]?.collegeId, expectedId, query);
     }
+    const ambedkarMatches = (await searchColleges("ambedkar")).map((college) => college.collegeId);
+    assert.ok(ambedkarMatches.includes("rec-ambedkar-nagar"));
+    assert.ok(ambedkarMatches.includes("aitd-kanpur"));
     assert.deepEqual(await searchColleges(""), []);
     assert.deepEqual(await searchColleges("   "), []);
     assert.deepEqual(await searchColleges("definitely unknown college"), []);
