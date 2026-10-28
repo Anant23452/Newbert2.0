@@ -118,6 +118,8 @@ The script upserts by stable `collegeId`. Running it repeatedly updates existing
 
 To add colleges later, add a verified object to the maintained data file and run the same command. No autocomplete code change is needed. A future CSV importer or admin editor should write the same College schema.
 
+Each distinct institution needs its own record; aliases are alternate names for that same institution. MIT Meerut uses `mit-meerut`, not an alias of a Rajkiya college. To repair the earlier MIT entry in an existing database, run `node scripts/fixMitMeerutCollege.js` with the target database environment configured. This repeatable repair upserts MIT and removes only the eight incorrect MIT aliases from Rajkiya records, preserving their other aliases and identities.
+
 ## Legacy migration
 
 Run the seed first, then:

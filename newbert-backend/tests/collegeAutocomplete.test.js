@@ -26,6 +26,7 @@ test("maintained Rajkiya seed contains eight unique active colleges including Mi
   assert.ok(rajkiyaColleges.every((college) => college.isActive && college.stateCode === "UP"));
   assert.ok(rajkiyaColleges.some((college) => college.aliases.includes("REC AmbedkarNagar")));
   assert.ok(rajkiyaColleges.some((college) => college.collegeId === "rec-mirzapur"));
+  assert.ok(rajkiyaColleges.every((college) => college.aliases.every((alias) => !alias.includes("Meerut Institute of Technology"))));
 });
 
 test("search handles prefixes, abbreviations, cities, and punctuation-heavy aliases", async () => {
@@ -52,6 +53,10 @@ test("search handles prefixes, abbreviations, cities, and punctuation-heavy alia
       ["biet", "biet-jhansi"],
       ["knit", "knit-sultanpur"],
       ["iet lucknow", "iet-lucknow"],
+      ["Meerut Institute of Technology", "mit-meerut"],
+      ["MIT Meerut", "mit-meerut"],
+      ["meerut", "mit-meerut"],
+      ["MIT", "mit-meerut"],
     ];
     for (const [query, expectedId] of cases) {
       assert.equal((await searchColleges(query))[0]?.collegeId, expectedId, query);

@@ -3,6 +3,7 @@ const normalized = (name) => String(name).toLowerCase().replace(/[^a-z0-9\s]/g, 
 module.exports = [
   ...rajkiyaColleges,
   ...[
+    { collegeId: "mit-meerut", name: "Meerut Institute of Technology", shortName: "MIT Meerut", abbreviation: "MIT", city: "Meerut", collegeType: "Private Engineering College", courses: ["B.Tech"], aliases: ["MIT Meerut", "Meerut Institute of Technology Meerut"], metadata: { source: "https://mitmeerut.ac.in/", verified: true } },
     { collegeId: "biet-jhansi", name: "Bundelkhand Institute of Engineering and Technology, Jhansi", shortName: "BIET Jhansi", abbreviation: "BIET", city: "Jhansi", aliases: ["BIET Jhansi", "Bundelkhand Institute Engineering Technology Jhansi"] },
     { collegeId: "knit-sultanpur", name: "Kamla Nehru Institute of Technology, Sultanpur", shortName: "KNIT Sultanpur", abbreviation: "KNIT", city: "Sultanpur", aliases: ["KNIT Sultanpur", "Kamla Nehru Institute Technology Sultanpur"] },
     { collegeId: "uptti-kanpur", name: "Uttar Pradesh Textile Technology Institute, Kanpur", shortName: "UPTTI Kanpur", abbreviation: "UPTTI", city: "Kanpur", aliases: ["UPTTI Kanpur", "UP Textile Technology Institute Kanpur"] },

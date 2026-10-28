@@ -10,7 +10,6 @@ const rec = (collegeId, city, aliases = []) => ({
     `Rajkiya Engineering College, (REC), ${city}`,
     `Rajkiya Eng College ${city}`,
     `Government Engineering College ${city}`,
-    `Meerut Institute of Technology ${city}`,
     ...aliases,
   ],
   isActive: true, active: true, metadata: { source: "Newbert maintained seed", verified: true },
