@@ -134,4 +134,5 @@ Legacy string fields remain during the transition. College-aware Alumni and plan
 
 ## Why Alumni shares the reference
 
-Using one College document means students and alumni selected as REC Banda point to the same identity. This enables reliable same-college senior matching, Alumni Wall filtering, leaderboards, placement analysis, and future GATE comparisons without spelling-based duplicate groups.
+Using one College document means students and alumni selected as REC Banda point
+clg data is more imp  to the same identity. This enables reliable same-college senior matching, Alumni Wall filtering, leaderboards, placement analysis, and future GATE comparisons without spelling-based duplicate groups.
